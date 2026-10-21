@@ -2,22 +2,12 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PortalController;
-use App\Models\Announcement;
-use App\Models\ReunionEvent;
-use App\Models\Setting;
-use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => view('welcome', [
-    'settings' => Setting::values(),
-    'event' => ReunionEvent::current(),
-    'announcements' => Announcement::feed()->take(3)->get(),
-    'students' => User::where('role', User::ROLE_STUDENT)->where('status', User::STATUS_APPROVED)
-        ->orderByDesc('ssc_batch')->orderBy('name')
-        ->get(['id', 'name', 'photo', 'phone', 'ssc_batch', 'profession', 'company_name', 'linkedin_url']),
-]))->name('home');
+Route::get('/', HomeController::class)->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
@@ -31,7 +21,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 // bKash redirects the browser here after payment (no auth: session may have expired).
 Route::get('/payment/bkash/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 
-Route::middleware('auth')->prefix('portal')->name('portal.')->group(function () {
+Route::middleware(['auth', 'not-rejected'])->prefix('portal')->name('portal.')->group(function () {
     Route::get('/', [PortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/announcements', [PortalController::class, 'announcements'])->name('announcements');
     Route::get('/announcements/{announcement}', [PortalController::class, 'showAnnouncement'])->name('announcements.show');

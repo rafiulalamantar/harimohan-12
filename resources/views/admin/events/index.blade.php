@@ -17,15 +17,15 @@
             <tr>
                 <td class="p-3 font-medium">{{ $e->title }}</td>
                 <td class="p-3">{{ $e->event_date?->format('d M Y') }}</td>
-                <td class="p-3">৳{{ number_format($e->fee) }}</td>
+                <td class="p-3">৳{{ $e->formattedFee() }}</td>
                 <td class="p-3">{{ $e->paid_count }}</td>
                 <td class="p-3">৳{{ number_format($e->collected ?? 0) }}</td>
                 <td class="p-3">{{ $e->is_active ? '✅' : '—' }}</td>
                 <td class="p-3">
                     <div class="flex gap-2">
-                        <a href="{{ route('admin.events.edit', $e) }}" class="border rounded px-3 py-1">Edit</a>
+                        <a href="{{ route('admin.events.edit', $e) }}" class="border rounded-sm px-3 py-1">Edit</a>
                         <form method="POST" action="{{ route('admin.events.destroy', $e) }}" onsubmit="return confirm('Delete this event? Payment records will be kept.')">@csrf @method('DELETE')
-                            <button class="border border-red-300 text-red-700 rounded px-3 py-1">Delete</button>
+                            <button class="border border-red-300 text-red-700 rounded-sm px-3 py-1">Delete</button>
                         </form>
                     </div>
                 </td>

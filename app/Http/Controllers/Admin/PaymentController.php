@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\ReunionEvent;
+use App\Services\CsvWriter;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -43,7 +44,7 @@ class PaymentController extends Controller
                 ->orderBy('id')
                 ->chunk(500, function ($rows) use ($out) {
                     foreach ($rows as $p) {
-                        fputcsv($out, [$p->invoice_no, $p->user?->name, $p->user?->phone, $p->user?->ssc_batch,
+                        CsvWriter::writeRow($out, [$p->invoice_no, $p->user?->name, $p->user?->phone, $p->user?->ssc_batch,
                             $p->event?->title, $p->amount, $p->status, $p->trx_id, $p->payer_msisdn, $p->paid_at]);
                     }
                 });

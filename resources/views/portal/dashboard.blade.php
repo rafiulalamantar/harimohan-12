@@ -32,7 +32,7 @@
                 <div class="font-semibold">{{ $event->title }}</div>
                 <div class="text-sm text-gray-600">{{ $event->event_date?->format('d M Y') }} @if($event->venue) · {{ $event->venue }} @endif</div>
                 @if($event->description)<p class="text-sm text-gray-600 mt-2">{{ $event->description }}</p>@endif
-                <div class="mt-4 text-3xl font-bold">৳{{ number_format($event->fee) }}</div>
+                <div class="mt-4 text-3xl font-bold">৳{{ $event->formattedFee() }}</div>
                 @if($event->payment_deadline)<div class="text-xs text-gray-500">Deadline: {{ $event->payment_deadline->format('d M Y') }}</div>@endif
             </div>
 
@@ -47,7 +47,7 @@
                     <form method="POST" action="{{ route('portal.pay', $event) }}">
                         @csrf
                         <button class="w-full bg-bkash hover:opacity-90 text-white font-semibold rounded-lg py-3 flex items-center justify-center gap-2">
-                            Pay ৳{{ number_format($event->fee) }} with bKash
+                            Pay ৳{{ $event->formattedFee() }} with bKash
                         </button>
                     </form>
                     <p class="text-xs text-gray-500 mt-2 text-center">You will be taken to the bKash page. Confirm with your OTP and PIN.</p>
@@ -64,7 +64,7 @@
         </div>
         <div class="divide-y mt-3">
             @forelse ($announcements as $a)
-                <a href="{{ route('portal.announcements.show', $a) }}" class="block py-3 hover:bg-gray-50 -mx-2 px-2 rounded">
+                <a href="{{ route('portal.announcements.show', $a) }}" class="block py-3 hover:bg-gray-50 -mx-2 px-2 rounded-sm">
                     <div class="flex items-center gap-2">
                         @if($a->is_pinned)<span>📌</span>@endif
                         <span class="font-medium">{{ $a->title }}</span>

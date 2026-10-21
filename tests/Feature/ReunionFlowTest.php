@@ -207,9 +207,8 @@ class ReunionFlowTest extends TestCase
             ->assertSee('https://www.linkedin.com/in/nusrat')->assertSee('https://www.facebook.com/nusrat');
     }
 
-    public function test_welcome_page_lists_all_approved_students_with_contact_details(): void
+    public function test_welcome_page_lists_approved_students_without_phone_numbers_for_guests(): void
     {
-        $students = User::factory()->count(120)->create();
         User::factory()->create([
             'name' => 'Nusrat', 'phone' => '01911111111', 'profession' => 'Engineer', 'company_name' => 'Grameenphone',
             'linkedin_url' => 'https://www.linkedin.com/in/nusrat',
@@ -217,15 +216,168 @@ class ReunionFlowTest extends TestCase
         User::factory()->pending()->create(['name' => 'Pending Person']);
         User::factory()->admin()->create(['name' => 'Admin Person']);
 
-        $response = $this->get(route('home'))->assertOk()
-            ->assertSee('Registered alumni')->assertSee('(121)')
-            ->assertSee('Nusrat')->assertSee('Engineer at Grameenphone')->assertSee('01911111111')
-            ->assertSee('https://www.linkedin.com/in/nusrat')
-            ->assertDontSee('Pending Person')->assertDontSee('Admin Person');
+        $response = $this->get(route('home'));
 
-        foreach ($students as $student) {
-            $response->assertSee($student->phone);
+        $response->assertOk()
+            ->assertSee('Registered alumni')->assertSee('(1)')
+            ->assertSee('Nusrat')->assertSee('Engineer at Grameenphone')
+            ->assertSee('https://www.linkedin.com/in/nusrat')->assertSee('Log in to contact')
+            ->assertDontSee('01911111111')
+            ->assertDontSee('Pending Person')->assertDontSee('Admin Person');
+    }
+
+    public function test_approved_member_sees_alumni_phone_numbers(): void
+    {
+        User::factory()->create(['name' => 'Nusrat', 'phone' => '01911111111']);
+
+        $this->actingAs(User::factory()->create())->get(route('home'))
+            ->assertOk()->assertSee('tel:01911111111', false);
+    }
+
+    public function test_pending_member_does_not_see_alumni_phone_numbers(): void
+    {
+        User::factory()->create(['name' => 'Nusrat', 'phone' => '01911111111']);
+
+        $this->actingAs(User::factory()->pending()->create())->get(route('home'))
+            ->assertOk()->assertSee('Nusrat')->assertDontSee('01911111111');
+    }
+
+    public function test_welcome_directory_is_paginated(): void
+    {
+        User::factory()->count(30)->create();
+
+        $this->get(route('home'))->assertOk()
+            ->assertSee('(30)')->assertSee('Showing 1–24 of 30 alumni');
+        $this->get(route('home', ['page' => 2]))->assertOk()
+            ->assertSee('Showing 25–30 of 30 alumni');
+    }
+
+    public function test_welcome_directory_filters_by_search_term_and_batch(): void
+    {
+        User::factory()->create(['name' => 'Nusrat Jahan', 'ssc_batch' => 2012]);
+        User::factory()->create(['name' => 'Karim Uddin', 'ssc_batch' => 2012]);
+        User::factory()->create(['name' => 'Nusrat Ara', 'ssc_batch' => 2010]);
+
+        $this->get(route('home', ['q' => 'nusrat', 'batch' => 2012]))->assertOk()
+            ->assertSee('Nusrat Jahan')->assertDontSee('Karim Uddin')->assertDontSee('Nusrat Ara');
+    }
+
+    public function test_guest_cannot_find_alumni_by_phone_number(): void
+    {
+        User::factory()->create(['name' => 'Nusrat', 'phone' => '01911111111']);
+
+        $this->get(route('home', ['q' => '01911111111']))->assertOk()
+            ->assertDontSee('Nusrat')->assertSee('No alumni match your search.');
+    }
+
+    public function test_rejected_student_is_logged_out_on_next_portal_request(): void
+    {
+        $student = User::factory()->create();
+        $this->actingAs($student)->get(route('portal.dashboard'))->assertOk();
+        $student->forceFill(['status' => User::STATUS_REJECTED])->save();
+
+        $response = $this->get(route('portal.profile'));
+
+        $response->assertRedirect(route('login'))
+            ->assertSessionHasErrors(['login' => 'Your registration was rejected. Please contact an admin.']);
+        $this->assertGuest();
+    }
+
+    public function test_rejecting_a_student_invalidates_their_remember_me_token(): void
+    {
+        $student = User::factory()->create(['remember_token' => 'old-remember-token']);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->patch(route('admin.students.status', $student), ['status' => User::STATUS_REJECTED]);
+
+        $this->assertNotSame('old-remember-token', $student->fresh()->remember_token);
+    }
+
+    public function test_admin_account_cannot_be_opened_as_a_student(): void
+    {
+        $otherAdmin = User::factory()->admin()->create();
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->get(route('admin.students.show', $otherAdmin))
+            ->assertNotFound();
+    }
+
+    public function test_student_can_login_with_country_code_and_spaced_phone(): void
+    {
+        $user = User::factory()->create(['phone' => '01811111111']);
+
+        $this->post('/login', ['login' => '+880 1811-111111', 'password' => 'password'])
+            ->assertRedirect(route('portal.dashboard'));
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_registration_stores_phone_without_country_code(): void
+    {
+        $this->post('/register', [
+            'name' => 'Rahim', 'email' => 'rahim@example.com', 'phone' => '+8801711111111', 'ssc_batch' => 2012,
+            'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ])->assertRedirect(route('portal.dashboard'));
+
+        $this->assertDatabaseHas('users', ['email' => 'rahim@example.com', 'phone' => '01711111111']);
+    }
+
+    public function test_profile_update_replaces_photo_and_deletes_the_old_one(): void
+    {
+        Storage::fake('public');
+        $oldPhoto = UploadedFile::fake()->image('old.jpg')->store('photos', 'public');
+        $student = User::factory()->create(['photo' => $oldPhoto]);
+
+        $this->actingAs($student)->put(route('portal.profile.update'), [
+            'name' => $student->name, 'phone' => $student->phone, 'photo' => UploadedFile::fake()->image('new.jpg'),
+        ])->assertSessionHas('success');
+
+        $newPhoto = $student->fresh()->photo;
+        $this->assertNotSame($oldPhoto, $newPhoto);
+        Storage::disk('public')->assertExists($newPhoto);
+        Storage::disk('public')->assertMissing($oldPhoto);
+    }
+
+    public function test_csv_exports_neutralise_formula_cells(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $student = User::factory()->create(['name' => '=HYPERLINK("http://evil.test","Click")']);
+        Payment::create([
+            'user_id' => $student->id, 'reunion_event_id' => $this->event()->id, 'amount' => 1500,
+            'invoice_no' => 'INV-1', 'status' => Payment::STATUS_COMPLETED,
+        ]);
+
+        $studentsCsv = $this->actingAs($admin)->get(route('admin.students.export'))->streamedContent();
+        $paymentsCsv = $this->actingAs($admin)->get(route('admin.payments.export'))->streamedContent();
+
+        foreach ([$studentsCsv, $paymentsCsv] as $csv) {
+            $this->assertStringContainsString('"\'=HYPERLINK(', $csv);
+            $this->assertStringNotContainsString('"=HYPERLINK(', $csv);
         }
+    }
+
+    public function test_payment_deadline_after_event_date_is_rejected(): void
+    {
+        $this->actingAs(User::factory()->admin()->create())->post(route('admin.events.store'), [
+            'title' => 'Reunion', 'fee' => 1500, 'event_date' => '2026-12-01', 'payment_deadline' => '2026-12-02',
+        ])->assertSessionHasErrors(['payment_deadline' => 'The payment deadline must be on or before the event date.']);
+
+        $this->assertDatabaseCount('reunion_events', 0);
+    }
+
+    public function test_fractional_fee_is_shown_to_the_paisa(): void
+    {
+        $this->event(['fee' => 500.50]);
+
+        $this->actingAs(User::factory()->create())->get(route('portal.dashboard'))
+            ->assertOk()->assertSee('Pay ৳500.50 with bKash');
+    }
+
+    public function test_responses_include_security_headers(): void
+    {
+        $this->get(route('home'))->assertOk()
+            ->assertHeader('X-Frame-Options', 'DENY')
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     }
 
     public function test_rejected_student_is_removed_from_welcome_page(): void

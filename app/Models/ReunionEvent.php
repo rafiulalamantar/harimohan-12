@@ -32,6 +32,14 @@ class ReunionEvent extends Model
         return static::where('is_active', true)->latest('event_date')->first();
     }
 
+    /** Fee for display: whole taka as "1,500", otherwise to the paisa as "500.50". */
+    public function formattedFee(): string
+    {
+        $fee = (float) $this->fee;
+
+        return number_format($fee, floor($fee) === $fee ? 0 : 2);
+    }
+
     public function isPaymentOpen(): bool
     {
         return $this->is_active

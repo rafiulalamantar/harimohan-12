@@ -25,7 +25,7 @@ class StudentFieldTest extends TestCase
         $this->actingAs(User::factory()->admin()->create())->post(route('admin.student-fields.store'), [
             'label' => 'Polo T-shirt size',
             'type' => 'select',
-            'options' => "S\nM\nL, XL\n\nM",
+            'options' => "S\nM\nL\nXL\n\nM",
             'help_text' => 'Check the chart.',
             'image' => UploadedFile::fake()->image('chart.png'),
             'is_required' => '1',
@@ -40,6 +40,40 @@ class StudentFieldTest extends TestCase
         $this->get(route('admin.student-fields.index'))->assertSee('Polo T-shirt size')->assertSee('S, M, L, XL');
         $this->get(route('admin.student-fields.edit', $field))->assertOk()->assertSee($field->imageUrl());
         $this->get(route('admin.student-fields.create'))->assertOk();
+    }
+
+    public function test_dropdown_choice_may_contain_a_comma(): void
+    {
+        $this->actingAs(User::factory()->admin()->create())->post(route('admin.student-fields.store'), [
+            'label' => 'Pickup point',
+            'type' => 'select',
+            'options' => "Dhaka, Mirpur\nChattogram",
+            'is_active' => '1',
+        ])->assertRedirect(route('admin.student-fields.index'));
+
+        $this->assertSame(['Dhaka, Mirpur', 'Chattogram'], StudentField::sole()->options);
+    }
+
+    public function test_removing_a_dropdown_choice_clears_answers_that_used_it(): void
+    {
+        $field = StudentField::factory()->select(['M', 'L'])->required()->create(['label' => 'Size']);
+        $keptChoiceStudent = User::factory()->create();
+        $removedChoiceStudent = User::factory()->create();
+        $keptChoiceStudent->saveFieldValues([$field->id => 'L']);
+        $removedChoiceStudent->saveFieldValues([$field->id => 'M']);
+
+        $this->actingAs(User::factory()->admin()->create())->put(route('admin.student-fields.update', $field), [
+            'label' => 'Size',
+            'type' => 'select',
+            'options' => "Medium\nL",
+            'is_required' => '1',
+            'is_active' => '1',
+        ])->assertRedirect(route('admin.student-fields.index'))
+            ->assertSessionHas('success', 'Student field updated. Cleared 1 saved answer that used a removed choice; those students will be asked to choose again.');
+
+        $this->assertSame([$field->id => 'L'], $keptChoiceStudent->fresh()->fieldAnswers());
+        $this->assertSame([$field->id => null], $removedChoiceStudent->fresh()->fieldAnswers());
+        $this->assertSame(['Size'], $removedChoiceStudent->fresh()->missingRequiredFields()->pluck('label')->all());
     }
 
     public function test_dropdown_field_needs_choices(): void

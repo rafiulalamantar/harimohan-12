@@ -60,7 +60,7 @@
             @forelse ($byBatch as $b)
                 <a href="{{ route('admin.students.index', ['batch' => $b->ssc_batch]) }}" class="flex items-center gap-3">
                     <span class="w-14 text-gray-600">{{ $b->ssc_batch ?? '—' }}</span>
-                    <span class="flex-1 bg-gray-100 rounded h-4"><span class="block bg-brand-600 h-4 rounded" style="width: {{ $b->total / $max * 100 }}%"></span></span>
+                    <span class="flex-1 bg-gray-100 rounded-sm h-4"><span class="block bg-brand-600 h-4 rounded-sm" style="width: {{ $b->total / $max * 100 }}%"></span></span>
                     <span class="w-8 text-right">{{ $b->total }}</span>
                 </a>
             @empty

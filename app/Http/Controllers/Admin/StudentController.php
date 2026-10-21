@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\StudentField;
 use App\Models\User;
+use App\Services\CsvWriter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class StudentController extends Controller
@@ -32,6 +34,8 @@ class StudentController extends Controller
 
     public function show(User $student)
     {
+        abort_if($student->isAdmin(), 404);
+
         $student->load('payments.event', 'fieldValues');
 
         return view('admin.students.show', [
@@ -52,7 +56,14 @@ class StudentController extends Controller
             return back()->with('error', "{$student->name} has already paid, so they cannot be rejected.");
         }
 
-        $student->forceFill(['status' => $data['status']])->save();
+        $student->forceFill(['status' => $data['status']]);
+
+        // Invalidate "remember me" logins so a rejected student can't come back in.
+        if ($data['status'] === User::STATUS_REJECTED) {
+            $student->setRememberToken(Str::random(60));
+        }
+
+        $student->save();
 
         return back()->with('success', "{$student->name}'s status: {$data['status']}");
     }
@@ -76,7 +87,7 @@ class StudentController extends Controller
                 ->chunk(500, function ($users) use ($out, $fields) {
                     foreach ($users as $u) {
                         $answers = $u->fieldAnswers();
-                        fputcsv($out, [$u->name, $u->email, $u->phone, $u->ssc_batch, $u->roll_no,
+                        CsvWriter::writeRow($out, [$u->name, $u->email, $u->phone, $u->ssc_batch, $u->roll_no,
                             $u->profession, $u->company_name, $u->linkedin_url, $u->facebook_url, $u->status, $u->paid_count > 0 ? 'Yes' : 'No', $u->created_at,
                             ...$fields->map(fn ($f) => $answers[$f->id] ?? '')]);
                     }
