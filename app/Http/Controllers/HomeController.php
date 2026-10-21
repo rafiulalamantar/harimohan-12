@@ -22,7 +22,7 @@ class HomeController extends Controller
     public function __invoke(Request $request): View
     {
         $canSeeContacts = (bool) $request->user()?->isApproved();
-        $term = $request->string('q')->trim()->value();
+        $term = is_string($request->query('q')) ? trim($request->query('q')) : '';
         $batch = $request->integer('batch') ?: null;
 
         $approvedStudents = User::where('role', User::ROLE_STUDENT)->where('status', User::STATUS_APPROVED);

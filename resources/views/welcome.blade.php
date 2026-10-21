@@ -23,11 +23,18 @@
         @endif
 
         <div class="mt-8 flex flex-wrap items-center gap-3">
-            <a href="{{ route('register') }}" class="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-semibold text-brand-900 shadow-lg shadow-black/10 hover:bg-brand-50 transition">
-                Register now
-                <svg class="w-4 h-4 transition group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
-            </a>
-            <a href="{{ route('login') }}" class="rounded-full px-6 py-3 font-semibold ring-1 ring-white/30 hover:bg-white/10 transition">Login</a>
+            @auth
+                <a href="{{ route(auth()->user()->isAdmin() ? 'admin.dashboard' : 'portal.dashboard') }}" class="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-semibold text-brand-900 shadow-lg shadow-black/10 hover:bg-brand-50 transition">
+                    Go to dashboard
+                    <svg class="w-4 h-4 transition group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+                </a>
+            @else
+                <a href="{{ route('register') }}" class="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-semibold text-brand-900 shadow-lg shadow-black/10 hover:bg-brand-50 transition">
+                    Register now
+                    <svg class="w-4 h-4 transition group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+                </a>
+                <a href="{{ route('login') }}" class="rounded-full px-6 py-3 font-semibold ring-1 ring-white/30 hover:bg-white/10 transition">Login</a>
+            @endauth
         </div>
 
         @if ($event)

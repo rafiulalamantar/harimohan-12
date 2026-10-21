@@ -69,11 +69,29 @@ class StudentFieldTest extends TestCase
             'is_required' => '1',
             'is_active' => '1',
         ])->assertRedirect(route('admin.student-fields.index'))
-            ->assertSessionHas('success', 'Student field updated. Cleared 1 saved answer that used a removed choice; those students will be asked to choose again.');
+            ->assertSessionHas('success', 'Student field updated. Cleared 1 saved answer that no longer fit this field; those students will be asked to answer again.');
 
         $this->assertSame([$field->id => 'L'], $keptChoiceStudent->fresh()->fieldAnswers());
         $this->assertSame([$field->id => null], $removedChoiceStudent->fresh()->fieldAnswers());
         $this->assertSame(['Size'], $removedChoiceStudent->fresh()->missingRequiredFields()->pluck('label')->all());
+    }
+
+    public function test_changing_text_field_to_number_clears_non_numeric_answers(): void
+    {
+        $field = StudentField::factory()->create(['label' => 'Guests', 'type' => 'text']);
+        $numericStudent = User::factory()->create();
+        $textStudent = User::factory()->create();
+        $numericStudent->saveFieldValues([$field->id => '3']);
+        $textStudent->saveFieldValues([$field->id => 'three']);
+
+        $this->actingAs(User::factory()->admin()->create())->put(route('admin.student-fields.update', $field), [
+            'label' => 'Guests',
+            'type' => 'number',
+            'is_active' => '1',
+        ])->assertSessionHas('success', 'Student field updated. Cleared 1 saved answer that no longer fit this field; those students will be asked to answer again.');
+
+        $this->assertSame([$field->id => '3'], $numericStudent->fresh()->fieldAnswers());
+        $this->assertSame([$field->id => null], $textStudent->fresh()->fieldAnswers());
     }
 
     public function test_dropdown_field_needs_choices(): void
