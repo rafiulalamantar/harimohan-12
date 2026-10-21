@@ -138,3 +138,7 @@ app/Models/{User,Announcement,ReunionEvent,Payment,StudentField,StudentFieldValu
 database/migrations/                    users (+alumni fields), announcements, reunion_events, payments, student fields, settings
 resources/views/                        Blade + Tailwind v4 (resources/css/app.css)
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
