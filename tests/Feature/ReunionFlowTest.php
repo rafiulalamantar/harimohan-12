@@ -520,4 +520,15 @@ class ReunionFlowTest extends TestCase
         $this->actingAs($student)->put(route('portal.profile.update'), ['name' => $student->name, 'phone' => ['x']])
             ->assertSessionHasErrors('phone');
     }
+
+    public function test_welcome_page_offers_dashboard_instead_of_register_to_logged_in_alumni(): void
+    {
+        User::factory()->create(['name' => 'Nusrat']);
+
+        $this->get(route('home'))->assertSee('Register now')->assertSee('Nusrat')->assertDontSee('Go to dashboard');
+
+        $this->actingAs(User::factory()->create())->get(route('home'))
+            ->assertSee('Go to dashboard')->assertSee(route('portal.dashboard'))
+            ->assertDontSee('Register now')->assertSee('Nusrat');
+    }
 }
