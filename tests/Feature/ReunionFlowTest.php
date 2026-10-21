@@ -8,6 +8,7 @@ use App\Models\ReunionEvent;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -601,6 +602,19 @@ class ReunionFlowTest extends TestCase
         $this->app->detectEnvironment(fn () => 'production');
 
         $this->get('http://localhost/login?x=1')->assertRedirect('https://localhost/login?x=1')->assertStatus(301);
+    }
+
+    public function test_https_forwarded_by_a_trusted_proxy_is_not_redirected_in_production(): void
+    {
+        $this->app->detectEnvironment(fn () => 'production');
+        TrustProxies::at('*');
+
+        $response = $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.1'])
+            ->withHeader('X-Forwarded-Proto', 'https')
+            ->get('http://localhost/login');
+        TrustProxies::flushState();
+
+        $response->assertOk();
     }
 
     public function test_payment_shows_under_construction_while_bkash_is_disabled(): void

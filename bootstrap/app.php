@@ -25,7 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
         if ($trustedProxies = env('TRUSTED_PROXIES')) {
             $middleware->trustProxies(at: $trustedProxies === '*' ? '*' : explode(',', $trustedProxies));
         }
-        $middleware->prepend(RedirectToHttps::class);
+        // Appended, not prepended: it must run after TrustProxies has read X-Forwarded-Proto.
+        $middleware->append(RedirectToHttps::class);
         $middleware->append(AddSecurityHeaders::class);
         // Password reset links are built from the request's host, so only answer to APP_URL's host (skipped locally and in tests).
         $middleware->trustHosts();
