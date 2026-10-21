@@ -25,6 +25,7 @@ class ReunionFlowTest extends TestCase
     {
         parent::setUp();
         config([
+            'bkash.enabled' => true,
             'bkash.base_url' => self::BASE,
             'bkash.username' => 'u', 'bkash.password' => 'p',
             'bkash.app_key' => 'k', 'bkash.app_secret' => 's',
@@ -589,5 +590,21 @@ class ReunionFlowTest extends TestCase
         $this->app->detectEnvironment(fn () => 'production');
 
         $this->get('http://localhost/login?x=1')->assertRedirect('https://localhost/login?x=1')->assertStatus(301);
+    }
+
+    public function test_payment_shows_under_construction_while_bkash_is_disabled(): void
+    {
+        config(['bkash.enabled' => false]);
+        Http::preventStrayRequests();
+        $event = $this->event();
+        $student = User::factory()->create();
+
+        $this->actingAs($student)->get(route('portal.dashboard'))
+            ->assertSee('Payment Process Under Construction')
+            ->assertDontSee('with bKash');
+
+        $this->actingAs($student)->post(route('portal.pay', $event))
+            ->assertSessionHas('error', 'Payment Process Under Construction');
+        $this->assertDatabaseCount('payments', 0);
     }
 }
