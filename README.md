@@ -127,11 +127,7 @@ php artisan test
 
 Vercel has no PHP runtime of its own, so this uses the community [`vercel-php`](https://github.com/vercel-community/php) runtime (`vercel.json`, `api/index.php`). Vercel functions are serverless: the disk is wiped after each request, so the database and uploads must live elsewhere.
 
-**1. Add the S3 driver** (for Cloudflare R2), then commit `composer.json` and `composer.lock`:
-
-```bash
-composer require league/flysystem-aws-s3-v3 "^3.0" -W
-```
+**1. S3 driver:** `league/flysystem-aws-s3-v3` (used for Cloudflare R2) is already in `composer.json`; Vercel installs it with the other packages.
 
 **2. Database (MySQL-compatible):** create a free [TiDB Cloud](https://tidbcloud.com) Starter cluster in the Singapore region. From its *Connect* dialog copy host, port (`4000`), user (`xxxx.root`) and password, and create a database (`CREATE DATABASE school_reunion;`). SSL is set in `vercel.json` (`MYSQL_ATTR_SSL_CA`).
 
