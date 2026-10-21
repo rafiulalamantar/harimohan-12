@@ -7,7 +7,7 @@
         <x-avatar :user="$user" class="w-12 h-12 text-xl" />
         <div>
         <h1 class="text-2xl font-bold">Assalamu Alaikum, {{ $user->name }}</h1>
-        <p class="text-sm text-gray-500">SSC batch {{ $user->ssc_batch }} · {{ $user->phone }}</p>
+        <p class="text-sm text-gray-500">SSC Batch {{ $user->ssc_batch }} · {{ $user->phone }}</p>
         </div>
     </div>
     @php($badge = ['approved' => 'bg-green-100 text-green-800', 'pending' => 'bg-yellow-100 text-yellow-800', 'rejected' => 'bg-red-100 text-red-800'][$user->status] ?? '')
@@ -17,7 +17,7 @@
 @if ($missingFields->isNotEmpty())
     <div class="mt-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 text-sm">
         Please complete your profile: {{ $missingFields->pluck('label')->join(', ') }}.
-        <a href="{{ route('portal.profile') }}" class="underline font-medium">Update profile</a>
+        <a href="{{ route('portal.profile') }}" class="underline font-medium">Update Profile</a>
     </div>
 @endif
 

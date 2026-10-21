@@ -135,23 +135,34 @@
                         </div>
                         <div class="flex flex-1 flex-col p-3 sm:p-4">
                             <h3 class="font-bold text-slate-900 leading-snug line-clamp-1" title="{{ $s->name }}">{{ $s->name }}</h3>
-                            <p class="mt-0.5 text-xs sm:text-sm text-slate-500 line-clamp-2 min-h-[2.5em]">{{ collect([$s->profession, $s->company_name])->filter()->join(' at ') ?: '—' }}</p>
-                            <div class="mt-auto pt-3 flex items-center gap-2">
+                            @php($job = collect([$s->profession, $s->company_name])->filter()->join(' at '))
+                            @if ($job)
+                                <p class="mt-0.5 text-xs sm:text-sm text-slate-500 line-clamp-2">{{ $job }}</p>
+                            @endif
+                            <div class="mt-auto pt-3 space-y-2">
+                                @if ($s->linkedin_url || $s->facebook_url)
+                                    <div class="flex items-center gap-2">
+                                        @if ($s->linkedin_url)
+                                            <a href="{{ $s->linkedin_url }}" target="_blank" rel="noopener noreferrer" title="LinkedIn profile" class="grid place-items-center w-9 h-9 shrink-0 rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100 hover:bg-sky-100 transition">
+                                                <span class="sr-only">LinkedIn</span>
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 11-.01 5 2.5 2.5 0 01.01-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05C20.6 8.65 21 11.2 21 14.5V21h-4v-5.8c0-1.4-.03-3.2-1.95-3.2-1.95 0-2.25 1.52-2.25 3.1V21H9z"/></svg>
+                                            </a>
+                                        @endif
+                                        @if ($s->facebook_url)
+                                            <a href="{{ $s->facebook_url }}" target="_blank" rel="noopener noreferrer" title="Facebook profile" class="grid place-items-center w-9 h-9 shrink-0 rounded-xl bg-blue-50 text-blue-700 ring-1 ring-blue-100 hover:bg-blue-100 transition">
+                                                <span class="sr-only">Facebook</span>
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.2c-.3 0-1.3-.2-2.5-.2C12 2 10.4 3.5 10.4 6.3v2.2H7.6v3.3h2.8V22H14V11.8h2.8l.4-3.3z"/></svg>
+                                            </a>
+                                        @endif
+                                    </div>
+                                @endif
                                 @if ($canSeeContacts)
-                                    <a href="tel:{{ $s->phone }}" title="Call {{ $s->name }}" class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-2 py-2 text-xs font-semibold text-white hover:bg-brand-800 transition">
+                                    <a href="tel:{{ $s->phone }}" title="Call {{ $s->name }}" class="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-2 py-2 text-xs font-semibold text-white hover:bg-brand-800 transition">
                                         <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2"/></svg>
                                         <span class="truncate">{{ $s->phone }}</span>
                                     </a>
                                 @elseif (! auth()->check())
-                                    <a href="{{ route('login') }}" class="flex-1 min-w-0 inline-flex items-center justify-center rounded-xl bg-slate-100 px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition">Log in to contact</a>
-                                @else
-                                    <span class="flex-1"></span>
-                                @endif
-                                @if ($s->linkedin_url)
-                                    <a href="{{ $s->linkedin_url }}" target="_blank" rel="noopener noreferrer" title="LinkedIn profile" class="grid place-items-center w-9 h-9 shrink-0 rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100 hover:bg-sky-100 transition">
-                                        <span class="sr-only">LinkedIn</span>
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 11-.01 5 2.5 2.5 0 01.01-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05C20.6 8.65 21 11.2 21 14.5V21h-4v-5.8c0-1.4-.03-3.2-1.95-3.2-1.95 0-2.25 1.52-2.25 3.1V21H9z"/></svg>
-                                    </a>
+                                    <a href="{{ route('login') }}" class="w-full inline-flex items-center justify-center rounded-xl bg-slate-100 px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition">Log in to contact</a>
                                 @endif
                             </div>
                         </div>
