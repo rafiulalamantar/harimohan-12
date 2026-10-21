@@ -395,6 +395,17 @@ class ReunionFlowTest extends TestCase
         $this->assertStringContainsString("frame-ancestors 'none'", $policy);
     }
 
+    public function test_content_security_policy_allows_images_from_external_upload_storage(): void
+    {
+        $this->withVite();
+        Vite::useHotFile(storage_path('framework/testing/no-vite-hot-file'));
+        config(['filesystems.disks.public.url' => 'https://pub-abc123.r2.dev/uploads']);
+
+        $policy = $this->get('/up')->assertOk()->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString("img-src 'self' data: https://pub-abc123.r2.dev;", $policy);
+    }
+
     public function test_content_security_policy_only_reports_in_local_environment(): void
     {
         $this->withVite();

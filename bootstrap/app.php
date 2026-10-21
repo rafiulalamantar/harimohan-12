@@ -20,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureAdmin::class,
             'not-rejected' => EnsureNotRejected::class,
         ]);
+        // Behind a load balancer (Vercel, Cloudflare, etc.) HTTPS ends at the proxy. Trusting its X-Forwarded-*
+        // headers lets isSecure() and generated URLs see HTTPS; without it RedirectToHttps loops forever.
+        if ($trustedProxies = env('TRUSTED_PROXIES')) {
+            $middleware->trustProxies(at: $trustedProxies === '*' ? '*' : explode(',', $trustedProxies));
+        }
         $middleware->prepend(RedirectToHttps::class);
         $middleware->append(AddSecurityHeaders::class);
         // Password reset links are built from the request's host, so only answer to APP_URL's host (skipped locally and in tests).
