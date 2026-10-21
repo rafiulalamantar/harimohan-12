@@ -35,7 +35,7 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
             ...StudentField::rulesFor($fields),
         ], [
-            'phone.regex' => 'Enter a valid Bangladeshi mobile number (01XXXXXXXXX).',
+            'phone.regex' => 'Mobile number must be 11 digits, like 01XXXXXXXXX.',
         ], StudentField::attributeNamesFor($fields));
 
         $answers = $data['fields'] ?? [];

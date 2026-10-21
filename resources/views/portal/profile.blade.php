@@ -13,7 +13,7 @@
     <form method="POST" action="{{ route('portal.profile.update') }}" enctype="multipart/form-data" class="mt-6 grid md:grid-cols-2 gap-4">
         @csrf @method('PUT')
         <x-field name="name" label="Full name" :value="$user->name" required />
-        <x-field name="phone" label="Mobile" :value="$user->phone" required />
+        <x-field name="phone" label="Mobile" :value="$user->phone" required placeholder="01XXXXXXXXX" inputmode="numeric" maxlength="11" pattern="01[3-9][0-9]{8}" title="11-digit mobile number, like 01XXXXXXXXX" hint="11 digits, e.g. 01712345678" />
         <x-field name="profession" label="Profession" :value="$user->profession" />
         <x-field name="company_name" label="Company / organization" :value="$user->company_name" />
         <x-field name="present_address" label="Present address" :value="$user->present_address" />

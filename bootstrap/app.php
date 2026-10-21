@@ -3,6 +3,7 @@
 use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureNotRejected;
+use App\Http\Middleware\RedirectToHttps;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,7 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureAdmin::class,
             'not-rejected' => EnsureNotRejected::class,
         ]);
+        $middleware->prepend(RedirectToHttps::class);
         $middleware->append(AddSecurityHeaders::class);
+        // Password reset links are built from the request's host, so only answer to APP_URL's host (skipped locally and in tests).
+        $middleware->trustHosts();
         $middleware->redirectUsersTo(fn () => auth()->user()?->isAdmin() ? route('admin.dashboard') : route('portal.dashboard'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {

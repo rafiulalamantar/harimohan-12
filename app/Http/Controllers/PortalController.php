@@ -73,7 +73,9 @@ class PortalController extends Controller
             'present_address' => ['nullable', 'string', 'max:255'],
             'photo' => ['nullable', 'image', 'max:2048'],
             ...StudentField::rulesFor($fields),
-        ], [], StudentField::attributeNamesFor($fields));
+        ], [
+            'phone.regex' => 'Mobile number must be 11 digits, like 01XXXXXXXXX.',
+        ], StudentField::attributeNamesFor($fields));
 
         $answers = $data['fields'] ?? [];
         unset($data['fields']);
