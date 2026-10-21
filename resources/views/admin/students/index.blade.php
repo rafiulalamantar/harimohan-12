@@ -45,7 +45,7 @@
                     </form>
                 @endif
                 @if ($s->status !== 'rejected')
-                    <form method="POST" action="{{ route('admin.students.status', $s) }}" onsubmit="return confirm('Reject this student?')" class="flex-1">@csrf @method('PATCH')
+                    <form method="POST" action="{{ route('admin.students.status', $s) }}" data-confirm="Reject this student?" class="flex-1">@csrf @method('PATCH')
                         <input type="hidden" name="status" value="rejected">
                         <button class="w-full text-sm bg-red-600 text-white rounded-lg px-3 py-2">Reject</button>
                     </form>
@@ -80,7 +80,7 @@
                             </form>
                         @endif
                         @if ($s->status !== 'rejected')
-                            <form method="POST" action="{{ route('admin.students.status', $s) }}" onsubmit="return confirm('Reject this student?')">@csrf @method('PATCH')
+                            <form method="POST" action="{{ route('admin.students.status', $s) }}" data-confirm="Reject this student?">@csrf @method('PATCH')
                                 <input type="hidden" name="status" value="rejected">
                                 <button class="text-xs bg-red-600 text-white rounded-sm px-2 py-1">Reject</button>
                             </form>

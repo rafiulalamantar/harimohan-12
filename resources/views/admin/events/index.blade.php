@@ -25,7 +25,7 @@
             </dl>
             <div class="mt-3 flex gap-2">
                 <a href="{{ route('admin.events.edit', $e) }}" class="flex-1 text-center text-sm border rounded-lg px-3 py-2">Edit</a>
-                <form method="POST" action="{{ route('admin.events.destroy', $e) }}" onsubmit="return confirm('Delete this event? Payment records will be kept.')" class="flex-1">@csrf @method('DELETE')
+                <form method="POST" action="{{ route('admin.events.destroy', $e) }}" data-confirm="Delete this event? Payment records will be kept." class="flex-1">@csrf @method('DELETE')
                     <button class="w-full text-sm border border-red-300 text-red-700 rounded-lg px-3 py-2">Delete</button>
                 </form>
             </div>
@@ -53,7 +53,7 @@
                 <td class="p-3">
                     <div class="flex gap-2">
                         <a href="{{ route('admin.events.edit', $e) }}" class="border rounded-sm px-3 py-1">Edit</a>
-                        <form method="POST" action="{{ route('admin.events.destroy', $e) }}" onsubmit="return confirm('Delete this event? Payment records will be kept.')">@csrf @method('DELETE')
+                        <form method="POST" action="{{ route('admin.events.destroy', $e) }}" data-confirm="Delete this event? Payment records will be kept.">@csrf @method('DELETE')
                             <button class="border border-red-300 text-red-700 rounded-sm px-3 py-1">Delete</button>
                         </form>
                     </div>
