@@ -15,7 +15,7 @@
     <div class="relative px-6 py-12 sm:px-10 sm:py-16 md:px-14 {{ $heroBanner ? 'md:pt-56 lg:pt-72' : 'md:py-20' }}">
         <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold tracking-wide ring-1 ring-white/20 backdrop-blur-sm">
             <span class="w-1.5 h-1.5 rounded-full bg-brand-300 animate-pulse"></span>
-            {{ config('app.name') }} Alumni Association
+            {{ config('app.name') }}
         </span>
         <h1 class="mt-5 max-w-3xl text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.05] [text-wrap:balance]">{{ $settings['hero_title'] }}</h1>
         @if ($settings['hero_subtitle'])
@@ -61,8 +61,8 @@
     <section class="mt-16">
         <div class="flex items-end justify-between gap-4 mb-6">
             <div>
-                <p class="text-sm font-semibold text-brand-700">Stay updated</p>
-                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Latest notice</h2>
+                <p class="text-sm font-semibold text-brand-700">Stay Updated</p>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Latest Notice</h2>
             </div>
         </div>
         <div class="grid md:grid-cols-3 gap-5">
@@ -93,11 +93,11 @@
     <section id="alumni" class="mt-16 scroll-mt-24">
         <form method="GET" action="{{ route('home') }}#alumni" class="flex flex-wrap items-end justify-between gap-4 mb-6">
             <div>
-                <p class="text-sm font-semibold text-brand-700">Alumni directory</p>
-                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Registered alumni <span class="text-slate-400 font-semibold">({{ $totalAlumni }})</span></h2>
+                <p class="text-sm font-semibold text-brand-700">Alumni Directory</p>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Registered Alumni <span class="text-slate-400 font-semibold">({{ $totalAlumni }})</span></h2>
             </div>
             <label class="relative w-full sm:w-80">
-                <span class="sr-only">Search alumni</span>
+                <span class="sr-only">Search Alumni</span>
                 <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
                 <input name="q" type="search" value="{{ $search }}" placeholder="Search name, batch, job…"
                        class="w-full rounded-full border-0 bg-white py-3 pl-11 pr-4 text-sm ring-1 ring-slate-200 shadow-soft placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-brand-500">

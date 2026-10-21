@@ -219,7 +219,7 @@ class ReunionFlowTest extends TestCase
         $response = $this->get(route('home'));
 
         $response->assertOk()
-            ->assertSee('Registered alumni')->assertSee('(1)')
+            ->assertSee('Registered Alumni')->assertSee('(1)')
             ->assertSee('Nusrat')->assertSee('Engineer at Grameenphone')
             ->assertSee('https://www.linkedin.com/in/nusrat')->assertSee('Log in to contact')
             ->assertDontSee('01911111111')
