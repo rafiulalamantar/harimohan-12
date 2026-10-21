@@ -43,6 +43,8 @@
                     <div class="rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 text-sm">You can pay once an admin verifies your registration.</div>
                 @elseif (! $event->isPaymentOpen())
                     <div class="rounded-lg bg-gray-100 text-gray-700 px-4 py-3 text-sm">Payments are currently closed.</div>
+                @elseif (! config('bkash.enabled'))
+                    <div class="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm font-semibold text-center">🚧 Payment Process Under Construction</div>
                 @else
                     <form method="POST" action="{{ route('portal.pay', $event) }}">
                         @csrf
