@@ -2,7 +2,7 @@
 @section('title', 'Notice board')
 
 @section('content')
-<h1 class="text-2xl font-bold mb-4">Notice board</h1>
+<h1 class="text-2xl font-bold mb-4">Notice Board</h1>
 <div class="space-y-3">
     @forelse ($announcements as $a)
         <a href="{{ route('portal.announcements.show', $a) }}" class="block bg-white rounded-xl border p-5 hover:border-brand-600">

@@ -2,7 +2,7 @@
 @section('title', 'My payments')
 
 @section('content')
-<h1 class="text-2xl font-bold mb-4">My payments</h1>
+<h1 class="text-2xl font-bold mb-4">My Payments</h1>
 {{-- Phones: one card per payment --}}
 <div class="md:hidden space-y-3">
     @forelse ($payments as $p)
@@ -23,7 +23,7 @@
             </dl>
         </div>
     @empty
-        <div class="bg-white rounded-2xl border p-6 text-center text-gray-500">No payments yet. <a href="{{ route('portal.dashboard') }}" class="text-brand-700 underline">Pay now</a></div>
+        <div class="bg-white rounded-2xl border p-6 text-center text-gray-500">No Payments Yet. <a href="{{ route('portal.dashboard') }}" class="text-brand-700 underline">Pay now</a></div>
     @endforelse
 </div>
 
@@ -44,7 +44,7 @@
                 <td class="p-3 font-mono text-xs">{{ $p->invoice_no }}</td>
             </tr>
         @empty
-            <tr><td colspan="6" class="p-6 text-center text-gray-500">No payments yet. <a href="{{ route('portal.dashboard') }}" class="text-brand-700 underline">Pay now</a></td></tr>
+            <tr><td colspan="6" class="p-6 text-center text-gray-500">No Payments Yet. <a href="{{ route('portal.dashboard') }}" class="text-brand-700 underline">Pay now</a></td></tr>
         @endforelse
         </tbody>
     </table>

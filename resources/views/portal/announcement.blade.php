@@ -2,7 +2,7 @@
 @section('title', $announcement->title)
 
 @section('content')
-<a href="{{ route('portal.announcements') }}" class="text-sm text-brand-700 underline">← Notice board</a>
+<a href="{{ route('portal.announcements') }}" class="text-sm text-brand-700 underline">← Notice Board</a>
 <article class="bg-white rounded-2xl border p-6 md:p-8 mt-3">
     @if ($announcement->banner)
         <img src="{{ $announcement->bannerUrl() }}" alt="" class="w-full max-h-80 object-cover rounded-xl mb-5">

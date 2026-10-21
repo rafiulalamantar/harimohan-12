@@ -27,7 +27,7 @@ class HomeController extends Controller
 
         $approvedStudents = User::where('role', User::ROLE_STUDENT)->where('status', User::STATUS_APPROVED);
 
-        $columns = ['id', 'name', 'photo', 'ssc_batch', 'profession', 'company_name', 'linkedin_url'];
+        $columns = ['id', 'name', 'photo', 'ssc_batch', 'profession', 'company_name', 'linkedin_url', 'facebook_url'];
         if ($canSeeContacts) {
             $columns[] = 'phone';
         }

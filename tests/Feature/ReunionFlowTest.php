@@ -211,7 +211,7 @@ class ReunionFlowTest extends TestCase
     {
         User::factory()->create([
             'name' => 'Nusrat', 'phone' => '01911111111', 'profession' => 'Engineer', 'company_name' => 'Grameenphone',
-            'linkedin_url' => 'https://www.linkedin.com/in/nusrat',
+            'linkedin_url' => 'https://www.linkedin.com/in/nusrat', 'facebook_url' => 'https://www.facebook.com/nusrat',
         ]);
         User::factory()->pending()->create(['name' => 'Pending Person']);
         User::factory()->admin()->create(['name' => 'Admin Person']);
@@ -221,8 +221,8 @@ class ReunionFlowTest extends TestCase
         $response->assertOk()
             ->assertSee('Registered Alumni')->assertSee('(1)')
             ->assertSee('Nusrat')->assertSee('Engineer at Grameenphone')
-            ->assertSee('https://www.linkedin.com/in/nusrat')->assertSee('Log in to contact')
-            ->assertDontSee('01911111111')
+            ->assertSee('https://www.linkedin.com/in/nusrat')->assertSee('https://www.facebook.com/nusrat')
+            ->assertSee('Log in to contact')->assertDontSee('01911111111')
             ->assertDontSee('Pending Person')->assertDontSee('Admin Person');
     }
 
