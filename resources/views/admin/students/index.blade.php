@@ -20,7 +20,45 @@
     <button class="bg-brand-600 text-white rounded-lg px-4 py-2">Filter</button>
 </form>
 
-<div class="bg-white rounded-xl border overflow-x-auto">
+{{-- Phones: one card per student --}}
+<div class="md:hidden space-y-3">
+    @forelse ($students as $s)
+        <div class="bg-white rounded-xl border p-4">
+            <div class="flex items-start gap-3">
+                <x-avatar :user="$s" class="w-10 h-10 shrink-0" />
+                <div class="min-w-0 flex-1">
+                    <a class="font-semibold text-brand-700 underline" href="{{ route('admin.students.show', $s) }}">{{ $s->name }}</a>
+                    <div class="text-xs text-gray-500 break-all">{{ $s->email }}</div>
+                </div>
+                <span class="shrink-0 text-xs font-medium text-gray-600">{{ ucfirst($s->status) }}</span>
+            </div>
+            <dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                <dt class="text-gray-500">Batch</dt><dd>{{ $s->ssc_batch }}</dd>
+                <dt class="text-gray-500">Phone</dt><dd><a href="tel:{{ $s->phone }}">{{ $s->phone }}</a></dd>
+                <dt class="text-gray-500">Paid</dt><dd>{{ $s->paid_count ? '✅' : '—' }}</dd>
+            </dl>
+            <div class="mt-3 flex gap-2">
+                @if ($s->status !== 'approved')
+                    <form method="POST" action="{{ route('admin.students.status', $s) }}" class="flex-1">@csrf @method('PATCH')
+                        <input type="hidden" name="status" value="approved">
+                        <button class="w-full text-sm bg-green-600 text-white rounded-lg px-3 py-2">Approve</button>
+                    </form>
+                @endif
+                @if ($s->status !== 'rejected')
+                    <form method="POST" action="{{ route('admin.students.status', $s) }}" onsubmit="return confirm('Reject this student?')" class="flex-1">@csrf @method('PATCH')
+                        <input type="hidden" name="status" value="rejected">
+                        <button class="w-full text-sm bg-red-600 text-white rounded-lg px-3 py-2">Reject</button>
+                    </form>
+                @endif
+            </div>
+        </div>
+    @empty
+        <div class="bg-white rounded-xl border p-6 text-center text-gray-500">No students found.</div>
+    @endforelse
+</div>
+
+{{-- Larger screens: table --}}
+<div class="hidden md:block bg-white rounded-xl border overflow-x-auto">
     <table class="w-full text-sm">
         <thead class="bg-gray-50 text-left text-gray-600">
             <tr><th class="p-3">Name</th><th class="p-3">Batch</th><th class="p-3">Phone</th><th class="p-3">Status</th><th class="p-3">Paid</th><th class="p-3">Action</th></tr>
