@@ -45,6 +45,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // The demo student has a public password and a fake payment, so it must never reach a live database.
+        if (app()->isProduction()) {
+            return;
+        }
+
         $student = User::firstOrNew(['email' => 'student@school.test']);
         $student->forceFill([
             'name' => 'Test Student',
