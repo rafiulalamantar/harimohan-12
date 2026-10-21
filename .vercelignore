@@ -8,3 +8,6 @@
 /storage/framework/views/*
 /tests
 .env
+.env.*
+!.env.example
+.vercel
