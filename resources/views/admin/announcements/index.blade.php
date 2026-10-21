@@ -22,7 +22,7 @@
             </div>
             <div class="flex gap-2 text-sm">
                 <a href="{{ route('admin.announcements.edit', $a) }}" class="border rounded-sm px-3 py-1">Edit</a>
-                <form method="POST" action="{{ route('admin.announcements.destroy', $a) }}" onsubmit="return confirm('Delete this announcement?')">@csrf @method('DELETE')
+                <form method="POST" action="{{ route('admin.announcements.destroy', $a) }}" data-confirm="Delete this announcement?">@csrf @method('DELETE')
                     <button class="border border-red-300 text-red-700 rounded-sm px-3 py-1">Delete</button>
                 </form>
             </div>

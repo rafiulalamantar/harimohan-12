@@ -31,7 +31,7 @@
                 <td class="p-3">
                     <div class="flex gap-2">
                         <a href="{{ route('admin.student-fields.edit', $f) }}" class="border rounded-sm px-3 py-1">Edit</a>
-                        <form method="POST" action="{{ route('admin.student-fields.destroy', $f) }}" onsubmit="return confirm('Delete this field and all {{ $f->answered_count }} answers? To keep the answers, turn the field off instead.')">@csrf @method('DELETE')
+                        <form method="POST" action="{{ route('admin.student-fields.destroy', $f) }}" data-confirm="Delete this field and all {{ $f->answered_count }} answers? To keep the answers, turn the field off instead.">@csrf @method('DELETE')
                             <button class="border border-red-300 text-red-700 rounded-sm px-3 py-1">Delete</button>
                         </form>
                     </div>

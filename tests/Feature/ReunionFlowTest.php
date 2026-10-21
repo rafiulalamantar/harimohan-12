@@ -9,8 +9,10 @@ use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
 
 class ReunionFlowTest extends TestCase
@@ -378,6 +380,44 @@ class ReunionFlowTest extends TestCase
             ->assertHeader('X-Frame-Options', 'DENY')
             ->assertHeader('X-Content-Type-Options', 'nosniff')
             ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    }
+
+    public function test_responses_enforce_a_content_security_policy(): void
+    {
+        $this->withVite();
+        Vite::useHotFile(storage_path('framework/testing/no-vite-hot-file'));
+
+        $policy = $this->get('/up')->assertOk()->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString("script-src 'self';", $policy);
+        $this->assertStringContainsString("form-action 'self' https://*.bka.sh https://*.bkash.com;", $policy);
+        $this->assertStringContainsString("frame-ancestors 'none'", $policy);
+    }
+
+    public function test_content_security_policy_only_reports_in_local_environment(): void
+    {
+        $this->withVite();
+        Vite::useHotFile(storage_path('framework/testing/no-vite-hot-file'));
+        $this->app->detectEnvironment(fn () => 'local');
+
+        $this->get('/up')->assertOk()
+            ->assertHeaderMissing('Content-Security-Policy')
+            ->assertHeader('Content-Security-Policy-Report-Only');
+    }
+
+    public function test_content_security_policy_is_skipped_while_vite_dev_server_runs(): void
+    {
+        $hotFile = storage_path('framework/testing/vite.hot');
+        File::ensureDirectoryExists(dirname($hotFile));
+        File::put($hotFile, 'http://localhost:5173');
+        $this->withVite();
+        Vite::useHotFile($hotFile);
+
+        try {
+            $this->get('/up')->assertOk()->assertHeaderMissing('Content-Security-Policy');
+        } finally {
+            File::delete($hotFile);
+        }
     }
 
     public function test_rejected_student_is_removed_from_welcome_page(): void
