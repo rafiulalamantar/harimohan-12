@@ -1,0 +1,32 @@
+# TEMPORARY: adds the S3 driver + runs Pint on feat/vercel-deploy, then gets deleted.
+name: tmp add s3 driver
+
+on:
+  push:
+    branches: [feat/vercel-deploy]
+    paths: [.github/workflows/tmp-add-s3-driver.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: feat/vercel-deploy
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: 8.4
+          extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite
+          coverage: none
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: composer require league/flysystem-aws-s3-v3 "^3.0" -W --no-interaction --no-progress
+      - run: vendor/bin/pint bootstrap/app.php config/filesystems.php app/Http/Middleware/AddSecurityHeaders.php api/index.php tests/Feature/ReunionFlowTest.php
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add composer.json composer.lock bootstrap app config api tests
+          git commit -m "Add league/flysystem-aws-s3-v3 for Cloudflare R2 uploads; run Pint"
+          git push origin HEAD:feat/vercel-deploy
