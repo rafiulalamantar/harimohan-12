@@ -44,7 +44,7 @@ class AddSecurityHeaders
             "script-src 'self'",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
-            "img-src 'self' data:",
+            "img-src 'self' data:".$this->uploadOrigin(),
             "connect-src 'self'",
             "form-action 'self' https://*.bka.sh https://*.bkash.com",
             "frame-ancestors 'none'",
@@ -57,5 +57,21 @@ class AddSecurityHeaders
         }
 
         return implode('; ', $directives);
+    }
+
+    /** Uploaded images may live on another host (e.g. Cloudflare R2 on Vercel); allow that origin for <img>. */
+    private function uploadOrigin(): string
+    {
+        $url = (string) config('filesystems.disks.public.url');
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        $host = parse_url($url, PHP_URL_HOST);
+
+        if (! $scheme || ! $host) {
+            return '';
+        }
+
+        $port = parse_url($url, PHP_URL_PORT);
+
+        return " {$scheme}://{$host}".($port ? ":{$port}" : '');
     }
 }

@@ -38,7 +38,22 @@ return [
             'report' => false,
         ],
 
-        'public' => [
+        // Uploaded photos and banners. On serverless hosts such as Vercel the local disk is wiped after each
+        // request, so set PUBLIC_DISK_DRIVER=s3 to keep them in S3-compatible storage (e.g. Cloudflare R2).
+        // The app always uses the "public" disk, so nothing else changes.
+        'public' => env('PUBLIC_DISK_DRIVER') === 's3' ? [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION', 'auto'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            // No 'visibility': R2 has no per-object ACLs; files are public through the bucket's public URL (AWS_URL).
+            'throw' => false,
+            'report' => false,
+        ] : [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',

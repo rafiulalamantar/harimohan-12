@@ -123,6 +123,61 @@ php artisan test
 - Change the admin password after first login (or set a strong `ADMIN_PASSWORD` before seeding)
 - Daily DB backup (payments table is your money record)
 
+## Deploy to Vercel
+
+Vercel has no PHP runtime of its own, so this uses the community [`vercel-php`](https://github.com/vercel-community/php) runtime (`vercel.json`, `api/index.php`). Vercel functions are serverless: the disk is wiped after each request, so the database and uploads must live elsewhere.
+
+**1. Add the S3 driver** (for Cloudflare R2), then commit `composer.json` and `composer.lock`:
+
+```bash
+composer require league/flysystem-aws-s3-v3 "^3.0" -W
+```
+
+**2. Database (MySQL-compatible):** create a free [TiDB Cloud](https://tidbcloud.com) Starter cluster in the Singapore region. From its *Connect* dialog copy host, port (`4000`), user (`xxxx.root`) and password, and create a database (`CREATE DATABASE school_reunion;`). SSL is set in `vercel.json` (`MYSQL_ATTR_SSL_CA`).
+
+**3. Uploads:** create a Cloudflare R2 bucket, turn on its public URL (r2.dev or a custom domain), and create an R2 API token with read/write access to that bucket.
+
+**4. Import the GitHub repo in Vercel**, leave *Framework* as **Other**, and add these Environment Variables:
+
+```
+APP_NAME="Harimohan'12 Alumni"
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:...                # php artisan key:generate --show
+APP_URL=https://your-project.vercel.app
+
+DB_CONNECTION=mysql
+DB_HOST=gateway01.ap-southeast-1.prod.aws.tidbcloud.com
+DB_PORT=4000
+DB_DATABASE=school_reunion
+DB_USERNAME=xxxx.root
+DB_PASSWORD=...
+
+AWS_ACCESS_KEY_ID=...             # R2 API token
+AWS_SECRET_ACCESS_KEY=...
+AWS_DEFAULT_REGION=auto
+AWS_BUCKET=your-bucket
+AWS_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+AWS_URL=https://pub-xxxx.r2.dev   # the bucket's public URL
+
+MAIL_* ...                        # see Email above
+BKASH_* ...                       # see bKash above
+```
+
+`vercel.json` already sets the serverless-specific values: caches and compiled views in `/tmp`, logs to stderr, queue `sync`, trusted proxies, the R2 disk and the TLS CA for TiDB.
+
+**5. Create tables once, from your computer**, with the production database values in a local `.env.production`-style shell:
+
+```bash
+DB_CONNECTION=mysql DB_HOST=... DB_PORT=4000 DB_DATABASE=school_reunion DB_USERNAME=... DB_PASSWORD=... \
+MYSQL_ATTR_SSL_CA=/etc/ssl/cert.pem ADMIN_PASSWORD='a-strong-password' \
+php artisan migrate --seed --force
+```
+
+(`/etc/ssl/cert.pem` is the macOS CA bundle.) Run `php artisan migrate --force` the same way after pulling new migrations.
+
+**Limits to know:** Vercel rejects request bodies over 4.5 MB, so keep photo uploads small; preview deployments get their own URL that does not match `APP_URL`, so test on the production URL.
+
 ## Structure
 
 ```
