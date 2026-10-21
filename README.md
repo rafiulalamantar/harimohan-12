@@ -127,11 +127,11 @@ php artisan test
 
 Vercel has no PHP runtime of its own, so this uses the community [`vercel-php`](https://github.com/vercel-community/php) runtime (`vercel.json`, `api/index.php`). Vercel functions are serverless: the disk is wiped after each request, so the database and uploads must live elsewhere.
 
-**1. S3 driver:** `league/flysystem-aws-s3-v3` (used for Cloudflare R2) is already in `composer.json`; Vercel installs it with the other packages.
+**1. S3 driver:** `league/flysystem-aws-s3-v3` (used for Supabase Storage) is already in `composer.json`; Vercel installs it with the other packages.
 
 **2. Database (MySQL-compatible):** create a free [TiDB Cloud](https://tidbcloud.com) Starter cluster in the Singapore region. From its *Connect* dialog copy host, port (`4000`), user (`xxxx.root`) and password, and create a database (`CREATE DATABASE school_reunion;`). SSL is set in `vercel.json` (`MYSQL_ATTR_SSL_CA`).
 
-**3. Uploads:** create a Cloudflare R2 bucket, turn on its public URL (r2.dev or a custom domain), and create an R2 API token with read/write access to that bucket.
+**3. Uploads:** create a free [Supabase](https://supabase.com) project (no card needed). Under *Storage* create a **public** bucket (e.g. `uploads`), then under *Storage → S3* copy the endpoint and region and create an access key. Any S3-compatible store works; Cloudflare R2 also does, but needs a card on file.
 
 **4. Import the GitHub repo in Vercel**, leave *Framework* as **Other**, and add these Environment Variables:
 
@@ -149,18 +149,19 @@ DB_DATABASE=school_reunion
 DB_USERNAME=xxxx.root
 DB_PASSWORD=...
 
-AWS_ACCESS_KEY_ID=...             # R2 API token
+AWS_ACCESS_KEY_ID=...             # Supabase Storage → S3 access key
 AWS_SECRET_ACCESS_KEY=...
-AWS_DEFAULT_REGION=auto
-AWS_BUCKET=your-bucket
-AWS_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-AWS_URL=https://pub-xxxx.r2.dev   # the bucket's public URL
+AWS_DEFAULT_REGION=ap-southeast-2 # the project's region
+AWS_BUCKET=uploads
+AWS_ENDPOINT=https://<project-ref>.storage.supabase.co/storage/v1/s3
+AWS_URL=https://<project-ref>.supabase.co/storage/v1/object/public/uploads
+AWS_USE_PATH_STYLE_ENDPOINT=true
 
 MAIL_* ...                        # see Email above
 BKASH_* ...                       # see bKash above
 ```
 
-`vercel.json` already sets the serverless-specific values: caches and compiled views in `/tmp`, logs to stderr, queue `sync`, trusted proxies, the R2 disk and the TLS CA for TiDB.
+`vercel.json` already sets the serverless-specific values: caches and compiled views in `/tmp`, logs to stderr, queue `sync`, trusted proxies, the S3 upload disk and the TLS CA for TiDB.
 
 **5. Create tables once, from your computer**, with the production database values in a local `.env.production`-style shell:
 
