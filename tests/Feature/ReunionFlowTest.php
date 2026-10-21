@@ -531,4 +531,23 @@ class ReunionFlowTest extends TestCase
             ->assertSee('Go to dashboard')->assertSee(route('portal.dashboard'))
             ->assertDontSee('Register now')->assertSee('Nusrat');
     }
+
+    public function test_mobile_number_must_be_11_digits(): void
+    {
+        $this->post('/register', [
+            'name' => 'Rahim', 'email' => 'rahim@example.com', 'phone' => '0171111111', 'ssc_batch' => 2012,
+            'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ])->assertSessionHasErrors(['phone' => 'Mobile number must be 11 digits, like 01XXXXXXXXX.']);
+
+        $student = User::factory()->create();
+        $this->actingAs($student)->put(route('portal.profile.update'), ['name' => $student->name, 'phone' => '017111111111'])
+            ->assertSessionHasErrors(['phone' => 'Mobile number must be 11 digits, like 01XXXXXXXXX.']);
+    }
+
+    public function test_plain_http_is_redirected_to_https_in_production(): void
+    {
+        $this->app->detectEnvironment(fn () => 'production');
+
+        $this->get('http://localhost/login?x=1')->assertRedirect('https://localhost/login?x=1')->assertStatus(301);
+    }
 }
