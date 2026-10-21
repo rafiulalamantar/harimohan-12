@@ -20,7 +20,31 @@
     <button class="bg-brand-600 text-white rounded-lg px-4 py-2">Filter</button>
 </form>
 
-<div class="bg-white rounded-xl border overflow-x-auto">
+{{-- Phones: one card per payment --}}
+<div class="md:hidden space-y-3">
+    @forelse ($payments as $p)
+        <div class="bg-white rounded-xl border p-4">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    @if ($p->user)<a class="font-semibold text-brand-700 underline" href="{{ route('admin.students.show', $p->user) }}">{{ $p->user->name }}</a> <span class="text-gray-400">({{ $p->user->ssc_batch }})</span>@endif
+                    <div class="text-xs text-gray-500">{{ $p->event?->title }} · {{ ($p->paid_at ?? $p->created_at)->format('d M Y, h:i A') }}</div>
+                </div>
+                <span class="shrink-0 rounded-full px-2 py-0.5 text-xs {{ $p->statusColor() }}">{{ ucfirst($p->status) }}</span>
+            </div>
+            <div class="mt-2 text-lg font-bold">৳{{ number_format($p->amount, 2) }}</div>
+            <dl class="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                <dt class="text-gray-500">TrxID</dt><dd class="font-mono break-all">{{ $p->trx_id ?? '—' }}</dd>
+                <dt class="text-gray-500">Payer</dt><dd>{{ $p->payer_msisdn ?? '—' }}</dd>
+                <dt class="text-gray-500">Invoice</dt><dd class="font-mono text-xs break-all self-center">{{ $p->invoice_no }}</dd>
+            </dl>
+        </div>
+    @empty
+        <div class="bg-white rounded-xl border p-6 text-center text-gray-500">No payments found.</div>
+    @endforelse
+</div>
+
+{{-- Larger screens: table --}}
+<div class="hidden md:block bg-white rounded-xl border overflow-x-auto">
     <table class="w-full text-sm">
         <thead class="bg-gray-50 text-left text-gray-600">
             <tr><th class="p-3">Date</th><th class="p-3">Student</th><th class="p-3">Event</th><th class="p-3">Amount</th><th class="p-3">Status</th><th class="p-3">TrxID</th><th class="p-3">Payer</th><th class="p-3">Invoice</th></tr>

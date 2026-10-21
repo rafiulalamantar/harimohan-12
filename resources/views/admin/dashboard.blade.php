@@ -24,7 +24,28 @@
         <h2 class="font-semibold">New students</h2>
         <a href="{{ route('admin.students.index') }}" class="text-sm text-brand-700 underline">View all</a>
     </div>
-    <div class="overflow-x-auto">
+    {{-- Phones: compact list --}}
+    <div class="md:hidden divide-y">
+        @forelse ($newStudents as $s)
+            <div class="py-3 flex items-start gap-3">
+                <x-avatar :user="$s" class="w-9 h-9 shrink-0" />
+                <div class="min-w-0 flex-1 text-sm">
+                    <a href="{{ route('admin.students.show', $s) }}" class="text-brand-700 underline">{{ $s->name }}</a> <span class="text-gray-400">({{ $s->ssc_batch }})</span>
+                    <div class="text-gray-500">{{ $s->company_name ?: '—' }} · {{ $s->created_at->diffForHumans() }}</div>
+                    <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                        <a href="tel:{{ $s->phone }}" class="whitespace-nowrap">{{ $s->phone }}</a>
+                        @if($s->linkedin_url)<a href="{{ $s->linkedin_url }}" target="_blank" rel="noopener noreferrer" class="text-brand-700 underline">LinkedIn</a>@endif
+                        @if($s->facebook_url)<a href="{{ $s->facebook_url }}" target="_blank" rel="noopener noreferrer" class="text-brand-700 underline">Facebook</a>@endif
+                    </div>
+                </div>
+            </div>
+        @empty
+            <p class="py-4 text-sm text-gray-500">No registrations yet.</p>
+        @endforelse
+    </div>
+
+    {{-- Larger screens: table --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="text-left text-gray-500">
                 <tr><th class="py-2">Student</th><th>Company</th><th>Mobile</th><th>LinkedIn</th><th>Facebook</th><th>Joined</th></tr>
