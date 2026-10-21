@@ -10,7 +10,7 @@
     @forelse ($announcements as $a)
         <div class="p-4 flex flex-wrap items-start justify-between gap-3">
             <div class="flex items-start gap-3">
-                @if ($a->banner)<img src="{{ $a->bannerUrl() }}" alt="" class="w-24 h-14 object-cover rounded border">@endif
+                @if ($a->banner)<img src="{{ $a->bannerUrl() }}" alt="" class="w-24 h-14 object-cover rounded-sm border">@endif
                 <div>
                 <div class="font-semibold">@if($a->is_pinned)📌 @endif{{ $a->title }}</div>
                 <div class="text-xs text-gray-500">
@@ -21,9 +21,9 @@
                 </div>
             </div>
             <div class="flex gap-2 text-sm">
-                <a href="{{ route('admin.announcements.edit', $a) }}" class="border rounded px-3 py-1">Edit</a>
+                <a href="{{ route('admin.announcements.edit', $a) }}" class="border rounded-sm px-3 py-1">Edit</a>
                 <form method="POST" action="{{ route('admin.announcements.destroy', $a) }}" onsubmit="return confirm('Delete this announcement?')">@csrf @method('DELETE')
-                    <button class="border border-red-300 text-red-700 rounded px-3 py-1">Delete</button>
+                    <button class="border border-red-300 text-red-700 rounded-sm px-3 py-1">Delete</button>
                 </form>
             </div>
         </div>

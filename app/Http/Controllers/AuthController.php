@@ -18,6 +18,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $fields = StudentField::active()->get();
+        $request->merge(['phone' => User::normalizePhone($request->input('phone'))]);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
@@ -66,10 +67,11 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        // Allow login with either email or phone number.
+        // Allow login with either email or phone number (+880 / spaces are accepted for phone).
         $field = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+        $login = $field === 'phone' ? User::normalizePhone($request->login) : $request->login;
 
-        if (! Auth::attempt([$field => $request->login, 'password' => $request->password], $request->boolean('remember'))) {
+        if (! Auth::attempt([$field => $login, 'password' => $request->password], $request->boolean('remember'))) {
             return back()->withErrors(['login' => 'Incorrect email/phone or password.'])->onlyInput('login');
         }
 

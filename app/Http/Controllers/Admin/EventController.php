@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ReunionEvent;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class EventController extends Controller
 {
@@ -57,9 +58,9 @@ class EventController extends Controller
             'event_date' => ['nullable', 'date'],
             'venue' => ['nullable', 'string', 'max:200'],
             'fee' => ['required', 'numeric', 'min:1', 'max:999999'],
-            'payment_deadline' => ['nullable', 'date'],
+            'payment_deadline' => ['nullable', 'date', Rule::when($request->filled('event_date'), ['before_or_equal:event_date'])],
             'is_active' => ['nullable', 'boolean'],
-        ]);
+        ], ['payment_deadline.before_or_equal' => 'The payment deadline must be on or before the event date.']);
         $data['is_active'] = $request->boolean('is_active');
 
         return $data;

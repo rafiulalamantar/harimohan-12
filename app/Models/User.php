@@ -38,6 +38,23 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Normalise a Bangladeshi mobile number to 01XXXXXXXXX.
+     *
+     * Strips spaces, dashes and brackets and a leading +88 / 88 country code.
+     * Anything that isn't a phone number is returned trimmed but otherwise unchanged.
+     */
+    public static function normalizePhone(?string $phone): ?string
+    {
+        if ($phone === null) {
+            return null;
+        }
+
+        $digits = preg_replace('/[\s\-()]/', '', trim($phone));
+
+        return preg_replace('/^\+?88(?=01\d{9}$)/', '', $digits);
+    }
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);

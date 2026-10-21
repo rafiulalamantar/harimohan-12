@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Announcement;
 use App\Models\ReunionEvent;
 use App\Models\StudentField;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class PortalController extends Controller
 {
@@ -58,6 +61,7 @@ class PortalController extends Controller
     {
         $user = $request->user();
         $fields = StudentField::active()->get();
+        $request->merge(['phone' => User::normalizePhone($request->input('phone'))]);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
@@ -71,17 +75,32 @@ class PortalController extends Controller
             ...StudentField::rulesFor($fields),
         ], [], StudentField::attributeNamesFor($fields));
 
-        $user->saveFieldValues($data['fields'] ?? []);
+        $answers = $data['fields'] ?? [];
         unset($data['fields']);
 
+        // Store the new photo first and only remove the old one once everything has saved,
+        // so a failure never leaves the student without a photo.
+        $oldPhoto = $user->photo;
         if ($request->hasFile('photo')) {
-            if ($user->photo) {
-                Storage::disk('public')->delete($user->photo);
-            }
             $data['photo'] = $request->file('photo')->store('photos', 'public');
         }
 
-        $user->update($data);
+        try {
+            DB::transaction(function () use ($user, $data, $answers) {
+                $user->update($data);
+                $user->saveFieldValues($answers);
+            });
+        } catch (Throwable $e) {
+            if (isset($data['photo'])) {
+                Storage::disk('public')->delete($data['photo']);
+            }
+
+            throw $e;
+        }
+
+        if (isset($data['photo']) && $oldPhoto) {
+            Storage::disk('public')->delete($oldPhoto);
+        }
 
         return back()->with('success', 'Profile updated.');
     }

@@ -9,22 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
-    {{-- Tailwind Play CDN keeps setup simple (no npm build). Swap for Vite build in production if you prefer. --}}
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: {
-            fontFamily: { sans: ['"Plus Jakarta Sans"', '"Hind Siliguri"', 'system-ui', 'sans-serif'] },
-            colors: {
-                brand: { 50:'#ecfdf5', 100:'#d1fae5', 200:'#a7f3d0', 300:'#6ee7b7', 400:'#34d399', 500:'#10b981', 600:'#059669', 700:'#047857', 800:'#065f46', 900:'#064e3b', 950:'#022c22' },
-                bkash: '#e2136e',
-            },
-            boxShadow: { soft: '0 1px 2px rgb(16 24 40 / .04), 0 8px 24px -8px rgb(16 24 40 / .08)' },
-        } } };
-    </script>
-    <style>
-        body { -webkit-font-smoothing: antialiased; }
-        details > summary::-webkit-details-marker { display: none; }
-    </style>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-[#f6f7f6] text-slate-800 font-sans min-h-screen flex flex-col selection:bg-brand-200">
 <div aria-hidden="true" class="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[420px] bg-[radial-gradient(60%_60%_at_50%_0%,rgb(16_185_129/.12),transparent)]"></div>
@@ -53,7 +38,7 @@
 <header class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/75 backdrop-blur-xl">
     <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <a href="{{ route('home') }}" class="flex items-center gap-2.5 shrink-0">
-            <span class="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-800 text-white text-sm font-extrabold shadow-sm shadow-brand-900/20">H</span>
+            <span class="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-800 text-white text-sm font-extrabold shadow-xs shadow-brand-900/20">H</span>
             <span class="font-extrabold tracking-tight text-slate-900 text-lg">{{ config('app.name') }}</span>
         </a>
 

@@ -38,13 +38,13 @@
                         @if ($s->status !== 'approved')
                             <form method="POST" action="{{ route('admin.students.status', $s) }}">@csrf @method('PATCH')
                                 <input type="hidden" name="status" value="approved">
-                                <button class="text-xs bg-green-600 text-white rounded px-2 py-1">Approve</button>
+                                <button class="text-xs bg-green-600 text-white rounded-sm px-2 py-1">Approve</button>
                             </form>
                         @endif
                         @if ($s->status !== 'rejected')
                             <form method="POST" action="{{ route('admin.students.status', $s) }}" onsubmit="return confirm('Reject this student?')">@csrf @method('PATCH')
                                 <input type="hidden" name="status" value="rejected">
-                                <button class="text-xs bg-red-600 text-white rounded px-2 py-1">Reject</button>
+                                <button class="text-xs bg-red-600 text-white rounded-sm px-2 py-1">Reject</button>
                             </form>
                         @endif
                     </div>

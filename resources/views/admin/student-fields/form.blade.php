@@ -18,7 +18,7 @@
             </select>
         </div>
         <x-field name="options" label="Dropdown choices" type="textarea" :value="implode(PHP_EOL, $field->options ?? [])"
-                 hint="Only for dropdown fields. One choice per line, e.g. S, M, L, XL, XXL." />
+                 hint="Only for dropdown fields. Put each choice on its own line (a choice may contain commas)." />
         <x-field name="help_text" label="Help text (optional)" :value="$field->help_text" placeholder="Check the size chart and pick your chest size." />
         @if ($field->image)
             <div>

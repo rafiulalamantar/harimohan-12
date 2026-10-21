@@ -13,7 +13,7 @@
     @endif
 
     <div class="relative px-6 py-12 sm:px-10 sm:py-16 md:px-14 {{ $heroBanner ? 'md:pt-56 lg:pt-72' : 'md:py-20' }}">
-        <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold tracking-wide ring-1 ring-white/20 backdrop-blur">
+        <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold tracking-wide ring-1 ring-white/20 backdrop-blur-sm">
             <span class="w-1.5 h-1.5 rounded-full bg-brand-300 animate-pulse"></span>
             {{ config('app.name') }} Alumni Association
         </span>
@@ -42,7 +42,7 @@
                     <div class="text-xs font-semibold uppercase tracking-wider text-brand-200">Upcoming event</div>
                     <div class="mt-0.5 font-bold text-lg truncate">{{ $event->title }}</div>
                     <div class="text-sm text-white/70">
-                        {{ $event->event_date?->format('d M Y') }} @if($event->venue) · {{ $event->venue }} @endif · Fee ৳{{ number_format($event->fee) }}
+                        {{ $event->event_date?->format('d M Y') }} @if($event->venue) · {{ $event->venue }} @endif · Fee ৳{{ $event->formattedFee() }}
                     </div>
                 </div>
             </div>
@@ -82,101 +82,78 @@
     </section>
 @endif
 
-@if ($students->isNotEmpty())
-    <section class="mt-16">
-        <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+@if ($totalAlumni > 0)
+    <section id="alumni" class="mt-16 scroll-mt-24">
+        <form method="GET" action="{{ route('home') }}#alumni" class="flex flex-wrap items-end justify-between gap-4 mb-6">
             <div>
                 <p class="text-sm font-semibold text-brand-700">Alumni directory</p>
-                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Registered alumni <span class="text-slate-400 font-semibold">({{ $students->count() }})</span></h2>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Registered alumni <span class="text-slate-400 font-semibold">({{ $totalAlumni }})</span></h2>
             </div>
             <label class="relative w-full sm:w-80">
                 <span class="sr-only">Search alumni</span>
                 <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
-                <input id="alumni-search" type="search" placeholder="Search name, batch, job…"
-                       class="w-full rounded-full border-0 bg-white py-3 pl-11 pr-4 text-sm ring-1 ring-slate-200 shadow-soft placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <input name="q" type="search" value="{{ $search }}" placeholder="Search name, batch, job…"
+                       class="w-full rounded-full border-0 bg-white py-3 pl-11 pr-4 text-sm ring-1 ring-slate-200 shadow-soft placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-brand-500">
+                @if ($selectedBatch)<input type="hidden" name="batch" value="{{ $selectedBatch }}">@endif
             </label>
-        </div>
-        @php($batches = $students->pluck('ssc_batch')->filter()->unique()->sortDesc()->values())
+        </form>
+
         @if ($batches->count() > 1)
-            <div id="batch-filter" class="-mx-4 mb-5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
-                <button type="button" data-batch="" class="batch-chip shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold ring-1 transition">All batches</button>
+            @php($chipClass = 'shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold ring-1 transition')
+            @php($activeChip = 'bg-slate-900 text-white ring-slate-900')
+            @php($idleChip = 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50')
+            <nav aria-label="Filter by batch" class="-mx-4 mb-5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+                <a href="{{ route('home', array_filter(['q' => $search])) }}#alumni" class="{{ $chipClass }} {{ $selectedBatch ? $idleChip : $activeChip }}">All batches</a>
                 @foreach ($batches as $batch)
-                    <button type="button" data-batch="{{ $batch }}" class="batch-chip shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold ring-1 transition">SSC {{ $batch }}</button>
+                    <a href="{{ route('home', array_filter(['q' => $search, 'batch' => $batch])) }}#alumni" class="{{ $chipClass }} {{ $selectedBatch === (int) $batch ? $activeChip : $idleChip }}">SSC {{ $batch }}</a>
                 @endforeach
-            </div>
+            </nav>
         @endif
 
-        <div id="alumni-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-            @foreach ($students as $s)
-                <article class="group flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/80 shadow-soft hover:-translate-y-1 hover:shadow-xl hover:ring-brand-300 transition duration-300"
-                         data-batch="{{ $s->ssc_batch }}"
-                         data-search="{{ mb_strtolower("{$s->name} {$s->ssc_batch} {$s->profession} {$s->company_name} {$s->phone}") }}">
-                    <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 via-brand-50 to-white">
-                        @if ($s->photoUrl())
-                            <img src="{{ $s->photoUrl() }}" alt="{{ $s->name }}" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                        @else
-                            <span class="absolute inset-0 grid place-items-center text-5xl font-extrabold text-brand-700/70">{{ mb_strtoupper(mb_substr($s->name, 0, 1)) }}</span>
-                        @endif
-                        @if ($s->ssc_batch)
-                            <span class="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-brand-800 shadow-sm backdrop-blur">SSC {{ $s->ssc_batch }}</span>
-                        @endif
-                    </div>
-                    <div class="flex flex-1 flex-col p-3 sm:p-4">
-                        <h3 class="font-bold text-slate-900 leading-snug line-clamp-1" title="{{ $s->name }}">{{ $s->name }}</h3>
-                        <p class="mt-0.5 text-xs sm:text-sm text-slate-500 line-clamp-2 min-h-[2.5em]">{{ collect([$s->profession, $s->company_name])->filter()->join(' at ') ?: '—' }}</p>
-                        <div class="mt-auto pt-3 flex items-center gap-2">
-                            <a href="tel:{{ $s->phone }}" title="Call {{ $s->name }}" class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-2 py-2 text-xs font-semibold text-white hover:bg-brand-800 transition">
-                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2"/></svg>
-                                <span class="truncate">{{ $s->phone }}</span>
-                            </a>
-                            @if ($s->linkedin_url)
-                                <a href="{{ $s->linkedin_url }}" target="_blank" rel="noopener noreferrer" title="LinkedIn profile" class="grid place-items-center w-9 h-9 shrink-0 rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100 hover:bg-sky-100 transition">
-                                    <span class="sr-only">LinkedIn</span>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 11-.01 5 2.5 2.5 0 01.01-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05C20.6 8.65 21 11.2 21 14.5V21h-4v-5.8c0-1.4-.03-3.2-1.95-3.2-1.95 0-2.25 1.52-2.25 3.1V21H9z"/></svg>
-                                </a>
+        @if ($students->isEmpty())
+            <div class="rounded-2xl border border-dashed border-slate-300 py-12 text-center text-sm text-slate-500">No alumni match your search.</div>
+        @else
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                @foreach ($students as $s)
+                    <article class="group flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/80 shadow-soft hover:-translate-y-1 hover:shadow-xl hover:ring-brand-300 transition duration-300">
+                        <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 via-brand-50 to-white">
+                            @if ($s->photoUrl())
+                                <img src="{{ $s->photoUrl() }}" alt="{{ $s->name }}" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            @else
+                                <span class="absolute inset-0 grid place-items-center text-5xl font-extrabold text-brand-700/70">{{ mb_strtoupper(mb_substr($s->name, 0, 1)) }}</span>
+                            @endif
+                            @if ($s->ssc_batch)
+                                <span class="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-brand-800 shadow-xs backdrop-blur-sm">SSC {{ $s->ssc_batch }}</span>
                             @endif
                         </div>
-                    </div>
-                </article>
-            @endforeach
-        </div>
-        <p id="alumni-count" class="mt-5 text-center text-sm text-slate-500"></p>
-        <div id="alumni-empty" class="hidden rounded-2xl border border-dashed border-slate-300 py-12 text-center text-sm text-slate-500">No alumni match your search.</div>
+                        <div class="flex flex-1 flex-col p-3 sm:p-4">
+                            <h3 class="font-bold text-slate-900 leading-snug line-clamp-1" title="{{ $s->name }}">{{ $s->name }}</h3>
+                            <p class="mt-0.5 text-xs sm:text-sm text-slate-500 line-clamp-2 min-h-[2.5em]">{{ collect([$s->profession, $s->company_name])->filter()->join(' at ') ?: '—' }}</p>
+                            <div class="mt-auto pt-3 flex items-center gap-2">
+                                @if ($canSeeContacts)
+                                    <a href="tel:{{ $s->phone }}" title="Call {{ $s->name }}" class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-2 py-2 text-xs font-semibold text-white hover:bg-brand-800 transition">
+                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2"/></svg>
+                                        <span class="truncate">{{ $s->phone }}</span>
+                                    </a>
+                                @elseif (! auth()->check())
+                                    <a href="{{ route('login') }}" class="flex-1 min-w-0 inline-flex items-center justify-center rounded-xl bg-slate-100 px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition">Log in to contact</a>
+                                @else
+                                    <span class="flex-1"></span>
+                                @endif
+                                @if ($s->linkedin_url)
+                                    <a href="{{ $s->linkedin_url }}" target="_blank" rel="noopener noreferrer" title="LinkedIn profile" class="grid place-items-center w-9 h-9 shrink-0 rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100 hover:bg-sky-100 transition">
+                                        <span class="sr-only">LinkedIn</span>
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 11-.01 5 2.5 2.5 0 01.01-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05C20.6 8.65 21 11.2 21 14.5V21h-4v-5.8c0-1.4-.03-3.2-1.95-3.2-1.95 0-2.25 1.52-2.25 3.1V21H9z"/></svg>
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+            <p class="mt-5 text-center text-sm text-slate-500">Showing {{ $students->firstItem() }}–{{ $students->lastItem() }} of {{ $students->total() }} alumni</p>
+            <div class="mt-4">{{ $students->links() }}</div>
+        @endif
     </section>
-    <script>
-        (function () {
-            const search = document.getElementById('alumni-search');
-            const cards = document.querySelectorAll('#alumni-grid [data-search]');
-            const chips = document.querySelectorAll('.batch-chip');
-            let batch = '';
-
-            function apply() {
-                const term = search.value.trim().toLowerCase();
-                let visible = 0;
-                cards.forEach(function (card) {
-                    const match = card.dataset.search.includes(term) && (batch === '' || card.dataset.batch === batch);
-                    card.classList.toggle('hidden', ! match);
-                    visible += match;
-                });
-                chips.forEach(function (chip) {
-                    const active = chip.dataset.batch === batch;
-                    chip.classList.toggle('bg-slate-900', active);
-                    chip.classList.toggle('text-white', active);
-                    chip.classList.toggle('ring-slate-900', active);
-                    chip.classList.toggle('bg-white', ! active);
-                    chip.classList.toggle('text-slate-600', ! active);
-                    chip.classList.toggle('ring-slate-200', ! active);
-                });
-                document.getElementById('alumni-empty').classList.toggle('hidden', visible > 0);
-                document.getElementById('alumni-count').textContent = visible > 0 ? 'Showing ' + visible + ' of ' + cards.length + ' alumni' : '';
-            }
-
-            search.addEventListener('input', apply);
-            chips.forEach(function (chip) {
-                chip.addEventListener('click', function () { batch = chip.dataset.batch; apply(); });
-            });
-            apply();
-        })();
-    </script>
 @endif
 @endsection

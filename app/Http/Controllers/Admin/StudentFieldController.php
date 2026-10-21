@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\StudentField;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -44,9 +45,19 @@ class StudentFieldController extends Controller
             $data['image'] ??= null;
         }
 
-        $studentField->update($data);
+        $clearedAnswers = DB::transaction(function () use ($studentField, $data) {
+            $studentField->update($data);
 
-        return redirect()->route('admin.student-fields.index')->with('success', 'Student field updated.');
+            return $this->clearInvalidChoices($studentField);
+        });
+
+        $message = 'Student field updated.';
+        if ($clearedAnswers > 0) {
+            $message .= " Cleared {$clearedAnswers} saved ".str('answer')->plural($clearedAnswers)
+                .' that used a removed choice; those students will be asked to choose again.';
+        }
+
+        return redirect()->route('admin.student-fields.index')->with('success', $message);
     }
 
     public function destroy(StudentField $studentField)
@@ -69,7 +80,7 @@ class StudentFieldController extends Controller
         ], ['options.required_if' => 'Add at least one choice for a dropdown field.']);
 
         $data['options'] = $data['type'] === 'select'
-            ? collect(preg_split('/\r\n|\r|\n|,/', $data['options'] ?? ''))->map(fn ($o) => trim($o))->filter()->unique()->values()->all()
+            ? collect(preg_split('/\r\n|\r|\n/', $data['options'] ?? ''))->map(fn ($o) => trim($o))->filter()->unique()->values()->all()
             : null;
         $data['is_required'] = $request->boolean('is_required');
         $data['is_active'] = $request->boolean('is_active');
@@ -82,6 +93,24 @@ class StudentFieldController extends Controller
         }
 
         return $data;
+    }
+
+    /**
+     * Clear answers that are no longer one of a dropdown field's choices,
+     * so the student is prompted to pick again instead of being stuck with an invalid value.
+     *
+     * @return int number of answers cleared
+     */
+    private function clearInvalidChoices(StudentField $field): int
+    {
+        if ($field->type !== 'select') {
+            return 0;
+        }
+
+        return $field->values()
+            ->whereNotNull('value')
+            ->whereNotIn('value', $field->options ?? [])
+            ->update(['value' => null]);
     }
 
     private function deleteImage(StudentField $field): void

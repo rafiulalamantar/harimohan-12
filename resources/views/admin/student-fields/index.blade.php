@@ -17,7 +17,7 @@
             <tr>
                 <td class="p-3">
                     <div class="flex items-center gap-3">
-                        @if ($f->image)<img src="{{ $f->imageUrl() }}" alt="" class="w-12 h-12 object-contain rounded border bg-white">@endif
+                        @if ($f->image)<img src="{{ $f->imageUrl() }}" alt="" class="w-12 h-12 object-contain rounded-sm border bg-white">@endif
                         <div>
                             <div class="font-medium">{{ $f->label }}</div>
                             @if ($f->type === 'select')<div class="text-xs text-gray-500">{{ implode(', ', $f->options ?? []) }}</div>@endif
@@ -30,9 +30,9 @@
                 <td class="p-3">{{ $f->answered_count }}</td>
                 <td class="p-3">
                     <div class="flex gap-2">
-                        <a href="{{ route('admin.student-fields.edit', $f) }}" class="border rounded px-3 py-1">Edit</a>
+                        <a href="{{ route('admin.student-fields.edit', $f) }}" class="border rounded-sm px-3 py-1">Edit</a>
                         <form method="POST" action="{{ route('admin.student-fields.destroy', $f) }}" onsubmit="return confirm('Delete this field and all {{ $f->answered_count }} answers? To keep the answers, turn the field off instead.')">@csrf @method('DELETE')
-                            <button class="border border-red-300 text-red-700 rounded px-3 py-1">Delete</button>
+                            <button class="border border-red-300 text-red-700 rounded-sm px-3 py-1">Delete</button>
                         </form>
                     </div>
                 </td>
