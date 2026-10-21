@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Harimohan'12 Alumni Portal"
+abstract: "Alumni portal for Harimohan'12: ex-student registration, admin approval, notice board, public alumni directory, and event fee payment with bKash. Built with Laravel 13 and Tailwind CSS v4."
+type: software
+authors:
+  - given-names: "Rafiul Alam"
+    family-names: "Antar"
+repository-code: "https://github.com/rafiulalamantar/harimohan-12"
+license: MIT
+version: 1.0.0
+date-released: 2026-10-21
+keywords:
+  - laravel
+  - alumni
+  - bkash
+  - bangladesh
