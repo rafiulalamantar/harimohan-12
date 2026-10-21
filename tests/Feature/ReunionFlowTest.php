@@ -501,4 +501,23 @@ class ReunionFlowTest extends TestCase
         $this->assertNull($announcement->fresh()->banner);
         Storage::disk('public')->assertMissing($banner);
     }
+
+    public function test_welcome_page_ignores_array_search_term(): void
+    {
+        User::factory()->create(['name' => 'Nusrat']);
+
+        $this->get('/?q[]=x')->assertOk()->assertSee('Nusrat');
+    }
+
+    public function test_array_phone_is_rejected_by_validation(): void
+    {
+        $this->post('/register', [
+            'name' => 'Rahim', 'email' => 'rahim@example.com', 'phone' => ['01711111111'], 'ssc_batch' => 2012,
+            'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ])->assertSessionHasErrors('phone');
+
+        $student = User::factory()->create();
+        $this->actingAs($student)->put(route('portal.profile.update'), ['name' => $student->name, 'phone' => ['x']])
+            ->assertSessionHasErrors('phone');
+    }
 }

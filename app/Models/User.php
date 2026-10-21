@@ -42,12 +42,13 @@ class User extends Authenticatable
      * Normalise a Bangladeshi mobile number to 01XXXXXXXXX.
      *
      * Strips spaces, dashes and brackets and a leading +88 / 88 country code.
-     * Anything that isn't a phone number is returned trimmed but otherwise unchanged.
+     * Anything that isn't a phone number is returned trimmed but otherwise unchanged;
+     * non-string input (e.g. phone[]=x) is returned as-is so validation can reject it.
      */
-    public static function normalizePhone(?string $phone): ?string
+    public static function normalizePhone(mixed $phone): mixed
     {
-        if ($phone === null) {
-            return null;
+        if (! is_string($phone)) {
+            return $phone;
         }
 
         $digits = preg_replace('/[\s\-()]/', '', trim($phone));

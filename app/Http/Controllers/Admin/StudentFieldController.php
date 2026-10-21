@@ -7,6 +7,7 @@ use App\Models\StudentField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class StudentFieldController extends Controller
@@ -48,13 +49,13 @@ class StudentFieldController extends Controller
         $clearedAnswers = DB::transaction(function () use ($studentField, $data) {
             $studentField->update($data);
 
-            return $this->clearInvalidChoices($studentField);
+            return $this->clearInvalidAnswers($studentField);
         });
 
         $message = 'Student field updated.';
         if ($clearedAnswers > 0) {
             $message .= " Cleared {$clearedAnswers} saved ".str('answer')->plural($clearedAnswers)
-                .' that used a removed choice; those students will be asked to choose again.';
+                .' that no longer fit this field; those students will be asked to answer again.';
         }
 
         return redirect()->route('admin.student-fields.index')->with('success', $message);
@@ -96,21 +97,27 @@ class StudentFieldController extends Controller
     }
 
     /**
-     * Clear answers that are no longer one of a dropdown field's choices,
-     * so the student is prompted to pick again instead of being stuck with an invalid value.
+     * Clear saved answers that no longer pass the field's rules (a removed dropdown choice,
+     * text left behind after switching to a number, etc.), so the student is prompted
+     * to answer again instead of being stuck with an invalid value.
      *
      * @return int number of answers cleared
      */
-    private function clearInvalidChoices(StudentField $field): int
+    private function clearInvalidAnswers(StudentField $field): int
     {
-        if ($field->type !== 'select') {
+        $rules = ['value' => $field->rules()];
+
+        $invalidIds = $field->values()
+            ->whereNotNull('value')
+            ->get(['id', 'value'])
+            ->filter(fn ($answer) => Validator::make(['value' => $answer->value], $rules)->fails())
+            ->pluck('id');
+
+        if ($invalidIds->isEmpty()) {
             return 0;
         }
 
-        return $field->values()
-            ->whereNotNull('value')
-            ->whereNotIn('value', $field->options ?? [])
-            ->update(['value' => null]);
+        return $field->values()->whereIn('id', $invalidIds)->update(['value' => null]);
     }
 
     private function deleteImage(StudentField $field): void
