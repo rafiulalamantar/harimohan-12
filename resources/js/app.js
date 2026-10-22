@@ -21,7 +21,10 @@ async function shrinkImage(file) {
     const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
     const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(bitmap.width, bitmap.height));
 
-    if (scale === 1 && file.size <= RESIZE_ABOVE_BYTES) {
+    // Formats most browsers can't display (e.g. iPhone HEIC) are always converted, even when small.
+    const isWebFormat = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
+
+    if (scale === 1 && file.size <= RESIZE_ABOVE_BYTES && isWebFormat) {
         bitmap.close();
         return file;
     }
@@ -94,3 +97,106 @@ document.addEventListener('keydown', (event) => {
         closeDropdowns();
     }
 });
+
+// Alumni directory pages (welcome page #alumni) swap in place instead of reloading the whole page,
+// which showed the header first and then scrolled down. Falls back to a normal page load on any error.
+let directoryPageSwapped = false;
+
+async function showDirectoryPage(url, { push }) {
+    const response = await fetch(url, { headers: { Accept: 'text/html' } });
+    const next = response.ok
+        ? new DOMParser().parseFromString(await response.text(), 'text/html').getElementById('alumni')
+        : null;
+    const current = document.getElementById('alumni');
+
+    if (!next || !current) {
+        throw new Error('Directory section not found');
+    }
+
+    current.replaceWith(next);
+
+    if (push) {
+        history.pushState({ directoryPage: true }, '', url);
+        directoryPageSwapped = true;
+    }
+
+    next.scrollIntoView({ block: 'start' });
+}
+
+document.addEventListener('click', (event) => {
+    const link = event.target.closest?.('[data-directory-pages] a[href]');
+
+    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+    }
+
+    event.preventDefault();
+
+    if (!navigator.onLine) {
+        showNetworkMessage(OFFLINE_MESSAGE, 'offline');
+
+        return;
+    }
+
+    showDirectoryPage(link.href, { push: true }).catch(() => {
+        window.location.href = link.href;
+    });
+});
+
+window.addEventListener('popstate', () => {
+    // Only Back/Forward between pages this script swapped; other history entries keep the browser default.
+    if (directoryPageSwapped && document.getElementById('alumni')) {
+        showDirectoryPage(window.location.href, { push: false }).catch(() => window.location.reload());
+    }
+});
+
+// Connection notices: a bar at the bottom while offline, a short "back online" when it returns, and forms
+// are held back while offline so nothing is lost to the browser's error page. public/sw.js serves
+// public/offline.html when a whole page can't load.
+const OFFLINE_MESSAGE = "📡 You're offline. Check your Wi-Fi or mobile data. We'll let you know when you're back.";
+const networkStatus = document.querySelector('[data-network-status]');
+const networkStatusBaseClass = networkStatus?.className ?? '';
+const networkTones = {
+    offline: 'bg-slate-900 text-white',
+    online: 'bg-emerald-600 text-white',
+};
+let networkStatusTimer;
+
+function showNetworkMessage(message, tone) {
+    if (!networkStatus) {
+        return;
+    }
+
+    clearTimeout(networkStatusTimer);
+    networkStatus.textContent = message;
+    networkStatus.className = `${networkStatusBaseClass} ${networkTones[tone]}`;
+    networkStatus.hidden = false;
+
+    if (tone === 'online') {
+        networkStatusTimer = setTimeout(() => {
+            networkStatus.hidden = true;
+        }, 3000);
+    }
+}
+
+window.addEventListener('offline', () => showNetworkMessage(OFFLINE_MESSAGE, 'offline'));
+window.addEventListener('online', () => showNetworkMessage("✅ You're back online.", 'online'));
+
+if (!navigator.onLine) {
+    showNetworkMessage(OFFLINE_MESSAGE, 'offline');
+}
+
+// Capture phase, so an offline submit is stopped before any "Are you sure?" prompt.
+document.addEventListener('submit', (event) => {
+    if (!navigator.onLine) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        showNetworkMessage("📡 You're offline, so nothing was sent. What you typed is still here. Try again once you're connected.", 'offline');
+    }
+}, true);
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+}

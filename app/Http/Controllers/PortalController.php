@@ -71,7 +71,7 @@ class PortalController extends Controller
             'linkedin_url' => ['nullable', 'url', 'max:255'],
             'facebook_url' => ['nullable', 'url', 'max:255'],
             'present_address' => ['nullable', 'string', 'max:255'],
-            'photo' => ['nullable', 'image', 'max:2048'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
             ...StudentField::rulesFor($fields),
         ], [
             'phone.regex' => 'Mobile number must be 11 digits, like 01XXXXXXXXX.',

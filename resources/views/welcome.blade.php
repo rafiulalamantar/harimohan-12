@@ -176,7 +176,7 @@
                 @endforeach
             </div>
             <p class="mt-5 text-center text-sm text-slate-500">Showing {{ $students->firstItem() }}–{{ $students->lastItem() }} of {{ $students->total() }} alumni</p>
-            <div class="mt-4">{{ $students->links() }}</div>
+            <div class="mt-4" data-directory-pages>{{ $students->links() }}</div>
         @endif
     </section>
 @endif

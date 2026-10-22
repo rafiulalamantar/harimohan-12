@@ -76,7 +76,7 @@ class StudentFieldController extends Controller
             'type' => ['required', Rule::in(array_keys(StudentField::TYPES))],
             'options' => ['nullable', 'required_if:type,select', 'string', 'max:2000'],
             'help_text' => ['nullable', 'string', 'max:500'],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:1000'],
         ], ['options.required_if' => 'Add at least one choice for a dropdown field.']);
 

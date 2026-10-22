@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('code', '419')
+@section('icon', '⏳')
+@section('title', 'This page expired')
+@section('message', 'For your security, forms stop working after a while. Please go back, refresh the page and try again.')
+@section('retry', url()->previous())

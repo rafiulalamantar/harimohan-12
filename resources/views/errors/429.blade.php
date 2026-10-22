@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('code', '429')
+@section('icon', '✋')
+@section('title', 'Too many tries')
+@section('message', 'You tried this a few too many times. Please wait a minute, then try again.')
+@section('retry', url()->previous())

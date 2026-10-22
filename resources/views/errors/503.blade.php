@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('code', '503')
+@section('icon', '🚧')
+@section('title', "We'll be right back")
+@section('message', "We're doing a quick update. Please check back in a few minutes.")
+@section('retry', url()->current())

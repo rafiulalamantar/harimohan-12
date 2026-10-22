@@ -74,6 +74,15 @@ class ReunionFlowTest extends TestCase
         $this->assertFalse(Schema::hasColumn('users', 'roll_no'));
     }
 
+    public function test_directory_page_links_are_marked_for_in_place_paging(): void
+    {
+        User::factory()->count(25)->create();
+
+        // resources/js/app.js swaps #alumni for links inside [data-directory-pages] instead of reloading the page.
+        $this->get('/')->assertSee('data-directory-pages', false)->assertSee('?page=2#alumni', false);
+        $this->get('/?page=2')->assertOk()->assertSee('id="alumni"', false);
+    }
+
     public function test_directory_shows_long_job_titles_in_full(): void
     {
         $job = 'Engineer (Deputy Manager-Electrical Maintenance) at Bangladesh India Friendship Power Company Limited';
@@ -250,6 +259,20 @@ class ReunionFlowTest extends TestCase
         $user = User::where('email', 'karim@example.com')->first();
         $this->assertSame('Acme Ltd', $user->company_name);
         Storage::disk('public')->assertExists($user->photo);
+    }
+
+    public function test_registration_rejects_iphone_heic_photos_that_browsers_cannot_show(): void
+    {
+        Storage::fake('public');
+
+        $this->post('/register', [
+            'name' => 'Karim', 'email' => 'karim@example.com', 'phone' => '01712345679', 'ssc_batch' => 2012,
+            'photo' => new UploadedFile(base_path('tests/fixtures/photo.heic'), 'IMG_0001.HEIC', 'image/heic', null, true),
+            'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ])->assertSessionHasErrors('photo');
+
+        $this->assertDatabaseMissing('users', ['email' => 'karim@example.com']);
+        $this->get('/register')->assertSee('accept="image/jpeg,image/png,image/webp,image/gif"', false);
     }
 
     public function test_registration_rejects_invalid_social_url(): void

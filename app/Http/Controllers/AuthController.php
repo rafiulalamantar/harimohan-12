@@ -30,7 +30,7 @@ class AuthController extends Controller
             'linkedin_url' => ['nullable', 'url', 'max:255'],
             'facebook_url' => ['nullable', 'url', 'max:255'],
             'present_address' => ['nullable', 'string', 'max:255'],
-            'photo' => ['nullable', 'image', 'max:2048'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
             'password' => ['required', 'confirmed', Password::min(8)],
             ...StudentField::rulesFor($fields),
         ], [

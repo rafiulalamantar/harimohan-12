@@ -19,7 +19,7 @@ class SettingController extends Controller
         $data = $request->validate([
             'hero_title' => ['required', 'string', 'max:200'],
             'hero_subtitle' => ['nullable', 'string', 'max:1000'],
-            'hero_banner' => ['nullable', 'image', 'max:4096'],
+            'hero_banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
         ]);
 
         $currentBanner = Setting::values()['hero_banner'];

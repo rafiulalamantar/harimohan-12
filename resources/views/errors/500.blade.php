@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('code', '500')
+@section('icon', '🛠️')
+@section('title', 'Something went wrong on our side')
+@section('message', "It's not you. Please try again in a moment. If it keeps happening, let an admin know.")
+@section('retry', url()->current())
