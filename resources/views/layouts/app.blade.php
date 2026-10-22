@@ -57,7 +57,7 @@
         <div class="flex items-center gap-2 text-sm font-semibold">
             @auth
                 @if ($badge = $user->adminBadge())
-                    <span title="Logged in as {{ $user->name }}" class="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800 ring-1 ring-brand-200 whitespace-nowrap">🛡️<span class="hidden min-[400px]:inline">{{ $badge }}</span></span>
+                    <span title="Logged in as {{ $user->name }}" class="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800 ring-1 ring-brand-200 whitespace-nowrap">🛡️<span class="sr-only min-[400px]:not-sr-only">{{ $badge }}</span></span>
                 @endif
                 <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">@csrf
                     <button class="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-slate-700 hover:bg-slate-50 transition">Logout</button>
