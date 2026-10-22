@@ -30,6 +30,11 @@ class User extends Authenticatable
     /** An admin who can also make students admins. */
     public const ADMIN_LEVEL_SUPER = 'super';
 
+    /** Names: letters in any script (Bangla included), spaces, dots, hyphens and apostrophes. */
+    public const NAME_PATTERN = "/^[\\p{L}\\p{M}\\s.'\\-]+$/u";
+
+    public const NAME_MESSAGE = 'Name can only contain letters, spaces, dots, hyphens and apostrophes.';
+
     public const STATUS_PENDING = 'pending';
 
     public const STATUS_APPROVED = 'approved';

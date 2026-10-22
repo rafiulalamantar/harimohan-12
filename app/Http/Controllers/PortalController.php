@@ -64,7 +64,7 @@ class PortalController extends Controller
         $request->merge(['phone' => User::normalizePhone($request->input('phone'))]);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
+            'name' => ['required', 'string', 'max:120', 'regex:'.User::NAME_PATTERN],
             'phone' => ['required', 'regex:/^01[3-9]\d{8}$/', Rule::unique('users')->ignore($user->id)],
             'profession' => ['nullable', 'string', 'max:150'],
             'company_name' => ['nullable', 'string', 'max:150'],
@@ -75,6 +75,7 @@ class PortalController extends Controller
             ...StudentField::rulesFor($fields),
         ], [
             'phone.regex' => 'Mobile number must be 11 digits, like 01XXXXXXXXX.',
+            'name.regex' => User::NAME_MESSAGE,
         ], StudentField::attributeNamesFor($fields));
 
         $answers = $data['fields'] ?? [];

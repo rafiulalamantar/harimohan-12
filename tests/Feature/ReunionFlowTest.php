@@ -327,6 +327,28 @@ class ReunionFlowTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => 'rahim@example.com', 'phone' => '01711111111']);
     }
 
+    public function test_registration_rejects_names_with_symbols_but_accepts_bangla(): void
+    {
+        $form = ['email' => 'karim@example.com', 'phone' => '01711111111', 'ssc_batch' => 2012,
+            'password' => 'secret123', 'password_confirmation' => 'secret123'];
+
+        $this->post('/register', $form + ['name' => 'QA <b>Bold</b>'])
+            ->assertSessionHasErrors(['name' => 'Name can only contain letters, spaces, dots, hyphens and apostrophes.']);
+        $this->assertDatabaseCount('users', 0);
+
+        $this->post('/register', $form + ['name' => "মো. রফিউল O'Brien-Alam"])->assertRedirect(route('portal.dashboard'));
+        $this->assertDatabaseHas('users', ['email' => 'karim@example.com', 'name' => "মো. রফিউল O'Brien-Alam"]);
+    }
+
+    public function test_profile_update_rejects_a_name_with_symbols(): void
+    {
+        $student = User::factory()->create(['name' => 'Karim Uddin']);
+
+        $this->actingAs($student)->put(route('portal.profile.update'), ['name' => 'Karim <script>', 'phone' => $student->phone])
+            ->assertSessionHasErrors(['name' => 'Name can only contain letters, spaces, dots, hyphens and apostrophes.']);
+        $this->assertSame('Karim Uddin', $student->fresh()->name);
+    }
+
     public function test_profile_update_replaces_photo_and_deletes_the_old_one(): void
     {
         Storage::fake('public');

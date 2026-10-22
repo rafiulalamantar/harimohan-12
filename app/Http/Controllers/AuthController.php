@@ -21,7 +21,7 @@ class AuthController extends Controller
         $request->merge(['phone' => User::normalizePhone($request->input('phone'))]);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
+            'name' => ['required', 'string', 'max:120', 'regex:'.User::NAME_PATTERN],
             'email' => ['required', 'email', 'max:190', 'unique:users,email'],
             'phone' => ['required', 'regex:/^01[3-9]\d{8}$/', 'unique:users,phone'],
             'ssc_batch' => ['required', 'integer', 'min:1950', 'max:'.now()->year],
@@ -36,6 +36,7 @@ class AuthController extends Controller
             ...StudentField::rulesFor($fields),
         ], [
             'phone.regex' => 'Mobile number must be 11 digits, like 01XXXXXXXXX.',
+            'name.regex' => User::NAME_MESSAGE,
         ], StudentField::attributeNamesFor($fields));
 
         $answers = $data['fields'] ?? [];
