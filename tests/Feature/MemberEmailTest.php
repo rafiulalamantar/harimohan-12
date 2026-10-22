@@ -59,7 +59,7 @@ class MemberEmailTest extends TestCase
             && $mail->hasBcc('pending@example.com')
             && ! $mail->hasBcc('rejected@example.com')
             && ! $mail->hasBcc('admin@example.com')
-            && $mail->hasTo(config('mail.from.address'))
+            && $mail->to === []
             && $mail->hasReplyTo('admin@example.com')
             && $mail->hasSubject('Iftar 2027 venue'));
         $this->assertDatabaseHas('member_emails', ['user_id' => $admin->id, 'subject' => 'Iftar 2027 venue', 'audience' => 'all', 'recipient_count' => 2]);
@@ -95,13 +95,11 @@ class MemberEmailTest extends TestCase
     public function test_nothing_is_sent_when_it_would_pass_the_daily_brevo_limit(): void
     {
         Mail::fake();
-        // Earlier today: 290 members + 6 "To" copies = 296 emails, leaving 4.
-        MemberEmail::factory()->create(['recipient_count' => 290]);
-        User::factory()->count(4)->create();
+        MemberEmail::factory()->create(['recipient_count' => MemberEmail::DAILY_LIMIT - 1]);
+        User::factory()->count(2)->create();
 
-        // 4 members need 5 emails (4 Bcc + 1 "To" copy), one more than the 4 left.
         $this->send(User::factory()->admin()->create())
-            ->assertSessionHas('error', "This would send 5 emails, but only 4 are left today (Brevo's free plan allows 300 a day). Pick a smaller group or try again tomorrow.");
+            ->assertSessionHas('error', "This would send 2 emails, but only 1 are left today (Brevo's free plan allows 300 a day). Pick a smaller group or try again tomorrow.");
 
         Mail::assertNothingSent();
         $this->assertDatabaseCount('member_emails', 1);
@@ -113,8 +111,7 @@ class MemberEmailTest extends TestCase
         MemberEmail::factory()->create(['recipient_count' => 250, 'created_at' => now()->subDay()]);
         MemberEmail::factory()->create(['recipient_count' => 20]);
 
-        // Only today's 20 members + 1 "To" copy count.
-        $this->assertSame(279, MemberEmail::remainingToday());
+        $this->assertSame(280, MemberEmail::remainingToday());
     }
 
     public function test_an_empty_group_sends_nothing(): void
@@ -135,7 +132,9 @@ class MemberEmailTest extends TestCase
         $mail->assertSeeInHtml('&lt;script&gt;alert(1)&lt;/script&gt;', false)
             ->assertDontSeeInHtml('<script>alert(1)</script>', false)
             ->assertSeeInHtml('white-space:pre-line', false)
-            ->assertSeeInText("Line one\n<script>alert(1)</script>", false);
+            ->assertSeeInText("Line one\n<script>alert(1)</script>", false)
+            ->assertDontSeeInHtml('Sent by')
+            ->assertDontSeeInText('Sent by');
     }
 
     public function test_admins_see_the_page_with_member_counts_and_todays_remaining_emails(): void
