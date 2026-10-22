@@ -1,6 +1,17 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.1...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.2...main)
+
+## [v1.4.2](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.1...v1.4.2) - 2026-10-22
+
+### Faster welcome page
+
+- **Photo thumbnails.** Directory cards and avatars showed full-size profile photos (some 3392x2544, ~2 MB), so the welcome page downloaded ~11 MB of images. Every photo now has a 480 px JPEG thumbnail (~30-50 KB) used on cards and avatars; the full photo stays for profile pages.
+- New uploads: the browser makes the thumbnail when a photo is picked (Vercel's PHP has no GD), with a GD fallback on the server.
+- Existing photos: run php artisan app:make-photo-thumbnails once (sideways phone photos are turned upright).
+- If a thumbnail is missing, cards fall back to the full photo.
+
+Needs the users.photo_thumb migration.
 
 ## [v1.4.1](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.0...v1.4.1) - 2026-10-22
 
