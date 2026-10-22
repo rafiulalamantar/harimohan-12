@@ -119,5 +119,7 @@
         <span>Made with care for every batch · <a href="https://github.com/rafiulalamantar/harimohan-12/releases/tag/v{{ config('app.version') }}" class="hover:text-brand-700 hover:underline">v{{ config('app.version') }}</a></span>
     </div>
 </footer>
+{{-- Connection notices from resources/js/app.js (offline, back online, form not sent). --}}
+<div data-network-status hidden role="status" aria-live="polite" class="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-md rounded-2xl px-4 py-3 text-sm font-medium shadow-xl"></div>
 </body>
 </html>
