@@ -65,6 +65,27 @@ async function shrinkImage(file) {
     return new File([blob], name, { type, lastModified: Date.now() });
 }
 
+// Matches App\Services\PhotoThumbnail::WIDTH.
+const THUMBNAIL_WIDTH = 480;
+
+async function makeThumbnail(file) {
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    const scale = Math.min(1, THUMBNAIL_WIDTH / bitmap.width);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+
+    const context = canvas.getContext('2d');
+    context.fillStyle = '#fff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.8));
+
+    return blob ? new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' }) : null;
+}
+
 document.addEventListener('change', async (event) => {
     const input = event.target;
 
@@ -84,6 +105,18 @@ document.addEventListener('change', async (event) => {
         const transfer = new DataTransfer();
         files.forEach((file) => transfer.items.add(file));
         input.files = transfer.files;
+
+        // Profile photos also get a small copy for directory cards and avatars (sent as e.g. photo_thumbnail);
+        // Vercel's PHP can't resize images, so the browser makes it.
+        const thumbnailInput = input.dataset.thumbnail && input.form?.querySelector(`input[name="${input.dataset.thumbnail}"]`);
+        if (thumbnailInput) {
+            const thumbnail = await makeThumbnail(files[0]).catch(() => null);
+            const thumbnailTransfer = new DataTransfer();
+            if (thumbnail) {
+                thumbnailTransfer.items.add(thumbnail);
+            }
+            thumbnailInput.files = thumbnailTransfer.files;
+        }
     } finally {
         if (submit) {
             submit.disabled = false;
