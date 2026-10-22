@@ -1,6 +1,15 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.1.2...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.0...main)
+
+## [v1.2.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.1.2...v1.2.0) - 2026-10-22
+
+- Super admins (the existing admin accounts) get **Make admin** / **Remove admin** on an approved student's page
+- A promoted student keeps their portal and directory listing, and switches between Portal and Admin panel from the menu
+- An admin student must lose admin access before being rejected or set back to pending
+- Payments close once the event day has passed, even if the payment deadline is later
+- A student opening an admin page is sent to their portal with a message instead of a bare 403
+- Students table shows an Admin badge; profile heading reads "My Profile"
 
 ## [v1.1.2](https://github.com/rafiulalamantar/harimohan-12/compare/v1.1.1...v1.1.2) - 2026-10-22
 
