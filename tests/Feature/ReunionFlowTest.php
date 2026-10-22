@@ -502,6 +502,14 @@ class ReunionFlowTest extends TestCase
             ->get(route('admin.students.show', $student))->assertOk()->assertDontSee('Make admin');
     }
 
+    public function test_header_shows_the_admin_level_after_login(): void
+    {
+        $this->actingAs(User::factory()->admin()->create())->get('/admin')->assertSee('Super admin</span>', false);
+        $this->actingAs(User::factory()->studentAdmin()->create())->get(route('portal.dashboard'))
+            ->assertSee('Admin</span>', false)->assertDontSee('Super admin');
+        $this->actingAs(User::factory()->create())->get(route('portal.dashboard'))->assertDontSee('🛡️');
+    }
+
     public function test_student_admin_cannot_make_other_students_admins(): void
     {
         $student = User::factory()->create();
