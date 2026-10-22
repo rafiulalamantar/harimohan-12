@@ -261,7 +261,7 @@ class ReunionFlowTest extends TestCase
         Storage::disk('public')->assertExists($user->photo);
     }
 
-    public function test_registration_rejects_iphone_heic_photos_that_browsers_cannot_show(): void
+    public function test_server_rejects_heic_photos_the_browser_did_not_convert(): void
     {
         Storage::fake('public');
 
@@ -272,7 +272,8 @@ class ReunionFlowTest extends TestCase
         ])->assertSessionHasErrors('photo');
 
         $this->assertDatabaseMissing('users', ['email' => 'karim@example.com']);
-        $this->get('/register')->assertSee('accept="image/jpeg,image/png,image/webp,image/gif"', false);
+        // The picker offers HEIC so resources/js/app.js can convert it to JPEG before upload.
+        $this->get('/register')->assertSee('accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"', false);
     }
 
     public function test_registration_rejects_invalid_social_url(): void
@@ -497,7 +498,10 @@ class ReunionFlowTest extends TestCase
 
         $policy = $this->get('/up')->assertOk()->headers->get('Content-Security-Policy');
 
-        $this->assertStringContainsString("script-src 'self';", $policy);
+        // WebAssembly + blob: workers for in-browser HEIC conversion, but never 'unsafe-eval'.
+        $this->assertStringContainsString("script-src 'self' 'wasm-unsafe-eval';", $policy);
+        $this->assertStringContainsString("worker-src 'self' blob:;", $policy);
+        $this->assertStringNotContainsString("'unsafe-eval'", $policy);
         $this->assertStringContainsString("form-action 'self' https://*.bka.sh https://*.bkash.com;", $policy);
         $this->assertStringContainsString("frame-ancestors 'none'", $policy);
     }
