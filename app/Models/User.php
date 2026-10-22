@@ -13,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'photo', 'email', 'phone', 'ssc_batch', 'roll_no', 'profession', 'company_name', 'linkedin_url', 'facebook_url', 'present_address', 'password'])]
+#[Fillable(['name', 'photo', 'email', 'phone', 'ssc_batch', 'profession', 'company_name', 'linkedin_url', 'facebook_url', 'present_address', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {

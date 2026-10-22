@@ -8,7 +8,7 @@
         <x-avatar :user="$student" class="w-24 h-24 text-3xl" />
         <h1 class="text-xl font-bold mt-3">{{ $student->name }}</h1>
         <dl class="mt-4 text-sm space-y-2">
-            @foreach (['Email' => $student->email, 'Phone' => $student->phone, 'SSC batch' => $student->ssc_batch, 'Roll' => $student->roll_no,
+            @foreach (['Email' => $student->email, 'Phone' => $student->phone, 'SSC batch' => $student->ssc_batch,
                        'Profession' => $student->profession, 'Company' => $student->company_name, 'Address' => $student->present_address, 'Status' => ucfirst($student->status),
                        'Registered' => $student->created_at->format('d M Y')] as $k => $v)
                 <div class="flex justify-between gap-3"><dt class="text-gray-500">{{ $k }}</dt><dd class="text-right">{{ $v ?: '—' }}</dd></div>

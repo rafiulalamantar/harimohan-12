@@ -143,7 +143,7 @@
                             <h3 class="font-bold text-slate-900 leading-snug line-clamp-1" title="{{ $s->name }}">{{ $s->name }}</h3>
                             @php($job = collect([$s->profession, $s->company_name])->filter()->join(' at '))
                             @if ($job)
-                                <p class="mt-0.5 text-xs sm:text-sm text-slate-500 line-clamp-2">{{ $job }}</p>
+                                <p class="mt-0.5 text-xs sm:text-sm text-slate-500 break-words">{{ $job }}</p>
                             @endif
                             <div class="mt-auto pt-3 space-y-2">
                                 @if ($s->linkedin_url || $s->facebook_url)
