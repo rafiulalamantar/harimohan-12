@@ -1,6 +1,10 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.1.1...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.1.2...main)
+
+## [v1.1.2](https://github.com/rafiulalamantar/harimohan-12/compare/v1.1.1...v1.1.2) - 2026-10-22
+
+- Alumni directory photos are cropped from the top, so heads are no longer cut off on tall or square portraits
 
 ## [v1.1.1](https://github.com/rafiulalamantar/harimohan-12/compare/v1.1.0...v1.1.1) - 2026-10-22
 
