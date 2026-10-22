@@ -47,15 +47,18 @@
             <span class="font-extrabold tracking-tight text-slate-900 text-lg">{{ config('app.name') }}</span>
         </a>
 
-        <nav class="hidden xl:flex items-center gap-0.5 text-sm font-medium">
+        <nav class="hidden xl:flex items-center text-sm font-medium">
             @foreach ($navLinks as [$route, $label, $pattern])
                 <a href="{{ route($route) }}"
-                   class="whitespace-nowrap rounded-full px-2 py-1.5 transition {{ request()->routeIs($pattern) ? 'bg-brand-50 text-brand-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">{{ $label }}</a>
+                   class="whitespace-nowrap rounded-full px-1.5 py-1.5 transition {{ request()->routeIs($pattern) ? 'bg-brand-50 text-brand-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">{{ $label }}</a>
             @endforeach
         </nav>
 
         <div class="flex items-center gap-2 text-sm font-semibold">
             @auth
+                @if ($user->isAdmin())
+                    <x-registration-bell :pending="$pendingRegistrations" :registrations="$latestRegistrations" />
+                @endif
                 @if ($badge = $user->adminBadge())
                     <span title="Logged in as {{ $user->name }}" class="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800 ring-1 ring-brand-200 whitespace-nowrap">🛡️<span class="sr-only min-[400px]:not-sr-only">{{ $badge }}</span></span>
                 @endif
@@ -95,7 +98,7 @@
 </header>
 
 <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-1">
-    @foreach (['success' => 'bg-brand-50 border-brand-200 text-brand-900', 'error' => 'bg-rose-50 border-rose-200 text-rose-800'] as $key => $cls)
+    @foreach (['success' => 'bg-brand-50 border-brand-200 text-brand-900', 'info' => 'bg-sky-50 border-sky-200 text-sky-900', 'error' => 'bg-rose-50 border-rose-200 text-rose-800'] as $key => $cls)
         @if (session($key))
             <div class="mb-6 flex items-start gap-3 border rounded-2xl px-4 py-3 text-sm font-medium {{ $cls }}">
                 @if ($key === 'success')

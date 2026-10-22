@@ -60,7 +60,18 @@ class StudentController extends Controller
             return back()->with('error', "{$student->name} has already paid, so they cannot be rejected.");
         }
 
-        $student->forceFill(['status' => $data['status']]);
+        // Another admin may have handled this registration since the page was loaded.
+        if ($data['status'] === $student->status && $student->reviewer) {
+            return back()->with('info', "{$student->name} is already {$student->status} by {$student->reviewer->name}.");
+        }
+
+        $reviewed = $data['status'] !== User::STATUS_PENDING;
+
+        $student->forceFill([
+            'status' => $data['status'],
+            'reviewed_by' => $reviewed ? $request->user()->id : null,
+            'reviewed_at' => $reviewed ? now() : null,
+        ]);
 
         // Invalidate "remember me" logins so a rejected student can't come back in.
         if ($data['status'] === User::STATUS_REJECTED) {
