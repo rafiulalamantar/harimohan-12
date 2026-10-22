@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
@@ -88,6 +89,40 @@ class ReunionFlowTest extends TestCase
         $this->post('/login', ['login' => '01811111111', 'password' => 'password'])
             ->assertRedirect(route('portal.dashboard'));
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_login_stays_active_after_the_session_expires_until_logout(): void
+    {
+        $user = User::factory()->create(['email' => 'stay@example.com']);
+        $recaller = Auth::guard()->getRecallerName();
+
+        $cookie = $this->post('/login', ['login' => 'stay@example.com', 'password' => 'password'])
+            ->assertCookie($recaller)
+            ->getCookie($recaller, false);
+
+        // A fresh session (idle timeout, browser restart) is logged back in by the remember cookie.
+        Auth::forgetGuards();
+        $this->flushSession();
+        $this->withUnencryptedCookie($recaller, $cookie->getValue())
+            ->get(route('portal.dashboard'))->assertOk();
+        $this->assertAuthenticatedAs($user);
+
+        $this->post(route('logout'))->assertRedirect(route('home'))->assertCookieExpired($recaller);
+
+        // The old remember cookie no longer works once the member has logged out.
+        Auth::forgetGuards();
+        $this->flushSession();
+        $this->withUnencryptedCookie($recaller, $cookie->getValue())
+            ->get(route('portal.dashboard'))->assertRedirect(route('login'));
+        $this->assertGuest();
+    }
+
+    public function test_registration_keeps_the_new_member_logged_in(): void
+    {
+        $this->post('/register', [
+            'name' => 'Rahim', 'email' => 'rahim@example.com', 'phone' => '01712345678', 'ssc_batch' => 2010,
+            'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ])->assertCookie(Auth::guard()->getRecallerName());
     }
 
     public function test_pending_student_cannot_pay(): void

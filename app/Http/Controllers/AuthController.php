@@ -48,7 +48,7 @@ class AuthController extends Controller
         $user = User::create($data); // role=student, status=pending by DB default
         $user->saveFieldValues($answers);
 
-        Auth::login($user);
+        Auth::login($user, remember: true);
         $request->session()->regenerate();
 
         return redirect()->route('portal.dashboard')
@@ -71,7 +71,8 @@ class AuthController extends Controller
         $field = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
         $login = $field === 'phone' ? User::normalizePhone($request->login) : $request->login;
 
-        if (! Auth::attempt([$field => $login, 'password' => $request->password], $request->boolean('remember'))) {
+        // Always remembered: members stay logged in on this device until they press Logout.
+        if (! Auth::attempt([$field => $login, 'password' => $request->password], remember: true)) {
             return back()->withErrors(['login' => 'Incorrect email/phone or password.'])->onlyInput('login');
         }
 
