@@ -74,6 +74,15 @@ class ReunionFlowTest extends TestCase
         $this->assertFalse(Schema::hasColumn('users', 'roll_no'));
     }
 
+    public function test_directory_page_links_are_marked_for_in_place_paging(): void
+    {
+        User::factory()->count(25)->create();
+
+        // resources/js/app.js swaps #alumni for links inside [data-directory-pages] instead of reloading the page.
+        $this->get('/')->assertSee('data-directory-pages', false)->assertSee('?page=2#alumni', false);
+        $this->get('/?page=2')->assertOk()->assertSee('id="alumni"', false);
+    }
+
     public function test_directory_shows_long_job_titles_in_full(): void
     {
         $job = 'Engineer (Deputy Manager-Electrical Maintenance) at Bangladesh India Friendship Power Company Limited';

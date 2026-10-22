@@ -97,3 +97,48 @@ document.addEventListener('keydown', (event) => {
         closeDropdowns();
     }
 });
+
+// Alumni directory pages (welcome page #alumni) swap in place instead of reloading the whole page,
+// which showed the header first and then scrolled down. Falls back to a normal page load on any error.
+let directoryPageSwapped = false;
+
+async function showDirectoryPage(url, { push }) {
+    const response = await fetch(url, { headers: { Accept: 'text/html' } });
+    const next = response.ok
+        ? new DOMParser().parseFromString(await response.text(), 'text/html').getElementById('alumni')
+        : null;
+    const current = document.getElementById('alumni');
+
+    if (!next || !current) {
+        throw new Error('Directory section not found');
+    }
+
+    current.replaceWith(next);
+
+    if (push) {
+        history.pushState({ directoryPage: true }, '', url);
+        directoryPageSwapped = true;
+    }
+
+    next.scrollIntoView({ block: 'start' });
+}
+
+document.addEventListener('click', (event) => {
+    const link = event.target.closest?.('[data-directory-pages] a[href]');
+
+    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+    }
+
+    event.preventDefault();
+    showDirectoryPage(link.href, { push: true }).catch(() => {
+        window.location.href = link.href;
+    });
+});
+
+window.addEventListener('popstate', () => {
+    // Only Back/Forward between pages this script swapped; other history entries keep the browser default.
+    if (directoryPageSwapped && document.getElementById('alumni')) {
+        showDirectoryPage(window.location.href, { push: false }).catch(() => window.location.reload());
+    }
+});
