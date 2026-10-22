@@ -548,6 +548,15 @@ class ReunionFlowTest extends TestCase
         $this->assertSame($antar->id, $student->fresh()->reviewed_by);
     }
 
+    public function test_admin_bell_shows_an_empty_state_and_caps_the_count_at_99(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $this->actingAs($admin)->get('/admin')->assertSee('No registrations yet.');
+
+        User::factory()->pending()->count(100)->create();
+        $this->actingAs($admin)->get('/admin')->assertSee('99+')->assertSee('Registrations: 100 waiting for approval');
+    }
+
     public function test_students_do_not_see_the_registration_bell(): void
     {
         $this->actingAs(User::factory()->create())->get(route('portal.dashboard'))->assertDontSee('waiting for approval');
