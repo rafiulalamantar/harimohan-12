@@ -1,6 +1,15 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.2...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.0...main)
+
+## [v1.3.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.2...v1.3.0) - 2026-10-22
+
+- 🔔 Bell in every admin's header with the number of registrations waiting for approval, shared by all admins
+- Clicking it lists the 8 newest registrations: **Approve** right there for pending ones, "Approved by *admin* · *time*" or "Rejected by *admin*" for the rest
+- If another admin already approved a student, approving again changes nothing and says who did it
+- "View all pending" opens the Students list filtered to pending
+- Who handled each registration is now recorded (`reviewed_by`, `reviewed_at`)
+- Works from 320 px phones to desktop; keyboard and screen-reader friendly
 
 ## [v1.2.2](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.1...v1.2.2) - 2026-10-22
 
