@@ -11,12 +11,6 @@
     <tr>
         <td style="padding:16px 24px 24px;font-size:15px;line-height:1.6;white-space:pre-line;">{{ $messageBody }}</td>
     </tr>
-    <tr>
-        <td style="padding:16px 24px;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;">
-            Sent by {{ $sender->name }} to members of {{ config('app.name') }}. Reply to this email to answer them.
-            <br><a href="{{ url('/') }}" style="color:#047857;">{{ url('/') }}</a>
-        </td>
-    </tr>
 </table>
 </body>
 </html>

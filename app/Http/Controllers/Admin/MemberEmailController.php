@@ -41,17 +41,16 @@ class MemberEmailController extends Controller
             return back()->withInput()->with('error', 'No members match that group, so nothing was sent.');
         }
 
-        $needed = MemberEmail::brevoEmailsFor($emails->count());
         $remaining = MemberEmail::remainingToday();
-        if ($needed > $remaining) {
-            return back()->withInput()->with('error', "This would send {$needed} emails, but only {$remaining} are left today (Brevo's free plan allows ".MemberEmail::DAILY_LIMIT.' a day). Pick a smaller group or try again tomorrow.');
+        if ($emails->count() > $remaining) {
+            return back()->withInput()->with('error', "This would send {$emails->count()} emails, but only {$remaining} are left today (Brevo's free plan allows ".MemberEmail::DAILY_LIMIT.' a day). Pick a smaller group or try again tomorrow.');
         }
 
         $sender = $request->user();
         // Batches of Bcc recipients, so one SMTP call covers many members and stays inside Vercel's time limit.
         foreach ($emails->chunk(MemberEmail::RECIPIENTS_PER_MESSAGE) as $chunk) {
-            Mail::to(config('mail.from.address'), config('mail.from.name'))
-                ->bcc($chunk->values()->all())
+            // Bcc only: no visible "To" address, so members see neither each other nor the site's own mailbox.
+            Mail::bcc($chunk->values()->all())
                 ->send(new MemberEmailMessage($data['subject'], $data['body'], $sender));
         }
 

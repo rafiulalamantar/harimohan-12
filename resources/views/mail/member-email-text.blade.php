@@ -2,7 +2,3 @@
 {!! $messageSubject !!}
 
 {!! $messageBody !!}
-
---
-Sent by {!! $sender->name !!} to members of {!! config('app.name') !!}. Reply to this email to answer them.
-{{ url('/') }}
