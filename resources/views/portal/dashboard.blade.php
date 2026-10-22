@@ -6,7 +6,7 @@
     <div class="flex items-center gap-3">
         <x-avatar :user="$user" class="w-12 h-12 text-xl" />
         <div>
-        <h1 class="text-2xl font-bold">{{ $user->name }} is in the Classroom! 🔥</h1>
+        <h1 class="text-2xl font-bold">Roll Call: {{ $user->name }} - Yes, Sir! 🔥</h1>
         <p class="text-sm text-gray-500">SSC Batch {{ $user->ssc_batch }} · {{ $user->phone }}</p>
         </div>
     </div>
