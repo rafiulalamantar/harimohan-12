@@ -1,6 +1,13 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.0.0...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.1.0...main)
+
+## [v1.1.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.0.0...v1.1.0) - 2026-10-22
+
+- Site name is now "Harimohan'12"
+- Footer shows the app version, linking to its release
+- "bKash Payment Coming Soon" shown on the event card and student dashboard while online payment is off
+- Default homepage text and seeded notice no longer ask students to pay with bKash
 
 ## [v1.0.0](https://github.com/rafiulalamantar/harimohan-12/releases/tag/v1.0.0) - 2026-10-21
 
