@@ -502,6 +502,17 @@ class ReunionFlowTest extends TestCase
             ->get(route('admin.students.show', $student))->assertOk()->assertDontSee('Make admin');
     }
 
+    public function test_admin_only_account_is_sent_from_the_portal_to_the_admin_panel(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->get(route('portal.profile'))
+            ->assertRedirect(route('admin.dashboard'))
+            ->assertSessionHas('error', 'The student portal is only for alumni accounts.');
+        $this->actingAs($admin)->post(route('portal.pay', $this->event()))->assertForbidden();
+        $this->actingAs(User::factory()->studentAdmin()->create())->get(route('portal.dashboard'))->assertOk();
+    }
+
     public function test_header_shows_the_admin_level_after_login(): void
     {
         $this->actingAs(User::factory()->admin()->create())->get('/admin')->assertSee('Super admin</span>', false);

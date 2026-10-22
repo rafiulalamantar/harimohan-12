@@ -3,6 +3,7 @@
 use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureNotRejected;
+use App\Http\Middleware\EnsureStudent;
 use App\Http\Middleware\RedirectToHttps;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => EnsureAdmin::class,
             'not-rejected' => EnsureNotRejected::class,
+            'student' => EnsureStudent::class,
         ]);
         // Behind a load balancer (Vercel, Cloudflare, etc.) HTTPS ends at the proxy. Trusting its X-Forwarded-*
         // headers lets isSecure() and generated URLs see HTTPS; without it RedirectToHttps loops forever.
