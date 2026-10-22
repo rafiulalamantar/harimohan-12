@@ -6,6 +6,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -39,6 +40,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'reviewed_at' => 'datetime',
             'password' => 'hashed',
             'ssc_batch' => 'integer',
         ];
@@ -60,6 +62,12 @@ class User extends Authenticatable
         $digits = preg_replace('/[\s\-()]/', '', trim($phone));
 
         return preg_replace('/^\+?88(?=01\d{9}$)/', '', $digits);
+    }
+
+    /** The admin who last approved or rejected this registration. */
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'reviewed_by');
     }
 
     public function payments(): HasMany

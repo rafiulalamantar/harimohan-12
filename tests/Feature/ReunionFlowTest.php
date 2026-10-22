@@ -445,6 +445,7 @@ class ReunionFlowTest extends TestCase
             ->assertSessionHas('success');
 
         $this->assertSame(User::STATUS_REJECTED, $student->fresh()->status);
+        auth()->logout();
         $this->flushSession()->get(route('home'))->assertDontSee('Rejected Rahim');
     }
 
@@ -511,6 +512,45 @@ class ReunionFlowTest extends TestCase
             ->assertSessionHas('error', 'The student portal is only for alumni accounts.');
         $this->actingAs($admin)->post(route('portal.pay', $this->event()))->assertForbidden();
         $this->actingAs(User::factory()->studentAdmin()->create())->get(route('portal.dashboard'))->assertOk();
+    }
+
+    public function test_admin_bell_counts_new_registrations_and_shows_who_approved(): void
+    {
+        $antar = User::factory()->admin()->create(['name' => 'Antar']);
+        $otherAdmin = User::factory()->studentAdmin()->create();
+        $this->post('/register', [
+            'name' => 'Karim Uddin', 'email' => 'karim@example.com', 'phone' => '01711111111', 'ssc_batch' => 2012,
+            'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ]);
+        auth()->logout();
+        $karim = User::where('email', 'karim@example.com')->firstOrFail();
+
+        $this->actingAs($otherAdmin)->get('/admin')
+            ->assertSee('Registrations: 1 waiting for approval')->assertSee('Karim Uddin');
+
+        $this->actingAs($antar)->patch(route('admin.students.status', $karim), ['status' => User::STATUS_APPROVED]);
+
+        $this->actingAs($otherAdmin)->get('/admin')
+            ->assertSee('Registrations: 0 waiting for approval')
+            ->assertSee('Approved by Antar');
+    }
+
+    public function test_second_admin_approving_an_already_approved_student_is_told_who_did_it(): void
+    {
+        $antar = User::factory()->admin()->create(['name' => 'Antar']);
+        $student = User::factory()->pending()->create(['name' => 'Karim Uddin']);
+        $this->actingAs($antar)->patch(route('admin.students.status', $student), ['status' => User::STATUS_APPROVED]);
+
+        $this->actingAs(User::factory()->studentAdmin()->create())
+            ->patch(route('admin.students.status', $student), ['status' => User::STATUS_APPROVED])
+            ->assertSessionHas('info', 'Karim Uddin is already approved by Antar.');
+
+        $this->assertSame($antar->id, $student->fresh()->reviewed_by);
+    }
+
+    public function test_students_do_not_see_the_registration_bell(): void
+    {
+        $this->actingAs(User::factory()->create())->get(route('portal.dashboard'))->assertDontSee('waiting for approval');
     }
 
     public function test_header_shows_the_admin_level_after_login(): void
