@@ -12,6 +12,7 @@ use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
@@ -58,6 +59,26 @@ class ReunionFlowTest extends TestCase
         ])->assertRedirect(route('portal.dashboard'));
 
         $this->assertDatabaseHas('users', ['email' => 'rahim@example.com', 'status' => 'pending', 'role' => 'student']);
+    }
+
+    public function test_registration_no_longer_collects_roll_number(): void
+    {
+        $this->get('/register')->assertDontSee('name="roll_no"', false);
+
+        $this->post('/register', [
+            'name' => 'Rahim', 'email' => 'rahim@example.com', 'phone' => '01712345678', 'ssc_batch' => 2010, 'roll_no' => '11',
+            'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ])->assertRedirect(route('portal.dashboard'));
+
+        $this->assertFalse(Schema::hasColumn('users', 'roll_no'));
+    }
+
+    public function test_directory_shows_long_job_titles_in_full(): void
+    {
+        $job = 'Engineer (Deputy Manager-Electrical Maintenance) at Bangladesh India Friendship Power Company Limited';
+        User::factory()->create(['profession' => 'Engineer (Deputy Manager-Electrical Maintenance)', 'company_name' => 'Bangladesh India Friendship Power Company Limited']);
+
+        $this->get('/')->assertSee($job)->assertDontSee('line-clamp-2');
     }
 
     public function test_student_can_login_with_phone(): void

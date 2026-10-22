@@ -25,7 +25,6 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:190', 'unique:users,email'],
             'phone' => ['required', 'regex:/^01[3-9]\d{8}$/', 'unique:users,phone'],
             'ssc_batch' => ['required', 'integer', 'min:1950', 'max:'.now()->year],
-            'roll_no' => ['nullable', 'string', 'max:30'],
             'profession' => ['nullable', 'string', 'max:150'],
             'company_name' => ['nullable', 'string', 'max:150'],
             'linkedin_url' => ['nullable', 'url', 'max:255'],

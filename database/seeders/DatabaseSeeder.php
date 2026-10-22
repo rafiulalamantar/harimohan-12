@@ -57,7 +57,6 @@ class DatabaseSeeder extends Seeder
             'photo' => Storage::disk('public')->exists('photos/test-student.png') ? 'photos/test-student.png' : null,
             'phone' => '01811111111',
             'ssc_batch' => 2012,
-            'roll_no' => '42',
             'profession' => 'Software Engineer',
             'company_name' => 'Grameenphone',
             'linkedin_url' => 'https://www.linkedin.com/in/test-student',

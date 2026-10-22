@@ -13,13 +13,12 @@
         <x-field name="email" label="Email" type="email" required />
         <x-field name="phone" label="Mobile (bKash number preferred)" required placeholder="01XXXXXXXXX" inputmode="numeric" maxlength="11" pattern="01[3-9][0-9]{8}" title="11-digit mobile number, like 01XXXXXXXXX" hint="11 digits, e.g. 01712345678" />
         <x-field name="ssc_batch" label="SSC batch (year)" type="number" required min="1950" max="{{ date('Y') }}" placeholder="2010" />
-        <x-field name="roll_no" label="School roll / ID (optional)" />
         <x-field name="profession" label="Profession (optional)" />
         <x-field name="company_name" label="Company / organization (optional)" />
         <x-field name="present_address" label="Present address (optional)" />
         <x-field name="linkedin_url" label="LinkedIn URL (optional)" type="url" placeholder="https://www.linkedin.com/in/..." />
         <x-field name="facebook_url" label="Facebook URL (optional)" type="url" placeholder="https://www.facebook.com/..." />
-        <div class="md:col-span-2"><x-field name="photo" label="Photo (optional)" type="file" accept="image/*" hint="JPG/PNG, max 2 MB" /></div>
+        <div class="md:col-span-2"><x-field name="photo" label="Photo (optional)" type="file" accept="image/*" hint="JPG/PNG. Large photos are resized automatically." /></div>
         <x-student-fields :fields="$fields" />
         <x-field name="password" label="Password" type="password" required hint="At least 8 characters" />
         <x-field name="password_confirmation" label="Confirm password" type="password" required />
