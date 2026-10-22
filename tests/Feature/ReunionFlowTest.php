@@ -621,10 +621,10 @@ class ReunionFlowTest extends TestCase
     {
         config(['bkash.enabled' => false]);
         Http::preventStrayRequests();
+        $this->get('/')->assertSee('bKash Payment Coming Soon');
+
         $event = $this->event();
         $student = User::factory()->create();
-
-        $this->get('/')->assertSee('bKash Payment Coming Soon');
 
         $this->actingAs($student)->get(route('portal.dashboard'))
             ->assertSee('bKash Payment Coming Soon')
