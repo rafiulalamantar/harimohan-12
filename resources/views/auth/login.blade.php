@@ -10,11 +10,11 @@
         @csrf
         <x-field name="login" label="Email or mobile number" required autofocus />
         <x-field name="password" label="Password" type="password" required />
-        <div class="flex items-center justify-between gap-3">
-            <label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="remember" class="w-4 h-4 rounded-sm accent-brand-600"> Remember me</label>
+        <div class="flex justify-end">
             <a class="text-sm font-semibold text-brand-700 hover:underline" href="{{ route('password.request') }}">Forgot password?</a>
         </div>
         <button class="w-full rounded-full bg-slate-900 hover:bg-brand-800 text-white font-semibold py-3 shadow-lg shadow-slate-900/10 transition">Login</button>
+        <p class="text-xs text-center text-slate-500">You'll stay logged in on this device for 10 days, or until you log out.</p>
         <p class="text-sm text-center text-slate-500">New here? <a class="font-semibold text-brand-700 hover:underline" href="{{ route('register') }}">Register</a></p>
     </form>
 </div>

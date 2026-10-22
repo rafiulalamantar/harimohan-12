@@ -1,7 +1,7 @@
 @props(['pending', 'registrations'])
 
 {{-- Admin notification bell: new registrations, shared by every admin. --}}
-<details class="relative">
+<details class="relative" data-dropdown>
     <summary class="list-none cursor-pointer relative grid place-items-center w-9 h-9 rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50" aria-label="Registrations: {{ $pending }} waiting for approval">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9"/></svg>
         @if ($pending > 0)

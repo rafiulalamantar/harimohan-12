@@ -41,6 +41,8 @@ return [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+            // Logins are always remembered; after this many minutes (10 days) the member must log in again.
+            'remember' => 60 * 24 * 10,
         ],
     ],
 

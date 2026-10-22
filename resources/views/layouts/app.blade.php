@@ -71,7 +71,7 @@
             @endauth
 
             @if ($navLinks)
-                <details class="relative xl:hidden">
+                <details class="relative xl:hidden" data-dropdown>
                     <summary class="list-none cursor-pointer grid place-items-center w-9 h-9 rounded-full border border-slate-200 bg-white text-slate-700" aria-label="Menu">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
                     </summary>

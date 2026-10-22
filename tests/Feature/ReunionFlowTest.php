@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
@@ -88,6 +89,43 @@ class ReunionFlowTest extends TestCase
         $this->post('/login', ['login' => '01811111111', 'password' => 'password'])
             ->assertRedirect(route('portal.dashboard'));
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_login_stays_active_for_ten_days_until_logout(): void
+    {
+        $user = User::factory()->create(['email' => 'stay@example.com']);
+        $recaller = Auth::guard()->getRecallerName();
+
+        $cookie = $this->post('/login', ['login' => 'stay@example.com', 'password' => 'password'])
+            ->assertCookie($recaller)
+            ->getCookie($recaller, false);
+
+        // The remember cookie lasts 10 days; after that the member has to log in again.
+        $this->assertEqualsWithDelta(now()->addDays(10)->getTimestamp(), $cookie->getExpiresTime(), 60);
+
+        // A fresh session (idle timeout, browser restart) is logged back in by the remember cookie.
+        Auth::forgetGuards();
+        $this->flushSession();
+        $this->withUnencryptedCookie($recaller, $cookie->getValue())
+            ->get(route('portal.dashboard'))->assertOk();
+        $this->assertAuthenticatedAs($user);
+
+        $this->post(route('logout'))->assertRedirect(route('home'))->assertCookieExpired($recaller);
+
+        // The old remember cookie no longer works once the member has logged out.
+        Auth::forgetGuards();
+        $this->flushSession();
+        $this->withUnencryptedCookie($recaller, $cookie->getValue())
+            ->get(route('portal.dashboard'))->assertRedirect(route('login'));
+        $this->assertGuest();
+    }
+
+    public function test_registration_keeps_the_new_member_logged_in(): void
+    {
+        $this->post('/register', [
+            'name' => 'Rahim', 'email' => 'rahim@example.com', 'phone' => '01712345678', 'ssc_batch' => 2010,
+            'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ])->assertCookie(Auth::guard()->getRecallerName());
     }
 
     public function test_pending_student_cannot_pay(): void
@@ -589,6 +627,14 @@ class ReunionFlowTest extends TestCase
             ->assertSessionHas('info', 'Karim Uddin is already approved by Antar.');
 
         $this->assertSame($antar->id, $student->fresh()->reviewed_by);
+    }
+
+    public function test_admin_bell_and_menu_are_both_exclusive_dropdowns(): void
+    {
+        $html = $this->actingAs(User::factory()->admin()->create())->get('/admin')->getContent();
+
+        // resources/js/app.js closes every other details[data-dropdown] when one opens, so they never overlap.
+        $this->assertSame(2, substr_count($html, '<details class="relative" data-dropdown>') + substr_count($html, '<details class="relative xl:hidden" data-dropdown>'));
     }
 
     public function test_admin_bell_shows_an_empty_state_and_caps_the_count_at_99(): void
