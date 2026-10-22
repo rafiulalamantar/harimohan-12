@@ -73,6 +73,9 @@
                 <td class="p-3">{{ $s->paid_count ? '✅' : '—' }}</td>
                 <td class="p-3">
                     <div class="flex gap-2">
+                        @if ($s->isAdmin() && $s->status === 'approved')
+                            <span class="text-gray-400">—</span>
+                        @endif
                         @if ($s->status !== 'approved')
                             <form method="POST" action="{{ route('admin.students.status', $s) }}">@csrf @method('PATCH')
                                 <input type="hidden" name="status" value="approved">

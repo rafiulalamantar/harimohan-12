@@ -38,7 +38,7 @@
                     <button class="w-full border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm hover:bg-red-50">Remove admin</button>
                 </form>
             @elseif ($student->isApproved())
-                <form method="POST" action="{{ route('admin.students.admin', $student) }}" data-confirm="Make {{ $student->name }} an admin? They will be able to approve students, post notices and see payments." class="mt-4">@csrf @method('PATCH')
+                <form method="POST" action="{{ route('admin.students.admin', $student) }}" data-confirm="Make {{ $student->name }} an admin? They will get the full admin panel: students and their phone numbers (including CSV export), notices, events, payments and the welcome page. Only super admins can make admins." class="mt-4">@csrf @method('PATCH')
                     <input type="hidden" name="admin" value="1">
                     <button class="w-full border border-brand-200 text-brand-800 rounded-lg px-4 py-2 text-sm hover:bg-brand-50">🛡️ Make admin</button>
                 </form>

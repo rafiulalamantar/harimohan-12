@@ -149,7 +149,9 @@ class ReunionFlowTest extends TestCase
 
     public function test_only_admin_reaches_admin_panel(): void
     {
-        $this->actingAs(User::factory()->create())->get('/admin')->assertForbidden();
+        $this->actingAs(User::factory()->create())->get('/admin')
+            ->assertRedirect(route('portal.dashboard'))
+            ->assertSessionHas('error', "You don't have access to the admin panel.");
         $this->actingAs(User::factory()->admin()->create())->get('/admin')->assertOk();
     }
 
@@ -459,6 +461,22 @@ class ReunionFlowTest extends TestCase
         $this->assertSame(User::STATUS_APPROVED, $student->fresh()->status);
     }
 
+    public function test_payment_closes_after_the_event_day_even_if_the_deadline_is_later(): void
+    {
+        Http::preventStrayRequests();
+        $event = $this->event(['event_date' => now()->subDay()->toDateString(), 'payment_deadline' => now()->addWeek()->toDateString()]);
+        $student = User::factory()->create();
+
+        $this->actingAs($student)->get(route('portal.dashboard'))->assertSee('Payments are currently closed.');
+        $this->actingAs($student)->post(route('portal.pay', $event))->assertSessionHas('error', 'Payments for this event are closed.');
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_payment_stays_open_on_the_event_day(): void
+    {
+        $this->assertTrue($this->event(['event_date' => now()->toDateString()])->isPaymentOpen());
+    }
+
     public function test_super_admin_makes_a_student_an_admin_who_keeps_their_portal_and_directory_listing(): void
     {
         $student = User::factory()->create(['name' => 'Karim Uddin']);
@@ -514,7 +532,7 @@ class ReunionFlowTest extends TestCase
             ->patch(route('admin.students.admin', $student), ['admin' => '0'])
             ->assertSessionHas('success', 'Karim Uddin is no longer an admin.');
 
-        $this->actingAs($student->fresh())->get('/admin')->assertForbidden();
+        $this->actingAs($student->fresh())->get('/admin')->assertRedirect(route('portal.dashboard'));
     }
 
     public function test_student_admin_must_lose_admin_access_before_being_rejected(): void
