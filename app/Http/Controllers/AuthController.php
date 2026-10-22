@@ -71,7 +71,7 @@ class AuthController extends Controller
         $field = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
         $login = $field === 'phone' ? User::normalizePhone($request->login) : $request->login;
 
-        // Always remembered: members stay logged in on this device until they press Logout.
+        // Always remembered: members stay logged in on this device for 10 days (config auth.guards.web.remember) or until Logout.
         if (! Auth::attempt([$field => $login, 'password' => $request->password], remember: true)) {
             return back()->withErrors(['login' => 'Incorrect email/phone or password.'])->onlyInput('login');
         }

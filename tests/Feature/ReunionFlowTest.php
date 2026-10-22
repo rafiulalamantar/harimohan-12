@@ -91,7 +91,7 @@ class ReunionFlowTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    public function test_login_stays_active_after_the_session_expires_until_logout(): void
+    public function test_login_stays_active_for_ten_days_until_logout(): void
     {
         $user = User::factory()->create(['email' => 'stay@example.com']);
         $recaller = Auth::guard()->getRecallerName();
@@ -99,6 +99,9 @@ class ReunionFlowTest extends TestCase
         $cookie = $this->post('/login', ['login' => 'stay@example.com', 'password' => 'password'])
             ->assertCookie($recaller)
             ->getCookie($recaller, false);
+
+        // The remember cookie lasts 10 days; after that the member has to log in again.
+        $this->assertEqualsWithDelta(now()->addDays(10)->getTimestamp(), $cookie->getExpiresTime(), 60);
 
         // A fresh session (idle timeout, browser restart) is logged back in by the remember cookie.
         Auth::forgetGuards();
