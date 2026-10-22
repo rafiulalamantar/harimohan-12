@@ -13,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'photo', 'email', 'phone', 'ssc_batch', 'profession', 'company_name', 'linkedin_url', 'facebook_url', 'present_address', 'password'])]
+#[Fillable(['name', 'photo', 'photo_thumb', 'email', 'phone', 'ssc_batch', 'profession', 'company_name', 'linkedin_url', 'facebook_url', 'present_address', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -126,6 +126,12 @@ class User extends Authenticatable
     public function photoUrl(): ?string
     {
         return $this->photo ? Storage::disk('public')->url($this->photo) : null;
+    }
+
+    /** The small copy for cards and avatars; the full photo when no thumbnail exists yet. */
+    public function photoThumbUrl(): ?string
+    {
+        return $this->photo_thumb ? Storage::disk('public')->url($this->photo_thumb) : $this->photoUrl();
     }
 
     /** Can open the admin panel: an admin account, or a student made admin by a super admin. */

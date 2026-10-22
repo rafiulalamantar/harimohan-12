@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Services\PhotoThumbnail;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -34,7 +35,7 @@ class ReplacePhoto extends Command
             return self::FAILURE;
         }
 
-        $oldPhoto = $user->photo;
+        $oldPhotos = array_filter([$user->photo, $user->photo_thumb]);
         $newPhoto = Storage::disk('public')->putFile('photos', new File($file));
 
         if (! $newPhoto) {
@@ -43,10 +44,10 @@ class ReplacePhoto extends Command
             return self::FAILURE;
         }
 
-        $user->update(['photo' => $newPhoto]);
-        Storage::disk('public')->delete($oldPhoto);
+        $user->update(['photo' => $newPhoto, 'photo_thumb' => PhotoThumbnail::create($newPhoto)]);
+        Storage::disk('public')->delete($oldPhotos);
 
-        $this->info("{$user->name}: {$oldPhoto} → {$newPhoto}");
+        $this->info("{$user->name}: {$oldPhotos[0]} → {$newPhoto}");
 
         return self::SUCCESS;
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\StudentField;
 use App\Models\User;
+use App\Services\PhotoThumbnail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
@@ -31,6 +32,7 @@ class AuthController extends Controller
             'facebook_url' => ['nullable', 'url', 'max:255'],
             'present_address' => ['nullable', 'string', 'max:255'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
+            'photo_thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg', 'max:512'],
             'password' => ['required', 'confirmed', Password::min(8)],
             ...StudentField::rulesFor($fields),
         ], [
@@ -39,10 +41,11 @@ class AuthController extends Controller
         ], StudentField::attributeNamesFor($fields));
 
         $answers = $data['fields'] ?? [];
-        unset($data['fields']);
+        unset($data['fields'], $data['photo_thumbnail']);
 
         if ($request->hasFile('photo')) {
             $data['photo'] = $request->file('photo')->store('photos', 'public');
+            $data['photo_thumb'] = PhotoThumbnail::forUpload($request->file('photo_thumbnail'), $data['photo']);
         }
 
         $user = User::create($data); // role=student, status=pending by DB default
