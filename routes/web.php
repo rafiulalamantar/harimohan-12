@@ -26,7 +26,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 // bKash redirects the browser here after payment (no auth: session may have expired).
 Route::get('/payment/bkash/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 
-Route::middleware(['auth', 'not-rejected'])->prefix('portal')->name('portal.')->group(function () {
+Route::middleware(['auth', 'not-rejected', 'student'])->prefix('portal')->name('portal.')->group(function () {
     Route::get('/', [PortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/announcements', [PortalController::class, 'announcements'])->name('announcements');
     Route::get('/announcements/{announcement}', [PortalController::class, 'showAnnouncement'])->name('announcements.show');
