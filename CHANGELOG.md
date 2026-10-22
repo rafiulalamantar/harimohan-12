@@ -1,6 +1,17 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.2...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.3...main)
+
+## [v1.3.3](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.2...v1.3.3) - 2026-10-22
+
+### Fixes
+
+- **Photos no longer re-download on every page load.** Uploads are now stored with Cache-Control: public, max-age=31536000, immutable (file names are random and never overwritten). Existing files get the header by running php artisan app:refresh-upload-cache-headers once.
+- **Admin bell and menu no longer overlap on phones.** Opening the bell closes the menu and vice versa; tapping outside or pressing Escape closes them.
+
+### Changes
+
+- **Logins last 10 days.** Login and registration always remember the device, so closing the browser or leaving the site idle no longer logs members out. After 10 days, or after pressing Logout, they log in again. The Remember me checkbox is replaced by a note under the Login button.
 
 ## [v1.3.2](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.1...v1.3.2) - 2026-10-22
 
