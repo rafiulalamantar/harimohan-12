@@ -26,7 +26,7 @@
                 <label class="flex items-center gap-2 text-sm mt-2"><input type="checkbox" name="remove_image" value="1"> Remove image</label>
             </div>
         @endif
-        <x-field name="image" :label="$field->image ? 'Change reference image' : 'Reference image (optional)'" type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+        <x-field name="image" :label="$field->image ? 'Change reference image' : 'Reference image (optional)'" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
                  hint="Shown to students next to the field, e.g. a T-shirt size chart. PNG/JPG, max 4 MB" />
         <x-field name="sort_order" label="Order" type="number" min="0" :value="$field->sort_order ?? 0" hint="Lower numbers appear first." />
         <label class="flex items-center gap-2 text-sm">

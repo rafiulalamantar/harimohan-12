@@ -41,7 +41,10 @@ class AddSecurityHeaders
     {
         $directives = [
             "default-src 'self'",
-            "script-src 'self'",
+            // 'wasm-unsafe-eval' + blob: workers let heic-to convert iPhone HEIC photos in the browser;
+            // unlike 'unsafe-eval' they don't allow running strings as JavaScript.
+            "script-src 'self' 'wasm-unsafe-eval'",
+            "worker-src 'self' blob:",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data:".$this->uploadOrigin(),

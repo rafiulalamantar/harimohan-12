@@ -17,7 +17,7 @@
                 </label>
             </div>
         @endif
-        <x-field name="banner" :label="$announcement->banner ? 'Change banner' : 'Banner image'" type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+        <x-field name="banner" :label="$announcement->banner ? 'Change banner' : 'Banner image'" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
                  hint="Optional. A wide image (e.g. 1200×400) looks best. Max 4 MB" />
         <x-field name="body" label="Details" type="textarea" :value="$announcement->body" required />
         <x-field name="published_at" label="Publish time" type="datetime-local"

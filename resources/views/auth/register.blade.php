@@ -18,7 +18,7 @@
         <x-field name="present_address" label="Present address (optional)" />
         <x-field name="linkedin_url" label="LinkedIn URL (optional)" type="url" placeholder="https://www.linkedin.com/in/..." />
         <x-field name="facebook_url" label="Facebook URL (optional)" type="url" placeholder="https://www.facebook.com/..." />
-        <div class="md:col-span-2"><x-field name="photo" label="Photo (optional)" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hint="JPG, PNG or WebP. Large photos are resized automatically." /></div>
+        <div class="md:col-span-2"><x-field name="photo" label="Photo (optional)" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif" hint="JPG, PNG, WebP or iPhone photo (converted to JPG). Large photos are resized automatically." /></div>
         <x-student-fields :fields="$fields" />
         <x-field name="password" label="Password" type="password" required hint="At least 8 characters" />
         <x-field name="password_confirmation" label="Confirm password" type="password" required />
