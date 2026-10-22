@@ -59,7 +59,7 @@ class AnnouncementController extends Controller
     {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:200'],
-            'banner' => ['nullable', 'image', 'max:4096'],
+            'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
             'body' => ['required', 'string', 'max:10000'],
             'published_at' => ['nullable', 'date'],
             'is_pinned' => ['nullable', 'boolean'],

@@ -21,7 +21,10 @@ async function shrinkImage(file) {
     const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
     const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(bitmap.width, bitmap.height));
 
-    if (scale === 1 && file.size <= RESIZE_ABOVE_BYTES) {
+    // Formats most browsers can't display (e.g. iPhone HEIC) are always converted, even when small.
+    const isWebFormat = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
+
+    if (scale === 1 && file.size <= RESIZE_ABOVE_BYTES && isWebFormat) {
         bitmap.close();
         return file;
     }

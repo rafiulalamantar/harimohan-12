@@ -252,6 +252,20 @@ class ReunionFlowTest extends TestCase
         Storage::disk('public')->assertExists($user->photo);
     }
 
+    public function test_registration_rejects_iphone_heic_photos_that_browsers_cannot_show(): void
+    {
+        Storage::fake('public');
+
+        $this->post('/register', [
+            'name' => 'Karim', 'email' => 'karim@example.com', 'phone' => '01712345679', 'ssc_batch' => 2012,
+            'photo' => new UploadedFile(base_path('tests/fixtures/photo.heic'), 'IMG_0001.HEIC', 'image/heic', null, true),
+            'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ])->assertSessionHasErrors('photo');
+
+        $this->assertDatabaseMissing('users', ['email' => 'karim@example.com']);
+        $this->get('/register')->assertSee('accept="image/jpeg,image/png,image/webp,image/gif"', false);
+    }
+
     public function test_registration_rejects_invalid_social_url(): void
     {
         $this->post('/register', [

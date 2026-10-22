@@ -17,7 +17,7 @@
                 </label>
             </div>
         @endif
-        <x-field name="hero_banner" :label="$settings['hero_banner'] ? 'Change banner image' : 'Banner image'" type="file" accept="image/*"
+        <x-field name="hero_banner" :label="$settings['hero_banner'] ? 'Change banner image' : 'Banner image'" type="file" accept="image/jpeg,image/png,image/webp,image/gif"
                  hint="Optional. The whole image is shown full width above the text, nothing is cropped. Max 4 MB" />
         <button class="bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg px-6 py-2.5">Save</button>
     </form>

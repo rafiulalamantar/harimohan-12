@@ -19,7 +19,7 @@
         <x-field name="present_address" label="Present address" :value="$user->present_address" />
         <x-field name="linkedin_url" label="LinkedIn URL" type="url" :value="$user->linkedin_url" placeholder="https://www.linkedin.com/in/..." />
         <x-field name="facebook_url" label="Facebook URL" type="url" :value="$user->facebook_url" placeholder="https://www.facebook.com/..." />
-        <div class="md:col-span-2"><x-field name="photo" label="Photo" type="file" accept="image/*" hint="Uploading a new photo replaces the old one. JPG/PNG. Large photos are resized automatically." /></div>
+        <div class="md:col-span-2"><x-field name="photo" label="Photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hint="Uploading a new photo replaces the old one. JPG, PNG or WebP. Large photos are resized automatically." /></div>
         <x-student-fields :fields="$fields" :answers="$user->fieldAnswers()" />
         <div class="md:col-span-2"><button class="bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg px-6 py-2.5">Save</button></div>
     </form>
