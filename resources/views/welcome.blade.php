@@ -51,6 +51,9 @@
                     <div class="text-sm text-white/70">
                         {{ $event->event_date?->format('d M Y') }} @if($event->venue) · {{ $event->venue }} @endif · Fee ৳{{ $event->formattedFee() }}
                     </div>
+                    @unless (config('bkash.enabled'))
+                        <div class="mt-1.5 inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2.5 py-0.5 text-xs font-semibold text-amber-200 ring-1 ring-amber-300/30">🚧 bKash Payment Coming Soon</div>
+                    @endunless
                 </div>
             </div>
         @endif

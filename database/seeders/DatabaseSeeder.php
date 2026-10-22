@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
             ['title' => 'Reunion registration is now open!'],
             [
                 'user_id' => $admin->id,
-                'body' => "Pay the {$event->fee} BDT registration fee with bKash from the portal. Deadline: {$event->payment_deadline->format('d M Y')}.",
+                'body' => "The registration fee is {$event->fee} BDT. bKash payment from the portal is coming soon. Deadline: {$event->payment_deadline->format('d M Y')}.",
                 'is_pinned' => true,
                 'published_at' => now(),
             ]

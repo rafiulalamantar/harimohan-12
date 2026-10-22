@@ -44,7 +44,7 @@
                 @elseif (! $event->isPaymentOpen())
                     <div class="rounded-lg bg-gray-100 text-gray-700 px-4 py-3 text-sm">Payments are currently closed.</div>
                 @elseif (! config('bkash.enabled'))
-                    <div class="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm font-semibold text-center">🚧 Payment Process Under Construction</div>
+                    <div class="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm font-semibold text-center">🚧 bKash Payment Coming Soon</div>
                 @else
                     <form method="POST" action="{{ route('portal.pay', $event) }}">
                         @csrf

@@ -20,7 +20,7 @@ class PaymentController extends Controller
         $user = $request->user();
 
         if (! config('bkash.enabled')) {
-            return back()->with('error', 'Payment Process Under Construction');
+            return back()->with('error', 'bKash Payment Coming Soon');
         }
         if (! $user->isApproved()) {
             return back()->with('error', 'You can pay once an admin approves your registration.');

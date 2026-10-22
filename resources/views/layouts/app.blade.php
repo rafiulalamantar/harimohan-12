@@ -98,7 +98,7 @@
 <footer class="border-t border-slate-200/70">
     <div class="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
         <span>© {{ date('Y') }} {{ config('app.name') }} · Alumni Association</span>
-        <span>Made with care for every batch</span>
+        <span>Made with care for every batch · <a href="https://github.com/rafiulalamantar/harimohan-12/releases/tag/v{{ config('app.version') }}" class="hover:text-brand-700 hover:underline">v{{ config('app.version') }}</a></span>
     </div>
 </footer>
 </body>

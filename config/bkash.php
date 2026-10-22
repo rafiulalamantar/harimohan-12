@@ -1,7 +1,7 @@
 <?php
 
 return [
-    // false = students see "Payment Process Under Construction" instead of the Pay button
+    // false = students see "bKash Payment Coming Soon" instead of the Pay button
     'enabled' => (bool) env('BKASH_ENABLED', false),
 
     // true = sandbox, false = live merchant account
