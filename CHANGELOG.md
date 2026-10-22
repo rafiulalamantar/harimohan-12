@@ -1,6 +1,18 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.3...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.4...main)
+
+## [v1.3.4](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.3...v1.3.4) - 2026-10-22
+
+### Fixes
+
+- **iPhone HEIC photos.** HEIC uploads were accepted but only Safari can show them, so cards were blank. Image pickers now ask for JPG/PNG/WebP/GIF (iPhones convert HEIC to JPEG when picking), the server rejects other formats, and the browser converts any non-web format it can read. New command php artisan app:replace-photo swaps a stored photo for a converted file.
+- **Directory pages no longer jump to the header.** Page numbers swap the alumni list in place (no reload); the URL updates and Back/Forward work.
+
+### New
+
+- **Offline handling.** A bar shows while the connection is down and "back online" when it returns; forms are held back while offline so typed input isn't lost; a friendly offline page replaces the browser's error page (service worker, nothing else cached).
+- **Friendly error pages** for 403, 404, 419 (page expired), 429 (too many tries), 500 and 503.
 
 ## [v1.3.3](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.2...v1.3.3) - 2026-10-22
 
