@@ -26,6 +26,7 @@
                 ['admin.student-fields.index', 'Student fields', 'admin.student-fields.*'],
                 ['admin.announcements.index', 'Announcements', 'admin.announcements.*'],
                 ['admin.member-emails.create', 'Email members', 'admin.member-emails.*'],
+                ['admin.member-sms.create', 'SMS members', 'admin.member-sms.*'],
                 ['admin.events.index', 'Events', 'admin.events.*'],
                 ['admin.payments.index', 'Payments', 'admin.payments.*'],
                 ['admin.settings.edit', 'Welcome page', 'admin.settings.*'],

@@ -296,3 +296,37 @@ function revealDirectoryPhotosTogether(root = document) {
 }
 
 revealDirectoryPhotosTogether();
+
+// SMS members page: live character count, SMS parts per member and estimated cost.
+// Mirrors App\Models\MemberSms::parts(): 160/153 characters for plain English, 70/67 once there's Bangla.
+function smsParts(message) {
+    const length = [...message].length;
+    const [single, multi] = /^[\x00-\x7F]*$/.test(message) ? [160, 153] : [70, 67];
+
+    return length <= single ? 1 : Math.ceil(length / multi);
+}
+
+const smsBody = document.querySelector('[data-sms-body]');
+const smsCounter = document.querySelector('[data-sms-counter]');
+
+if (smsBody && smsCounter) {
+    const audience = document.querySelector('[data-sms-audience]');
+    const batch = document.querySelector('[data-sms-batch]');
+    const rate = Number(smsBody.dataset.smsRate) || 0;
+
+    const update = () => {
+        const parts = smsBody.value ? smsParts(smsBody.value) : 0;
+        const members = Number(audience?.selectedOptions[0]?.dataset.count ?? 0);
+        let text = `${[...smsBody.value].length} characters · ${parts} SMS per member · about ৳${(parts * rate).toFixed(2)} each`;
+
+        if (!batch?.value && parts) {
+            text += ` · about ৳${(parts * rate * members).toFixed(2)} for ${members} members`;
+        }
+
+        smsCounter.textContent = text;
+    };
+
+    [smsBody, audience, batch].forEach((element) => element?.addEventListener('input', update));
+    [audience, batch].forEach((element) => element?.addEventListener('change', update));
+    update();
+}
