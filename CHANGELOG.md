@@ -1,6 +1,13 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.4...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.0...main)
+
+## [v1.4.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.4...v1.4.0) - 2026-10-22
+
+### New
+
+- **Email members.** Admins have a new Email members page: send a plain-text message to all members (approved + pending), approved only or pending only, optionally one SSC batch. Members get private Bcc copies in batches of 50; replies go to the sending admin. Rejected and admin-only accounts are never emailed. Sends are logged (Recently sent), confirmed before sending, rate-limited, and capped at Brevo's free 300 emails a day. Needs the member_emails migration.
+- **iPhone HEIC photos are converted to JPEG in the browser** (heic-to, CSP build, downloaded only when a HEIC photo is picked). Pickers now offer HEIC; the server still rejects any HEIC that arrives unconverted. The security policy adds wasm-unsafe-eval and blob: workers for this, never unsafe-eval.
 
 ## [v1.3.4](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.3...v1.3.4) - 2026-10-22
 
