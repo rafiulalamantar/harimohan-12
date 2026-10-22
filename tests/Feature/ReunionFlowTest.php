@@ -629,6 +629,14 @@ class ReunionFlowTest extends TestCase
         $this->assertSame($antar->id, $student->fresh()->reviewed_by);
     }
 
+    public function test_admin_bell_and_menu_are_both_exclusive_dropdowns(): void
+    {
+        $html = $this->actingAs(User::factory()->admin()->create())->get('/admin')->getContent();
+
+        // resources/js/app.js closes every other details[data-dropdown] when one opens, so they never overlap.
+        $this->assertSame(2, substr_count($html, '<details class="relative" data-dropdown>') + substr_count($html, '<details class="relative xl:hidden" data-dropdown>'));
+    }
+
     public function test_admin_bell_shows_an_empty_state_and_caps_the_count_at_99(): void
     {
         $admin = User::factory()->admin()->create();
