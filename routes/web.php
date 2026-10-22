@@ -47,6 +47,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/students/{student}/admin', [Admin\StudentController::class, 'updateAdminAccess'])->name('students.admin');
 
     Route::resource('announcements', Admin\AnnouncementController::class)->except('show');
+    Route::get('/email-members', [Admin\MemberEmailController::class, 'create'])->name('member-emails.create');
+    Route::post('/email-members', [Admin\MemberEmailController::class, 'store'])->middleware('throttle:5,10')->name('member-emails.store');
     Route::resource('events', Admin\EventController::class)->except('show');
 
     Route::get('/payments', [Admin\PaymentController::class, 'index'])->name('payments.index');
