@@ -51,6 +51,8 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             // No 'visibility': R2 has no per-object ACLs; files are public through the bucket's public URL (AWS_URL).
+            // Uploads get random names and are never overwritten, so browsers may cache them for a year.
+            'options' => ['CacheControl' => 'public, max-age=31536000, immutable'],
             'throw' => false,
             'report' => false,
         ] : [
