@@ -6,7 +6,7 @@
     <div class="flex items-center gap-4">
         <x-avatar :user="$user" class="w-16 h-16 text-2xl" />
         <div>
-            <h1 class="text-2xl font-bold">My profile</h1>
+            <h1 class="text-2xl font-bold">My Profile</h1>
             <p class="text-sm text-gray-500 mt-1">{{ $user->email }} · SSC batch {{ $user->ssc_batch }} (ask an admin to change your batch)</p>
         </div>
     </div>
