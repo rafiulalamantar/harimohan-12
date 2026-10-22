@@ -1,6 +1,13 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.0...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.1...main)
+
+## [v1.2.1](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.0...v1.2.1) - 2026-10-22
+
+- After login the header shows 🛡️ **Super admin** or 🛡️ **Admin** (students who are admins too); plain students see no badge
+- The ☰ menu starts with "Logged in as <name>" and the admin level
+- Below 400 px the badge shows only 🛡️; screen readers still hear the level
+- The full menu row appears from 1280 px, so the admin menu never wraps or overflows
 
 ## [v1.2.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.1.2...v1.2.0) - 2026-10-22
 
