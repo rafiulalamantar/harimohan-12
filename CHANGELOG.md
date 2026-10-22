@@ -1,6 +1,17 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.1...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.2...main)
+
+## [v1.3.2](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.1...v1.3.2) - 2026-10-22
+
+### Fixes
+
+- **Photo uploads no longer fail with "413 FUNCTION_PAYLOAD_TOO_LARGE".** Large photos (phone cameras are often 5–10 MB) are now resized in the browser to at most 1600px before upload, staying well under Vercel's 4.5 MB limit. Applies to registration, profile and admin image uploads.
+- **Directory cards show the full job title.** Long "profession at company" lines were cut off after two lines; they now show in full.
+
+### Changes
+
+- **Roll number removed.** The field is gone from registration, the admin student page and the CSV export; a migration drops the users.roll_no column and all saved roll numbers.
 
 ## [v1.3.1](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.0...v1.3.1) - 2026-10-22
 
