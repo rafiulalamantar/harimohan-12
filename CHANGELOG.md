@@ -1,6 +1,11 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.1...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.2...main)
+
+## [v1.2.2](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.1...v1.2.2) - 2026-10-22
+
+- Admin-only accounts that open the student portal are sent to the admin panel with "The student portal is only for alumni accounts." Student admins keep their portal.
+- Student dashboard greeting is now "Roll Call: *name* - Yes, Sir! 🔥"
 
 ## [v1.2.1](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.0...v1.2.1) - 2026-10-22
 
