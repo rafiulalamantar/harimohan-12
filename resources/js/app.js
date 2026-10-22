@@ -167,6 +167,7 @@ async function showDirectoryPage(url, { push }) {
     }
 
     current.replaceWith(next);
+    revealDirectoryPhotosTogether(next);
 
     if (push) {
         history.pushState({ directoryPage: true }, '', url);
@@ -253,3 +254,45 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
     });
 }
+
+// Alumni directory: every card shows a shimmer until all photos on the page have loaded, then they appear
+// together instead of popping in one by one. A slow photo can't hold the page back for more than 6 seconds.
+const PHOTO_REVEAL_TIMEOUT_MS = 6000;
+
+function revealDirectoryPhotosTogether(root = document) {
+    const frames = [...root.querySelectorAll('[data-photo-frame]')];
+    const reveal = () => frames.forEach((frame) => frame.classList.add('is-loaded'));
+    const images = frames.map((frame) => frame.querySelector('img')).filter(Boolean);
+    const pending = images.filter((image) => !image.complete);
+
+    // Already failed before this ran: show the card background rather than a broken-image icon.
+    images.filter((image) => image.complete && image.naturalWidth === 0).forEach((image) => {
+        image.style.visibility = 'hidden';
+    });
+
+    if (pending.length === 0) {
+        reveal();
+
+        return;
+    }
+
+    let remaining = pending.length;
+    const settle = (event) => {
+        if (event.type === 'error') {
+            event.target.style.visibility = 'hidden';
+        }
+
+        remaining -= 1;
+        if (remaining === 0) {
+            reveal();
+        }
+    };
+
+    pending.forEach((image) => {
+        image.addEventListener('load', settle, { once: true });
+        image.addEventListener('error', settle, { once: true });
+    });
+    setTimeout(reveal, PHOTO_REVEAL_TIMEOUT_MS);
+}
+
+revealDirectoryPhotosTogether();
