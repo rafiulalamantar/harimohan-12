@@ -1,6 +1,12 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.0...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.1...main)
+
+## [v1.3.1](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.0...v1.3.1) - 2026-10-22
+
+- Names may only contain letters (English, Bangla or any script), spaces, dots, hyphens and apostrophes
+- Anything else (e.g. HTML or digits) gets "Name can only contain letters, spaces, dots, hyphens and apostrophes." on the register and profile forms
+- All existing names already match
 
 ## [v1.3.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.2.2...v1.3.0) - 2026-10-22
 
