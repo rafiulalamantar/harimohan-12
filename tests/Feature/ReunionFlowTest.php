@@ -617,19 +617,28 @@ class ReunionFlowTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_payment_shows_under_construction_while_bkash_is_disabled(): void
+    public function test_payment_shows_coming_soon_while_bkash_is_disabled(): void
     {
         config(['bkash.enabled' => false]);
         Http::preventStrayRequests();
         $event = $this->event();
         $student = User::factory()->create();
 
+        $this->get('/')->assertSee('bKash Payment Coming Soon');
+
         $this->actingAs($student)->get(route('portal.dashboard'))
-            ->assertSee('Payment Process Under Construction')
+            ->assertSee('bKash Payment Coming Soon')
             ->assertDontSee('with bKash');
 
         $this->actingAs($student)->post(route('portal.pay', $event))
-            ->assertSessionHas('error', 'Payment Process Under Construction');
+            ->assertSessionHas('error', 'bKash Payment Coming Soon');
         $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_footer_shows_the_app_version(): void
+    {
+        config(['app.version' => '9.8.7']);
+
+        $this->get('/')->assertSee('v9.8.7');
     }
 }

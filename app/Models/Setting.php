@@ -10,7 +10,7 @@ class Setting extends Model
     /** Defaults used until an admin saves the welcome page settings. */
     public const DEFAULTS = [
         'hero_title' => 'See you again at our beloved school! 🎉',
-        'hero_subtitle' => 'Ex-students of every batch: register, follow notices on the portal, and pay the event fee with bKash.',
+        'hero_subtitle' => 'Ex-students of every batch: register, find old friends in the alumni directory, and follow notices on the portal.',
         'hero_banner' => null,
     ];
 
