@@ -23,6 +23,12 @@ class User extends Authenticatable
 
     public const ROLE_STUDENT = 'student';
 
+    /** Opens the admin panel. A student keeps their alumni profile and portal on top of it. */
+    public const ADMIN_LEVEL_ADMIN = 'admin';
+
+    /** An admin who can also make students admins. */
+    public const ADMIN_LEVEL_SUPER = 'super';
+
     public const STATUS_PENDING = 'pending';
 
     public const STATUS_APPROVED = 'approved';
@@ -109,9 +115,21 @@ class User extends Authenticatable
         return $this->photo ? Storage::disk('public')->url($this->photo) : null;
     }
 
+    /** Can open the admin panel: an admin account, or a student made admin by a super admin. */
     public function isAdmin(): bool
     {
-        return $this->role === self::ROLE_ADMIN;
+        return $this->role === self::ROLE_ADMIN || $this->admin_level !== null;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->admin_level === self::ADMIN_LEVEL_SUPER;
+    }
+
+    /** An alumnus with a portal and a place in the directory, whether or not they are also an admin. */
+    public function isStudent(): bool
+    {
+        return $this->role === self::ROLE_STUDENT;
     }
 
     public function isApproved(): bool

@@ -28,6 +28,22 @@
             </select>
             <button class="bg-brand-600 text-white rounded-lg px-4 text-sm">Update</button>
         </form>
+        @if ($student->isAdmin())
+            <p class="mt-4 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800">🛡️ {{ $student->isSuperAdmin() ? 'Super admin' : 'Admin' }}: can open the admin panel.</p>
+        @endif
+        @if (auth()->user()->isSuperAdmin() && ! $student->isSuperAdmin())
+            @if ($student->isAdmin())
+                <form method="POST" action="{{ route('admin.students.admin', $student) }}" data-confirm="Remove {{ $student->name }}'s admin access?" class="mt-2">@csrf @method('PATCH')
+                    <input type="hidden" name="admin" value="0">
+                    <button class="w-full border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm hover:bg-red-50">Remove admin</button>
+                </form>
+            @elseif ($student->isApproved())
+                <form method="POST" action="{{ route('admin.students.admin', $student) }}" data-confirm="Make {{ $student->name }} an admin? They will get the full admin panel: students and their phone numbers (including CSV export), notices, events, payments and the welcome page. Only super admins can make admins." class="mt-4">@csrf @method('PATCH')
+                    <input type="hidden" name="admin" value="1">
+                    <button class="w-full border border-brand-200 text-brand-800 rounded-lg px-4 py-2 text-sm hover:bg-brand-50">🛡️ Make admin</button>
+                </form>
+            @endif
+        @endif
     </section>
     <section class="md:col-span-2 bg-white rounded-xl border p-6">
         <h2 class="font-semibold mb-3">Payment history</h2>

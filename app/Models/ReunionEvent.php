@@ -40,9 +40,11 @@ class ReunionEvent extends Model
         return number_format($fee, floor($fee) === $fee ? 0 : 2);
     }
 
+    /** Open while the event is active and neither the payment deadline nor the event day has passed. */
     public function isPaymentOpen(): bool
     {
         return $this->is_active
-            && ($this->payment_deadline === null || $this->payment_deadline->endOfDay()->isFuture());
+            && ($this->payment_deadline === null || $this->payment_deadline->endOfDay()->isFuture())
+            && ($this->event_date === null || $this->event_date->endOfDay()->isFuture());
     }
 }

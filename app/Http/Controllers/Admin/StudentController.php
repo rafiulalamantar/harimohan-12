@@ -34,7 +34,7 @@ class StudentController extends Controller
 
     public function show(User $student)
     {
-        abort_if($student->isAdmin(), 404);
+        abort_unless($student->isStudent(), 404);
 
         $student->load('payments.event', 'fieldValues');
 
@@ -50,7 +50,11 @@ class StudentController extends Controller
             'status' => ['required', Rule::in([User::STATUS_PENDING, User::STATUS_APPROVED, User::STATUS_REJECTED])],
         ]);
 
-        abort_if($student->isAdmin(), 403);
+        abort_unless($student->isStudent(), 403);
+
+        if ($data['status'] !== User::STATUS_APPROVED && $student->isAdmin()) {
+            return back()->with('error', "{$student->name} is an admin. Remove their admin access first.");
+        }
 
         if ($data['status'] === User::STATUS_REJECTED && $student->hasAnyCompletedPayment()) {
             return back()->with('error', "{$student->name} has already paid, so they cannot be rejected.");
@@ -66,6 +70,23 @@ class StudentController extends Controller
         $student->save();
 
         return back()->with('success', "{$student->name}'s status: {$data['status']}");
+    }
+
+    /** Super admins make an approved student an admin, or take admin access away again. */
+    public function updateAdminAccess(Request $request, User $student)
+    {
+        abort_unless($request->user()->isSuperAdmin(), 403);
+        abort_unless($student->isStudent(), 404);
+
+        $makeAdmin = $request->validate(['admin' => ['required', 'boolean']])['admin'];
+
+        if ($makeAdmin && ! $student->isApproved()) {
+            return back()->with('error', "Approve {$student->name} before making them an admin.");
+        }
+
+        $student->forceFill(['admin_level' => $makeAdmin ? User::ADMIN_LEVEL_ADMIN : null])->save();
+
+        return back()->with('success', $makeAdmin ? "{$student->name} is now an admin." : "{$student->name} is no longer an admin.");
     }
 
     public function export(Request $request)

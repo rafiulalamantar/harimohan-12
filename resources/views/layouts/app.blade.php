@@ -15,8 +15,11 @@
 <div aria-hidden="true" class="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[420px] bg-[radial-gradient(60%_60%_at_50%_0%,rgb(16_185_129/.12),transparent)]"></div>
 
 @php
-    $navLinks = auth()->check()
-        ? (auth()->user()->isAdmin()
+    $user = auth()->user();
+    // A student who is also an admin sees the portal menu on portal pages and the admin menu everywhere else.
+    $showPortalNav = $user && (! $user->isAdmin() || ($user->isStudent() && request()->routeIs('portal.*')));
+    $navLinks = $user
+        ? (! $showPortalNav
             ? [
                 ['admin.dashboard', 'Dashboard', 'admin.dashboard'],
                 ['admin.students.index', 'Students', 'admin.students.*'],
@@ -25,12 +28,14 @@
                 ['admin.events.index', 'Events', 'admin.events.*'],
                 ['admin.payments.index', 'Payments', 'admin.payments.*'],
                 ['admin.settings.edit', 'Welcome page', 'admin.settings.*'],
+                ...($user->isStudent() ? [['portal.dashboard', 'My portal', 'portal.*']] : []),
             ]
             : [
                 ['portal.dashboard', 'Home', 'portal.dashboard'],
                 ['portal.announcements', 'Notice', 'portal.announcements*'],
                 ['portal.payments', 'My Payments', 'portal.payments'],
                 ['portal.profile', 'Profile', 'portal.profile'],
+                ...($user->isAdmin() ? [['admin.dashboard', 'Admin panel', 'admin.*']] : []),
             ])
         : [];
 @endphp

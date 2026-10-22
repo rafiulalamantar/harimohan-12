@@ -44,6 +44,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('student-fields', Admin\StudentFieldController::class)->except('show');
     Route::get('/students/{student}', [Admin\StudentController::class, 'show'])->name('students.show');
     Route::patch('/students/{student}/status', [Admin\StudentController::class, 'updateStatus'])->name('students.status');
+    Route::patch('/students/{student}/admin', [Admin\StudentController::class, 'updateAdminAccess'])->name('students.admin');
 
     Route::resource('announcements', Admin\AnnouncementController::class)->except('show');
     Route::resource('events', Admin\EventController::class)->except('show');

@@ -17,7 +17,7 @@ class DatabaseSeederTest extends TestCase
 
         $this->artisan('db:seed', ['--force' => true])->assertSuccessful();
 
-        $this->assertDatabaseHas('users', ['email' => 'admin@school.test', 'role' => User::ROLE_ADMIN]);
+        $this->assertDatabaseHas('users', ['email' => 'admin@school.test', 'role' => User::ROLE_ADMIN, 'admin_level' => User::ADMIN_LEVEL_SUPER]);
         $this->assertDatabaseMissing('users', ['email' => 'student@school.test']);
         $this->assertDatabaseCount(Payment::class, 0);
     }

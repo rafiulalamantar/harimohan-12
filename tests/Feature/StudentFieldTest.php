@@ -195,6 +195,6 @@ class StudentFieldTest extends TestCase
 
     public function test_student_cannot_manage_fields(): void
     {
-        $this->actingAs(User::factory()->create())->get(route('admin.student-fields.index'))->assertForbidden();
+        $this->actingAs(User::factory()->create())->get(route('admin.student-fields.index'))->assertRedirect(route('portal.dashboard'));
     }
 }

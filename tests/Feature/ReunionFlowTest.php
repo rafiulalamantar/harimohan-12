@@ -149,7 +149,9 @@ class ReunionFlowTest extends TestCase
 
     public function test_only_admin_reaches_admin_panel(): void
     {
-        $this->actingAs(User::factory()->create())->get('/admin')->assertForbidden();
+        $this->actingAs(User::factory()->create())->get('/admin')
+            ->assertRedirect(route('portal.dashboard'))
+            ->assertSessionHas('error', "You don't have access to the admin panel.");
         $this->actingAs(User::factory()->admin()->create())->get('/admin')->assertOk();
     }
 
@@ -455,6 +457,91 @@ class ReunionFlowTest extends TestCase
         $this->actingAs(User::factory()->admin()->create())
             ->patch(route('admin.students.status', $student), ['status' => User::STATUS_REJECTED])
             ->assertSessionHas('error', "{$student->name} has already paid, so they cannot be rejected.");
+
+        $this->assertSame(User::STATUS_APPROVED, $student->fresh()->status);
+    }
+
+    public function test_payment_closes_after_the_event_day_even_if_the_deadline_is_later(): void
+    {
+        Http::preventStrayRequests();
+        $event = $this->event(['event_date' => now()->subDay()->toDateString(), 'payment_deadline' => now()->addWeek()->toDateString()]);
+        $student = User::factory()->create();
+
+        $this->actingAs($student)->get(route('portal.dashboard'))->assertSee('Payments are currently closed.');
+        $this->actingAs($student)->post(route('portal.pay', $event))->assertSessionHas('error', 'Payments for this event are closed.');
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_payment_stays_open_on_the_event_day(): void
+    {
+        $this->assertTrue($this->event(['event_date' => now()->toDateString()])->isPaymentOpen());
+    }
+
+    public function test_super_admin_makes_a_student_an_admin_who_keeps_their_portal_and_directory_listing(): void
+    {
+        $student = User::factory()->create(['name' => 'Karim Uddin']);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->patch(route('admin.students.admin', $student), ['admin' => '1'])
+            ->assertSessionHas('success', 'Karim Uddin is now an admin.');
+
+        $this->assertSame(User::ADMIN_LEVEL_ADMIN, $student->fresh()->admin_level);
+        $this->actingAs($student->fresh())->get('/admin')->assertOk();
+        $this->get(route('portal.dashboard'))->assertOk()->assertSee('Admin panel');
+        auth()->logout();
+        $this->get('/')->assertSee('Karim Uddin');
+    }
+
+    public function test_only_super_admins_see_the_make_admin_button(): void
+    {
+        $student = User::factory()->create();
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->get(route('admin.students.show', $student))->assertSee('Make admin');
+        $this->actingAs(User::factory()->studentAdmin()->create())
+            ->get(route('admin.students.show', $student))->assertOk()->assertDontSee('Make admin');
+    }
+
+    public function test_student_admin_cannot_make_other_students_admins(): void
+    {
+        $student = User::factory()->create();
+
+        $this->actingAs(User::factory()->studentAdmin()->create())
+            ->patch(route('admin.students.admin', $student), ['admin' => '1'])
+            ->assertForbidden();
+
+        $this->assertNull($student->fresh()->admin_level);
+    }
+
+    public function test_pending_student_cannot_be_made_an_admin(): void
+    {
+        $student = User::factory()->pending()->create(['name' => 'Karim Uddin']);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->patch(route('admin.students.admin', $student), ['admin' => '1'])
+            ->assertSessionHas('error', 'Approve Karim Uddin before making them an admin.');
+
+        $this->assertNull($student->fresh()->admin_level);
+    }
+
+    public function test_super_admin_removes_a_students_admin_access(): void
+    {
+        $student = User::factory()->studentAdmin()->create(['name' => 'Karim Uddin']);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->patch(route('admin.students.admin', $student), ['admin' => '0'])
+            ->assertSessionHas('success', 'Karim Uddin is no longer an admin.');
+
+        $this->actingAs($student->fresh())->get('/admin')->assertRedirect(route('portal.dashboard'));
+    }
+
+    public function test_student_admin_must_lose_admin_access_before_being_rejected(): void
+    {
+        $student = User::factory()->studentAdmin()->create(['name' => 'Karim Uddin']);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->patch(route('admin.students.status', $student), ['status' => User::STATUS_REJECTED])
+            ->assertSessionHas('error', 'Karim Uddin is an admin. Remove their admin access first.');
 
         $this->assertSame(User::STATUS_APPROVED, $student->fresh()->status);
     }
