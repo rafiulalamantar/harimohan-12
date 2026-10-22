@@ -1,6 +1,16 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.2...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.3...main)
+
+## [v1.4.3](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.2...v1.4.3) - 2026-10-22
+
+### Changes
+
+- **Directory photos appear together.** Card thumbnails now load straight away instead of lazily and show a shimmer until every photo on the page has loaded, then all fade in at once (also after in-place paging). A slow photo can't hold a page back for more than 6 seconds; failed images show the card background; a CSS fallback reveals photos after 8 seconds if the script never runs; reduced-motion users get a still placeholder.
+
+### Fixes
+
+- **Thumbnail backfill memory.** app:make-photo-thumbnails ran out of memory on a 12 MP sideways photo; thumbnails are now shrunk before the EXIF rotation.
 
 ## [v1.4.2](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.1...v1.4.2) - 2026-10-22
 
