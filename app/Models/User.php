@@ -126,6 +126,16 @@ class User extends Authenticatable
         return $this->admin_level === self::ADMIN_LEVEL_SUPER;
     }
 
+    /** The badge shown in the header after login: "Super admin", "Admin", or null for a plain student. */
+    public function adminBadge(): ?string
+    {
+        return match (true) {
+            $this->isSuperAdmin() => 'Super admin',
+            $this->isAdmin() => 'Admin',
+            default => null,
+        };
+    }
+
     /** An alumnus with a portal and a place in the directory, whether or not they are also an admin. */
     public function isStudent(): bool
     {
