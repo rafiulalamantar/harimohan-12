@@ -27,7 +27,9 @@ class PhotoThumbnailTest extends TestCase
         $this->assertSame([480, 640], array_slice(getimagesizefromstring(Storage::disk('public')->get($user->photo_thumb)), 0, 2));
 
         $user->forceFill(['status' => User::STATUS_APPROVED])->save();
-        $this->get('/')->assertSee($user->photoThumbUrl(), false)->assertDontSee($user->photoUrl(), false);
+        // Cards load their thumbnails straight away (not lazily) behind a shimmer, so a page's photos appear together.
+        $this->get('/')->assertSee($user->photoThumbUrl(), false)->assertDontSee($user->photoUrl(), false)
+            ->assertSee('data-photo-frame', false)->assertSee('photo-shimmer', false)->assertDontSee('loading="lazy"', false);
     }
 
     public function test_the_thumbnail_made_by_the_browser_is_stored_next_to_the_photo(): void

@@ -129,9 +129,11 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
                 @foreach ($students as $s)
                     <article class="group flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/80 shadow-soft hover:-translate-y-1 hover:shadow-xl hover:ring-brand-300 transition duration-300">
-                        <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 via-brand-50 to-white">
+                        <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 via-brand-50 to-white" data-photo-frame>
                             @if ($s->photoUrl())
-                                <img src="{{ $s->photoThumbUrl() }}" alt="{{ $s->name }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition duration-500">
+                                <span class="photo-shimmer absolute inset-0" aria-hidden="true"></span>
+                                {{-- Not lazy: a page's thumbnails (~1 MB) load together so they can appear at once. --}}
+                                <img src="{{ $s->photoThumbUrl() }}" alt="{{ $s->name }}" decoding="async" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition duration-500">
                             @else
                                 <span class="absolute inset-0 grid place-items-center text-5xl font-extrabold text-brand-700/70">{{ mb_strtoupper(mb_substr($s->name, 0, 1)) }}</span>
                             @endif

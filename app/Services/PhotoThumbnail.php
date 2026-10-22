@@ -45,15 +45,25 @@ class PhotoThumbnail
                 return null;
             }
 
-            $image = self::applyExifOrientation($image, $bytes);
+            // Shrink first and rotate the small copy: rotating a full 12 MP photo needs more memory than PHP allows.
+            $orientation = self::exifOrientation($bytes);
             $width = imagesx($image);
             $height = imagesy($image);
-            $scale = min(1, self::WIDTH / $width);
+            $sideways = in_array($orientation, [6, 8], true);
+            $scale = min(1, self::WIDTH / ($sideways ? $height : $width));
 
             $thumb = imagecreatetruecolor((int) round($width * $scale), (int) round($height * $scale));
             // White behind transparent PNGs instead of black.
             imagefill($thumb, 0, 0, imagecolorallocate($thumb, 255, 255, 255));
             imagecopyresampled($thumb, $image, 0, 0, 0, 0, imagesx($thumb), imagesy($thumb), $width, $height);
+            unset($image);
+
+            $thumb = match ($orientation) {
+                3 => imagerotate($thumb, 180, 0),
+                6 => imagerotate($thumb, -90, 0),
+                8 => imagerotate($thumb, 90, 0),
+                default => $thumb,
+            };
 
             ob_start();
             imagejpeg($thumb, null, self::QUALITY);
@@ -82,19 +92,14 @@ class PhotoThumbnail
     /**
      * Phone photos are often stored sideways with an EXIF "rotate me" flag that browsers obey but GD ignores.
      */
-    private static function applyExifOrientation(\GdImage $image, string $bytes): \GdImage
+    private static function exifOrientation(string $bytes): int
     {
         if (! function_exists('exif_read_data') || ! str_starts_with($bytes, "\xFF\xD8")) {
-            return $image;
+            return 1;
         }
 
         $exif = @exif_read_data('data://image/jpeg;base64,'.base64_encode($bytes));
 
-        return match ((int) ($exif['Orientation'] ?? 1)) {
-            3 => imagerotate($image, 180, 0),
-            6 => imagerotate($image, -90, 0),
-            8 => imagerotate($image, 90, 0),
-            default => $image,
-        };
+        return (int) ($exif['Orientation'] ?? 1);
     }
 }

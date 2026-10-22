@@ -50,3 +50,45 @@
         display: none;
     }
 }
+
+/*
+ * Alumni directory photos: a shimmer until every photo on the page has loaded, then they all fade in together
+ * (resources/js/app.js adds .is-loaded). The delayed animation reveals photos even if that script never runs.
+ */
+@keyframes photo-shimmer {
+    from {
+        background-position: 200% 0;
+    }
+    to {
+        background-position: -200% 0;
+    }
+}
+
+@keyframes photo-reveal-fallback {
+    to {
+        opacity: 1;
+    }
+}
+
+.photo-shimmer {
+    background: linear-gradient(90deg, rgb(226 232 240 / 0.7) 25%, rgb(248 250 252 / 0.95) 50%, rgb(226 232 240 / 0.7) 75%);
+    background-size: 200% 100%;
+    animation: photo-shimmer 1.2s linear infinite;
+}
+
+[data-photo-frame].is-loaded .photo-shimmer {
+    display: none;
+}
+
+@media (scripting: enabled) {
+    [data-photo-frame]:not(.is-loaded) img {
+        opacity: 0;
+        animation: photo-reveal-fallback 0s 8s forwards;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .photo-shimmer {
+        animation: none;
+    }
+}
