@@ -1,6 +1,13 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.0...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.1...main)
+
+## [v1.4.1](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.0...v1.4.1) - 2026-10-22
+
+### Changes
+
+- **Member emails no longer have a footer.** The "Sent by … Reply to this email to answer them." line and site link are removed from both the HTML and plain-text versions. Replies still go to the admin who sent it.
+- **No visible To address.** Member emails are now Bcc-only, so members no longer see the site's own mailbox in To, and Brevo no longer counts an extra copy per batch of 50 against the 300-a-day limit.
 
 ## [v1.4.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.3.4...v1.4.0) - 2026-10-22
 
