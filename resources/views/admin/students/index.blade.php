@@ -27,7 +27,7 @@
             <div class="flex items-start gap-3">
                 <x-avatar :user="$s" class="w-10 h-10 shrink-0" />
                 <div class="min-w-0 flex-1">
-                    <a class="font-semibold text-brand-700 underline" href="{{ route('admin.students.show', $s) }}">{{ $s->name }}</a>
+                    <a class="font-semibold text-brand-700 underline" href="{{ route('admin.students.show', $s) }}">{{ $s->name }}</a>@if($s->isAdmin()) <span class="ml-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800 no-underline">Admin</span>@endif
                     <div class="text-xs text-gray-500 break-all">{{ $s->email }}</div>
                 </div>
                 <span class="shrink-0 text-xs font-medium text-gray-600">{{ ucfirst($s->status) }}</span>
@@ -44,7 +44,7 @@
                         <button class="w-full text-sm bg-green-600 text-white rounded-lg px-3 py-2">Approve</button>
                     </form>
                 @endif
-                @if ($s->status !== 'rejected')
+                @if ($s->status !== 'rejected' && ! $s->isAdmin())
                     <form method="POST" action="{{ route('admin.students.status', $s) }}" data-confirm="Reject this student?" class="flex-1">@csrf @method('PATCH')
                         <input type="hidden" name="status" value="rejected">
                         <button class="w-full text-sm bg-red-600 text-white rounded-lg px-3 py-2">Reject</button>
@@ -66,7 +66,7 @@
         <tbody class="divide-y">
         @forelse ($students as $s)
             <tr>
-                <td class="p-3"><div class="flex items-center gap-3"><x-avatar :user="$s" class="w-9 h-9" /><div><a class="text-brand-700 underline" href="{{ route('admin.students.show', $s) }}">{{ $s->name }}</a><div class="text-xs text-gray-500">{{ $s->email }}</div></div></div></td>
+                <td class="p-3"><div class="flex items-center gap-3"><x-avatar :user="$s" class="w-9 h-9" /><div><a class="text-brand-700 underline" href="{{ route('admin.students.show', $s) }}">{{ $s->name }}</a>@if($s->isAdmin()) <span class="ml-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800 no-underline">Admin</span>@endif<div class="text-xs text-gray-500">{{ $s->email }}</div></div></div></td>
                 <td class="p-3">{{ $s->ssc_batch }}</td>
                 <td class="p-3">{{ $s->phone }}</td>
                 <td class="p-3">{{ ucfirst($s->status) }}</td>
@@ -79,7 +79,7 @@
                                 <button class="text-xs bg-green-600 text-white rounded-sm px-2 py-1">Approve</button>
                             </form>
                         @endif
-                        @if ($s->status !== 'rejected')
+                        @if ($s->status !== 'rejected' && ! $s->isAdmin())
                             <form method="POST" action="{{ route('admin.students.status', $s) }}" data-confirm="Reject this student?">@csrf @method('PATCH')
                                 <input type="hidden" name="status" value="rejected">
                                 <button class="text-xs bg-red-600 text-white rounded-sm px-2 py-1">Reject</button>

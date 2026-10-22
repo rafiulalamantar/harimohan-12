@@ -39,7 +39,13 @@ class UserFactory extends Factory
 
     public function admin(): static
     {
-        return $this->state(fn () => ['role' => 'admin', 'status' => 'approved']);
+        return $this->state(fn () => ['role' => 'admin', 'admin_level' => User::ADMIN_LEVEL_SUPER, 'status' => 'approved']);
+    }
+
+    /** An approved student a super admin has made an admin. */
+    public function studentAdmin(): static
+    {
+        return $this->state(fn () => ['admin_level' => User::ADMIN_LEVEL_ADMIN]);
     }
 
     public function pending(): static

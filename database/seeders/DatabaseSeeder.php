@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             'phone' => env('ADMIN_PHONE', '01700000000'),
             'password' => env('ADMIN_PASSWORD', 'ChangeMe@123'),
             'role' => User::ROLE_ADMIN,
+            'admin_level' => User::ADMIN_LEVEL_SUPER,
             'status' => User::STATUS_APPROVED,
         ])->save();
 
