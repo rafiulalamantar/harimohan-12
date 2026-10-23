@@ -1,6 +1,19 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.6...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.7...main)
+
+## [v1.4.7](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.6...v1.4.7) - 2026-10-23
+
+v1.4.7
+
+Flexible student fields.
+
+- New field types: radio buttons, checkboxes (choose any), date, and image only (students just see a picture such as a T-shirt size chart; no answer).
+- Answers stay admin-only. The admin Students page shows a column per field, filters by choice answers and per-choice totals (e.g. T-shirt size XL: 12) for ordering.
+- Students are told "Only admins see this answer." Reference images show as a small thumbnail that opens full size.
+- Saving an unchanged profile now says "No changes to save."
+- Unticking every checkbox clears the answer; removing a choice clears answers that used it.
+- Admin tip on the Student fields page for setting up a T-shirt size field.
 
 ## [v1.4.6](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.5...v1.4.6) - 2026-10-23
 
