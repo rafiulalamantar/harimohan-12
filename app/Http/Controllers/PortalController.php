@@ -26,6 +26,7 @@ class PortalController extends Controller
             'hasPaid' => $event ? $user->hasPaidFor($event) : false,
             'announcements' => Announcement::feed()->take(5)->get(),
             'missingFields' => $user->missingRequiredFields(),
+            'imageFields' => StudentField::active()->where('type', 'image')->whereNotNull('image')->get(),
         ]);
     }
 

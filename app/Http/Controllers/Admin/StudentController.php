@@ -17,7 +17,7 @@ class StudentController extends Controller
 {
     public function index(Request $request)
     {
-        $fields = StudentField::active()->get();
+        $fields = StudentField::active()->get()->filter->takesAnswer();
         $choiceFields = $fields->filter(fn (StudentField $field) => $field->hasChoices())->keyBy('id');
         $answerFilters = $this->answerFilters($request, $choiceFields);
 
@@ -122,7 +122,7 @@ class StudentController extends Controller
 
         return view('admin.students.show', [
             'student' => $student,
-            'fields' => StudentField::orderBy('sort_order')->orderBy('id')->get(),
+            'fields' => StudentField::orderBy('sort_order')->orderBy('id')->get()->filter->takesAnswer(),
         ]);
     }
 
@@ -186,7 +186,7 @@ class StudentController extends Controller
     {
         $filename = 'students-'.now()->format('Ymd-His').'.csv';
 
-        $fields = StudentField::orderBy('sort_order')->orderBy('id')->get();
+        $fields = StudentField::orderBy('sort_order')->orderBy('id')->get()->filter->takesAnswer();
 
         return response()->streamDownload(function () use ($fields) {
             $out = fopen('php://output', 'w');

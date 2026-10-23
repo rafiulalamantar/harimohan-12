@@ -26,6 +26,7 @@ class StudentField extends Model
         'radio' => 'Radio buttons (choose one)',
         'checkboxes' => 'Checkboxes (choose any)',
         'date' => 'Date',
+        'image' => 'Image only (no answer)',
     ];
 
     /** Types whose answers must be one (or, for checkboxes, several) of the admin's choices. */
@@ -50,6 +51,12 @@ class StudentField extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /** Image-only fields show students a picture and collect no answer. */
+    public function takesAnswer(): bool
+    {
+        return $this->type !== 'image';
     }
 
     public function hasChoices(): bool
@@ -139,7 +146,7 @@ class StudentField extends Model
      */
     public static function rulesFor(Collection $fields): array
     {
-        return $fields->flatMap(fn (self $field) => $field->rules("fields.{$field->id}"))->all();
+        return $fields->filter->takesAnswer()->flatMap(fn (self $field) => $field->rules("fields.{$field->id}"))->all();
     }
 
     /**
@@ -152,7 +159,8 @@ class StudentField extends Model
      */
     public static function answersFrom(Collection $fields, array $input): array
     {
-        return $fields->mapWithKeys(fn (self $field) => [$field->id => $field->storedAnswer($input[$field->id] ?? null)])->all();
+        return $fields->filter->takesAnswer()
+            ->mapWithKeys(fn (self $field) => [$field->id => $field->storedAnswer($input[$field->id] ?? null)])->all();
     }
 
     /**

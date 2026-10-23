@@ -1,6 +1,14 @@
 @props(['fields', 'answers' => []])
 
 @foreach ($fields as $f)
+    @if (! $f->takesAnswer())
+        @if ($f->image)
+            <div class="md:col-span-2 rounded-2xl bg-slate-50 ring-1 ring-slate-200/80 p-4">
+                <x-student-field-image :field="$f" />
+            </div>
+        @endif
+        @continue
+    @endif
     @php($name = "fields.{$f->id}")
     @php($value = old($name, $f->answerInput($answers[$f->id] ?? null)))
     <div class="md:col-span-2 rounded-2xl bg-slate-50 ring-1 ring-slate-200/80 p-4 {{ $f->image ? 'grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 items-start' : '' }}">

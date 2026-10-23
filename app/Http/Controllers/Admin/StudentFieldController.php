@@ -27,7 +27,7 @@ class StudentFieldController extends Controller
 
     public function store(Request $request)
     {
-        StudentField::create($this->validated($request));
+        StudentField::create($this->validated($request, new StudentField));
 
         return redirect()->route('admin.student-fields.index')->with('success', 'Student field created.');
     }
@@ -39,7 +39,7 @@ class StudentFieldController extends Controller
 
     public function update(Request $request, StudentField $studentField)
     {
-        $data = $this->validated($request);
+        $data = $this->validated($request, $studentField);
 
         if (isset($data['image']) || $request->boolean('remove_image')) {
             $this->deleteImage($studentField);
@@ -69,21 +69,26 @@ class StudentFieldController extends Controller
         return back()->with('success', 'Student field deleted.');
     }
 
-    private function validated(Request $request): array
+    private function validated(Request $request, StudentField $field): array
     {
+        $keepsCurrentImage = $field->image && ! $request->boolean('remove_image');
+
         $data = $request->validate([
             'label' => ['required', 'string', 'max:150'],
             'type' => ['required', Rule::in(array_keys(StudentField::TYPES))],
             'options' => ['nullable', Rule::requiredIf(in_array($request->input('type'), StudentField::CHOICE_TYPES, true)), 'string', 'max:2000'],
             'help_text' => ['nullable', 'string', 'max:500'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
+            'image' => ['nullable', Rule::requiredIf($request->input('type') === 'image' && ! $keepsCurrentImage), 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:1000'],
-        ], ['options.required' => 'Add at least one choice for a dropdown, radio button or checkbox field.']);
+        ], [
+            'options.required' => 'Add at least one choice for a dropdown, radio button or checkbox field.',
+            'image.required' => 'Upload the image students should see.',
+        ]);
 
         $data['options'] = in_array($data['type'], StudentField::CHOICE_TYPES, true)
             ? collect(preg_split('/\r\n|\r|\n/', $data['options'] ?? ''))->map(fn ($o) => trim($o))->filter()->unique()->values()->all()
             : null;
-        $data['is_required'] = $request->boolean('is_required');
+        $data['is_required'] = $data['type'] !== 'image' && $request->boolean('is_required');
         $data['is_active'] = $request->boolean('is_active');
         $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
 

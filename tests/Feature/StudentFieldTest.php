@@ -242,6 +242,49 @@ class StudentFieldTest extends TestCase
             ->assertSee('karim@example.com')->assertSee('rahim@example.com')->assertSee('salma@example.com');
     }
 
+    public function test_image_only_field_needs_an_image_and_is_never_required(): void
+    {
+        Storage::fake('public');
+        $this->actingAs(User::factory()->admin()->create());
+
+        $this->post(route('admin.student-fields.store'), ['label' => 'T-shirt size chart', 'type' => 'image', 'is_active' => '1'])
+            ->assertSessionHasErrors(['image' => 'Upload the image students should see.']);
+
+        $this->post(route('admin.student-fields.store'), [
+            'label' => 'T-shirt size chart',
+            'type' => 'image',
+            'image' => UploadedFile::fake()->image('chart.png'),
+            'is_required' => '1',
+            'is_active' => '1',
+        ])->assertRedirect(route('admin.student-fields.index'));
+
+        $field = StudentField::sole();
+        $this->assertFalse($field->is_required);
+
+        $this->put(route('admin.student-fields.update', $field), ['label' => 'Size chart', 'type' => 'image', 'is_active' => '1'])
+            ->assertSessionDoesntHaveErrors();
+        $this->put(route('admin.student-fields.update', $field), ['label' => 'Size chart', 'type' => 'image', 'is_active' => '1', 'remove_image' => '1'])
+            ->assertSessionHasErrors('image');
+        $this->assertNotNull($field->fresh()->image);
+    }
+
+    public function test_students_see_image_only_field_in_portal_without_answering(): void
+    {
+        $chart = StudentField::factory()->create(['label' => 'T-shirt size chart', 'type' => 'image', 'image' => 'student-fields/chart.png']);
+        $student = User::factory()->create();
+
+        $this->actingAs($student)->get(route('portal.dashboard'))->assertSee('T-shirt size chart')->assertSee($chart->imageUrl());
+        $this->actingAs($student)->get(route('portal.profile'))
+            ->assertSee($chart->imageUrl())
+            ->assertDontSee('name="fields['.$chart->id.']"', false);
+
+        $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student, [$chart->id => 'x']))
+            ->assertSessionHas('success');
+        $this->assertSame([], $student->fresh()->fieldAnswers());
+
+        $this->actingAs(User::factory()->admin()->create())->get(route('admin.students.index'))->assertDontSee('T-shirt size chart');
+    }
+
     public function test_student_sees_field_with_image_on_profile_and_saves_answer(): void
     {
         $field = StudentField::factory()->select()->required()->create(['label' => 'Polo T-shirt size', 'image' => 'student-fields/chart.png']);

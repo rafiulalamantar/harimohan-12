@@ -27,7 +27,7 @@
                 <td class="p-3">{{ \App\Models\StudentField::TYPES[$f->type] ?? $f->type }}</td>
                 <td class="p-3">{{ $f->is_required ? 'Yes' : '—' }}</td>
                 <td class="p-3">{{ $f->is_active ? '✅' : 'Off' }}</td>
-                <td class="p-3">{{ $f->answered_count }}</td>
+                <td class="p-3">{{ $f->takesAnswer() ? $f->answered_count : '—' }}</td>
                 <td class="p-3">
                     <div class="flex gap-2">
                         <a href="{{ route('admin.student-fields.edit', $f) }}" class="border rounded-sm px-3 py-1">Edit</a>

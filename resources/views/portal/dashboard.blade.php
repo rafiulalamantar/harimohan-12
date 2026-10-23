@@ -21,6 +21,16 @@
     </div>
 @endif
 
+@if ($imageFields->isNotEmpty())
+    <div class="grid gap-4 mt-6 {{ $imageFields->count() > 1 ? 'md:grid-cols-2' : '' }}">
+        @foreach ($imageFields as $f)
+            <section class="bg-white rounded-2xl border p-4 sm:p-6">
+                <x-student-field-image :field="$f" />
+            </section>
+        @endforeach
+    </div>
+@endif
+
 <div class="grid md:grid-cols-3 gap-6 mt-6">
     {{-- Event + payment card --}}
     <section class="md:col-span-1 bg-white rounded-2xl border p-6">
