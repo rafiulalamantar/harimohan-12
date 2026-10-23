@@ -45,6 +45,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/students/{student}', [Admin\StudentController::class, 'show'])->name('students.show');
     Route::patch('/students/{student}/status', [Admin\StudentController::class, 'updateStatus'])->name('students.status');
     Route::patch('/students/{student}/admin', [Admin\StudentController::class, 'updateAdminAccess'])->name('students.admin');
+    Route::patch('/students/{student}/card-photo', [Admin\StudentController::class, 'updateCardPhoto'])->name('students.card-photo');
 
     Route::resource('announcements', Admin\AnnouncementController::class)->except('show');
     Route::get('/email-members', [Admin\MemberEmailController::class, 'create'])->name('member-emails.create');

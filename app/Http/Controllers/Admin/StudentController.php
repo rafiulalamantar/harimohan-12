@@ -7,9 +7,11 @@ use App\Models\StudentField;
 use App\Models\StudentFieldValue;
 use App\Models\User;
 use App\Services\CsvWriter;
+use App\Services\PhotoThumbnail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -180,6 +182,31 @@ class StudentController extends Controller
         $student->forceFill(['admin_level' => $makeAdmin ? User::ADMIN_LEVEL_ADMIN : null])->save();
 
         return back()->with('success', $makeAdmin ? "{$student->name} is now an admin." : "{$student->name} is no longer an admin.");
+    }
+
+    /**
+     * Replace the card/avatar copy of a student's photo with one an admin framed from the original
+     * (resources/js/app.js, data-reframe-photo). The original photo is kept, so it can be framed again.
+     */
+    public function updateCardPhoto(Request $request, User $student)
+    {
+        abort_unless($student->isStudent() && $student->photo, 404);
+
+        $thumbnail = $request->validate([
+            'photo_thumbnail' => ['required', 'image', 'mimes:jpg,jpeg', 'max:512'],
+        ], ['photo_thumbnail.required' => 'Frame the photo before saving.'])['photo_thumbnail'];
+
+        $newThumb = PhotoThumbnail::storeReframed($thumbnail, $student->photo);
+        abort_unless($newThumb, 500, 'The framed photo could not be stored.');
+
+        $oldThumb = $student->photo_thumb;
+        $student->forceFill(['photo_thumb' => $newThumb])->save();
+
+        if ($oldThumb && $oldThumb !== $newThumb) {
+            Storage::disk('public')->delete($oldThumb);
+        }
+
+        return back()->with('success', "Updated {$student->name}'s card photo.");
     }
 
     public function export(Request $request)
