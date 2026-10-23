@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.4...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.5...main)
+
+## [v1.4.5](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.4...v1.4.5) - 2026-10-23
+
+v1.4.5
+
+- **Member emails reach the inbox again.** Since v1.4.1 member emails were sent Bcc-only, with no To address. Brevo delivered them, but Gmail filed them as spam (password reset emails, which have a To, still arrived). Each member now gets their own copy addressed To them, so nobody sees anyone else's address and nothing is sent as Bcc. Brevo still counts one email per member.
+
+No migration needed.
 
 ## [v1.4.4](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.3...v1.4.4) - 2026-10-23
 
