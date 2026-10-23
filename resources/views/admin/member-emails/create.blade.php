@@ -5,7 +5,7 @@
 <div class="max-w-3xl mx-auto space-y-6">
     <div class="bg-white rounded-2xl border p-6 md:p-8">
         <h1 class="text-2xl font-bold">Email members</h1>
-        <p class="mt-1 text-sm text-slate-500">Each member gets a private copy (Bcc), so nobody sees anyone else's address. Replies come to your email, {{ auth()->user()->email }}.</p>
+        <p class="mt-1 text-sm text-slate-500">Each member gets their own copy addressed to them, so nobody sees anyone else's address. Replies come to your email, {{ auth()->user()->email }}.</p>
         <p class="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
             <strong>{{ $remainingToday }}</strong> of {{ \App\Models\MemberEmail::DAILY_LIMIT }} emails left today (Brevo free plan limit; every member counts as one email).
         </p>

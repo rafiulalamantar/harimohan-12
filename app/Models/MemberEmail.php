@@ -56,10 +56,7 @@ class MemberEmail extends Model
             ->when($sscBatch, fn (Builder $query) => $query->where('ssc_batch', $sscBatch));
     }
 
-    /** Bcc recipients per message, so one SMTP call covers many members. */
-    public const RECIPIENTS_PER_MESSAGE = 50;
-
-    /** Emails still allowed today under {@see self::DAILY_LIMIT}; Brevo counts each Bcc recipient as one email. */
+    /** Emails still allowed today under {@see self::DAILY_LIMIT}; Brevo counts each member's copy as one email. */
     public static function remainingToday(): int
     {
         return max(0, self::DAILY_LIMIT - (int) self::whereDate('created_at', today())->sum('recipient_count'));

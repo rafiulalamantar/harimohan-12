@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
 /**
- * An admin's message to members. Recipients go in Bcc so nobody sees anyone else's address;
+ * An admin's message to members. Each member gets their own copy, so nobody sees anyone else's address;
  * replies go to the admin who sent it.
  */
 class MemberEmailMessage extends Mailable
