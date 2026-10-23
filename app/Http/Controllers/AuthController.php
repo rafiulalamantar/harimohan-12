@@ -2,56 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RegisterRequest;
 use App\Models\StudentField;
 use App\Models\User;
 use App\Services\PhotoThumbnail;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\View\View;
 
+/** Registration, login and logout for members and admins. */
 class AuthController extends Controller
 {
-    public function showRegister()
+    public function showRegister(): View
     {
         return view('auth.register', ['fields' => StudentField::active()->get()]);
     }
 
-    public function register(Request $request)
+    /** New members start as pending (database default) until an admin approves them. */
+    public function register(RegisterRequest $request): RedirectResponse
     {
-        $fields = StudentField::active()->get();
-        $request->merge(['phone' => User::normalizePhone($request->input('phone'))]);
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:120', 'regex:'.User::NAME_PATTERN],
-            'email' => ['required', 'email', 'max:190', 'unique:users,email'],
-            'phone' => ['required', 'regex:/^01[3-9]\d{8}$/', 'unique:users,phone'],
-            'ssc_batch' => ['required', 'integer', 'min:1950', 'max:'.now()->year],
-            'blood_group' => ['nullable', Rule::in(User::BLOOD_GROUPS)],
-            'profession' => ['nullable', 'string', 'max:150'],
-            'company_name' => ['nullable', 'string', 'max:150'],
-            'linkedin_url' => ['nullable', 'url', 'max:255'],
-            'facebook_url' => ['nullable', 'url', 'max:255'],
-            'present_address' => ['nullable', 'string', 'max:255'],
-            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
-            'photo_thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg', 'max:512'],
-            'password' => ['required', 'confirmed', Password::min(8)],
-            ...StudentField::rulesFor($fields),
-        ], [
-            'phone.regex' => 'Mobile number must be 11 digits, like 01XXXXXXXXX.',
-            'name.regex' => User::NAME_MESSAGE,
-        ], StudentField::attributeNamesFor($fields));
-
-        $answers = StudentField::answersFrom($fields, $data['fields'] ?? []);
-        unset($data['fields'], $data['photo_thumbnail']);
+        $data = $request->profileData();
 
         if ($request->hasFile('photo')) {
             $data['photo'] = $request->file('photo')->store('photos', 'public');
             $data['photo_thumb'] = PhotoThumbnail::forUpload($request->file('photo_thumbnail'), $data['photo']);
         }
 
-        $user = User::create($data); // role=student, status=pending by DB default
-        $user->saveFieldValues($answers);
+        $user = User::create($data);
+        $user->saveFieldValues($request->fieldAnswers());
 
         Auth::login($user, remember: true);
         $request->session()->regenerate();
@@ -60,12 +39,12 @@ class AuthController extends Controller
             ->with('success', 'Registration complete! You can pay for events once an admin approves you.');
     }
 
-    public function showLogin()
+    public function showLogin(): View
     {
         return view('auth.login');
     }
 
-    public function login(Request $request)
+    public function login(Request $request): RedirectResponse
     {
         $request->validate([
             'login' => ['required', 'string'],
@@ -92,7 +71,7 @@ class AuthController extends Controller
         return redirect()->intended(Auth::user()->isAdmin() ? route('admin.dashboard') : route('portal.dashboard'));
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
         $request->session()->invalidate();

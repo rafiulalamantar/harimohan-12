@@ -7,10 +7,12 @@ use App\Models\Payment;
 use App\Models\ReunionEvent;
 use App\Services\CsvWriter;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PaymentController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $payments = Payment::with(['user', 'event'])
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
@@ -29,7 +31,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function export(Request $request)
+    public function export(Request $request): StreamedResponse
     {
         $filename = 'payments-'.now()->format('Ymd-His').'.csv';
 

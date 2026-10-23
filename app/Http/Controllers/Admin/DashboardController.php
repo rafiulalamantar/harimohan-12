@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\ReunionEvent;
 use App\Models\User;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke()
+    /** Totals for the current event and the newest registrations and payments. */
+    public function __invoke(): View
     {
         $event = ReunionEvent::current();
         $students = User::students();

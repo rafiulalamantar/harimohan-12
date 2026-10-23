@@ -9,15 +9,18 @@ use App\Models\User;
 use App\Services\CsvWriter;
 use App\Services\PhotoThumbnail;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudentController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $fields = StudentField::active()->get()->filter->takesAnswer();
         $choiceFields = $fields->filter(fn (StudentField $field) => $field->hasChoices())->keyBy('id');
@@ -116,7 +119,7 @@ class StudentController extends Controller
         return $counts;
     }
 
-    public function show(User $student)
+    public function show(User $student): View
     {
         abort_unless($student->isStudent(), 404);
 
@@ -128,10 +131,11 @@ class StudentController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, User $student)
+    /** Approve, reject or reset a registration, recording which admin did it. */
+    public function updateStatus(Request $request, User $student): RedirectResponse
     {
         $data = $request->validate([
-            'status' => ['required', Rule::in([User::STATUS_PENDING, User::STATUS_APPROVED, User::STATUS_REJECTED])],
+            'status' => ['required', Rule::in(User::STATUSES)],
         ]);
 
         abort_unless($student->isStudent(), 403);
@@ -168,7 +172,7 @@ class StudentController extends Controller
     }
 
     /** Super admins make an approved student an admin, or take admin access away again. */
-    public function updateAdminAccess(Request $request, User $student)
+    public function updateAdminAccess(Request $request, User $student): RedirectResponse
     {
         abort_unless($request->user()->isSuperAdmin(), 403);
         abort_unless($student->isStudent(), 404);
@@ -188,7 +192,7 @@ class StudentController extends Controller
      * Replace the card/avatar copy of a student's photo with one an admin framed from the original
      * (resources/js/app.js, data-reframe-photo). The original photo is kept, so it can be framed again.
      */
-    public function updateCardPhoto(Request $request, User $student)
+    public function updateCardPhoto(Request $request, User $student): RedirectResponse
     {
         abort_unless($student->isStudent() && $student->photo, 404);
 
@@ -209,7 +213,8 @@ class StudentController extends Controller
         return back()->with('success', "Updated {$student->name}'s card photo.");
     }
 
-    public function export(Request $request)
+    /** Every student with their answers to the extra fields, as a UTF-8 CSV that Excel opens correctly. */
+    public function export(Request $request): StreamedResponse
     {
         $filename = 'students-'.now()->format('Ymd-His').'.csv';
 

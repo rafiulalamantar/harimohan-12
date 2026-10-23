@@ -3,39 +3,42 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AnnouncementRequest;
 use App\Models\Announcement;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
+/** Admins post notices to the welcome page and the member portal. */
 class AnnouncementController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         return view('admin.announcements.index', [
             'announcements' => Announcement::orderByDesc('is_pinned')->latest()->paginate(20),
         ]);
     }
 
-    public function create()
+    public function create(): View
     {
         return view('admin.announcements.form', ['announcement' => new Announcement(['published_at' => now()])]);
     }
 
-    public function store(Request $request)
+    public function store(AnnouncementRequest $request): RedirectResponse
     {
-        Announcement::create($this->validated($request) + ['user_id' => $request->user()->id]);
+        Announcement::create($this->announcementData($request) + ['user_id' => $request->user()->id]);
 
         return redirect()->route('admin.announcements.index')->with('success', 'Announcement published.');
     }
 
-    public function edit(Announcement $announcement)
+    public function edit(Announcement $announcement): View
     {
         return view('admin.announcements.form', compact('announcement'));
     }
 
-    public function update(Request $request, Announcement $announcement)
+    public function update(AnnouncementRequest $request, Announcement $announcement): RedirectResponse
     {
-        $data = $this->validated($request);
+        $data = $this->announcementData($request);
 
         if (isset($data['banner']) || $request->boolean('remove_banner')) {
             $this->deleteBanner($announcement);
@@ -47,7 +50,7 @@ class AnnouncementController extends Controller
         return redirect()->route('admin.announcements.index')->with('success', 'Announcement updated.');
     }
 
-    public function destroy(Announcement $announcement)
+    public function destroy(Announcement $announcement): RedirectResponse
     {
         $this->deleteBanner($announcement);
         $announcement->delete();
@@ -55,21 +58,17 @@ class AnnouncementController extends Controller
         return back()->with('success', 'Announcement deleted.');
     }
 
-    private function validated(Request $request): array
+    /**
+     * The notice's columns, with the uploaded banner stored when there is one.
+     *
+     * @return array<string, mixed>
+     */
+    private function announcementData(AnnouncementRequest $request): array
     {
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:200'],
-            'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
-            'body' => ['required', 'string', 'max:10000'],
-            'published_at' => ['nullable', 'date'],
-            'is_pinned' => ['nullable', 'boolean'],
-        ]);
-        $data['is_pinned'] = $request->boolean('is_pinned');
+        $data = $request->announcementData();
 
         if ($request->hasFile('banner')) {
             $data['banner'] = $request->file('banner')->store('announcements', 'public');
-        } else {
-            unset($data['banner']);
         }
 
         return $data;

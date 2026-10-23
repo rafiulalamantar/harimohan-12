@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\EventRequest;
 use App\Models\ReunionEvent;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
+/** Admins manage events; the portal shows the active one with the latest date. */
 class EventController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         return view('admin.events.index', [
             'events' => ReunionEvent::withCount(['payments as paid_count' => fn ($payments) => $payments->completed()])
@@ -18,51 +20,35 @@ class EventController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): View
     {
         return view('admin.events.form', ['event' => new ReunionEvent(['is_active' => true])]);
     }
 
-    public function store(Request $request)
+    public function store(EventRequest $request): RedirectResponse
     {
-        ReunionEvent::create($this->validated($request));
+        ReunionEvent::create($request->eventData());
 
         return redirect()->route('admin.events.index')->with('success', 'Event created.');
     }
 
-    public function edit(ReunionEvent $event)
+    public function edit(ReunionEvent $event): View
     {
         return view('admin.events.form', compact('event'));
     }
 
-    public function update(Request $request, ReunionEvent $event)
+    public function update(EventRequest $request, ReunionEvent $event): RedirectResponse
     {
-        $event->update($this->validated($request));
+        $event->update($request->eventData());
 
         return redirect()->route('admin.events.index')->with('success', 'Event updated.');
     }
 
     /** Soft-deletes so completed payments keep their event for the records. */
-    public function destroy(ReunionEvent $event)
+    public function destroy(ReunionEvent $event): RedirectResponse
     {
         $event->delete();
 
         return redirect()->route('admin.events.index')->with('success', 'Event deleted.');
-    }
-
-    private function validated(Request $request): array
-    {
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:200'],
-            'description' => ['nullable', 'string', 'max:5000'],
-            'event_date' => ['nullable', 'date'],
-            'venue' => ['nullable', 'string', 'max:200'],
-            'fee' => ['required', 'numeric', 'min:1', 'max:999999'],
-            'payment_deadline' => ['nullable', 'date', Rule::when($request->filled('event_date'), ['before_or_equal:event_date'])],
-            'is_active' => ['nullable', 'boolean'],
-        ], ['payment_deadline.before_or_equal' => 'The payment deadline must be on or before the event date.']);
-        $data['is_active'] = $request->boolean('is_active');
-
-        return $data;
     }
 }
