@@ -55,13 +55,12 @@ class MemberEmailTest extends TestCase
         $this->send($admin)->assertRedirect(route('admin.member-emails.create'))
             ->assertSessionHas('success', 'Email sent to 2 members.');
 
-        Mail::assertSent(MemberEmailMessage::class, fn (MemberEmailMessage $mail) => $mail->hasBcc('approved@example.com')
-            && $mail->hasBcc('pending@example.com')
-            && ! $mail->hasBcc('rejected@example.com')
-            && ! $mail->hasBcc('admin@example.com')
-            && $mail->to === []
+        Mail::assertSentCount(2);
+        Mail::assertSent(MemberEmailMessage::class, fn (MemberEmailMessage $mail) => $mail->hasTo('approved@example.com')
             && $mail->hasReplyTo('admin@example.com')
             && $mail->hasSubject('Iftar 2027 venue'));
+        Mail::assertSent(MemberEmailMessage::class, fn (MemberEmailMessage $mail) => $mail->hasTo('pending@example.com'));
+        Mail::assertNotSent(MemberEmailMessage::class, fn (MemberEmailMessage $mail) => $mail->hasTo('rejected@example.com') || $mail->hasTo('admin@example.com'));
         $this->assertDatabaseHas('member_emails', ['user_id' => $admin->id, 'subject' => 'Iftar 2027 venue', 'audience' => 'all', 'recipient_count' => 2]);
     }
 
@@ -75,21 +74,20 @@ class MemberEmailTest extends TestCase
         $this->send(User::factory()->admin()->create(), ['audience' => MemberEmail::AUDIENCE_APPROVED, 'ssc_batch' => 2012])
             ->assertSessionHas('success', 'Email sent to 1 member.');
 
-        Mail::assertSent(MemberEmailMessage::class, fn (MemberEmailMessage $mail) => $mail->hasBcc('approved-2012@example.com')
-            && ! $mail->hasBcc('approved-2010@example.com')
-            && ! $mail->hasBcc('pending-2012@example.com'));
+        Mail::assertSentCount(1);
+        Mail::assertSent(MemberEmailMessage::class, fn (MemberEmailMessage $mail) => $mail->hasTo('approved-2012@example.com'));
     }
 
-    public function test_large_groups_are_split_into_messages_of_50_bcc_recipients(): void
+    public function test_each_member_gets_their_own_copy_with_a_to_address_and_no_bcc(): void
     {
         Mail::fake();
-        User::factory()->count(51)->create();
+        User::factory()->count(3)->create();
 
-        $this->send(User::factory()->admin()->create())->assertSessionHas('success', 'Email sent to 51 members.');
+        $this->send(User::factory()->admin()->create())->assertSessionHas('success', 'Email sent to 3 members.');
 
-        Mail::assertSentCount(2);
-        Mail::assertSent(MemberEmailMessage::class, fn (MemberEmailMessage $mail) => count($mail->bcc) === 50);
-        Mail::assertSent(MemberEmailMessage::class, fn (MemberEmailMessage $mail) => count($mail->bcc) === 1);
+        // Gmail files mail without a To header as spam, so every copy is addressed to one member.
+        Mail::assertSentCount(3);
+        Mail::assertNotSent(MemberEmailMessage::class, fn (MemberEmailMessage $mail) => count($mail->to) !== 1 || $mail->bcc !== []);
     }
 
     public function test_nothing_is_sent_when_it_would_pass_the_daily_brevo_limit(): void

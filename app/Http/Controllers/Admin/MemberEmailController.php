@@ -47,11 +47,10 @@ class MemberEmailController extends Controller
         }
 
         $sender = $request->user();
-        // Batches of Bcc recipients, so one SMTP call covers many members and stays inside Vercel's time limit.
-        foreach ($emails->chunk(MemberEmail::RECIPIENTS_PER_MESSAGE) as $chunk) {
-            // Bcc only: no visible "To" address, so members see neither each other nor the site's own mailbox.
-            Mail::bcc($chunk->values()->all())
-                ->send(new MemberEmailMessage($data['subject'], $data['body'], $sender));
+        // One message per member, addressed To them: Gmail sends Bcc-only mail (no To header) to spam.
+        // The SMTP connection stays open between sends, so a few hundred fit inside Vercel's time limit.
+        foreach ($emails as $email) {
+            Mail::to($email)->send(new MemberEmailMessage($data['subject'], $data['body'], $sender));
         }
 
         MemberEmail::create($data + ['user_id' => $sender->id, 'recipient_count' => $emails->count()]);
