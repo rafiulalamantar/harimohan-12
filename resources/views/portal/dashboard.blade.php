@@ -10,8 +10,7 @@
         <p class="text-sm text-gray-500">SSC Batch {{ $user->ssc_batch }} · {{ $user->phone }}</p>
         </div>
     </div>
-    @php($badge = ['approved' => 'bg-green-100 text-green-800', 'pending' => 'bg-yellow-100 text-yellow-800', 'rejected' => 'bg-red-100 text-red-800'][$user->status] ?? '')
-    <span class="text-sm rounded-full px-3 py-1 {{ $badge }}">Account: {{ ucfirst($user->status) }}</span>
+    <span class="text-sm rounded-full px-3 py-1 {{ $user->statusColor() }}">Account: {{ ucfirst($user->status) }}</span>
 </div>
 
 @if ($missingFields->isNotEmpty())

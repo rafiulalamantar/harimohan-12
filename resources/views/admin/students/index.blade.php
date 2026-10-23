@@ -11,7 +11,7 @@
     <input name="q" value="{{ request('q') }}" placeholder="Name / email / phone" class="border rounded-lg px-3 py-2">
     <select name="status" class="border rounded-lg px-3 py-2">
         <option value="">All status</option>
-        @foreach (['pending', 'approved', 'rejected'] as $s)<option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>@endforeach
+        @foreach (\App\Models\User::STATUSES as $s)<option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>@endforeach
     </select>
     <select name="batch" class="border rounded-lg px-3 py-2">
         <option value="">All batch</option>
@@ -68,15 +68,15 @@
                 @endforeach
             </dl>
             <div class="mt-3 flex gap-2">
-                @if ($s->status !== 'approved')
+                @if (! $s->isApproved())
                     <form method="POST" action="{{ route('admin.students.status', $s) }}" class="flex-1">@csrf @method('PATCH')
-                        <input type="hidden" name="status" value="approved">
+                        <input type="hidden" name="status" value="{{ \App\Models\User::STATUS_APPROVED }}">
                         <button class="w-full text-sm bg-green-600 text-white rounded-lg px-3 py-2">Approve</button>
                     </form>
                 @endif
-                @if ($s->status !== 'rejected' && ! $s->isAdmin())
+                @if ($s->status !== \App\Models\User::STATUS_REJECTED && ! $s->isAdmin())
                     <form method="POST" action="{{ route('admin.students.status', $s) }}" data-confirm="Reject this student?" class="flex-1">@csrf @method('PATCH')
-                        <input type="hidden" name="status" value="rejected">
+                        <input type="hidden" name="status" value="{{ \App\Models\User::STATUS_REJECTED }}">
                         <button class="w-full text-sm bg-red-600 text-white rounded-lg px-3 py-2">Reject</button>
                     </form>
                 @endif
@@ -107,18 +107,18 @@
                 @endforeach
                 <td class="p-3">
                     <div class="flex gap-2">
-                        @if ($s->isAdmin() && $s->status === 'approved')
+                        @if ($s->isAdmin() && $s->isApproved())
                             <span class="text-gray-400">—</span>
                         @endif
-                        @if ($s->status !== 'approved')
+                        @if (! $s->isApproved())
                             <form method="POST" action="{{ route('admin.students.status', $s) }}">@csrf @method('PATCH')
-                                <input type="hidden" name="status" value="approved">
+                                <input type="hidden" name="status" value="{{ \App\Models\User::STATUS_APPROVED }}">
                                 <button class="text-xs bg-green-600 text-white rounded-sm px-2 py-1">Approve</button>
                             </form>
                         @endif
-                        @if ($s->status !== 'rejected' && ! $s->isAdmin())
+                        @if ($s->status !== \App\Models\User::STATUS_REJECTED && ! $s->isAdmin())
                             <form method="POST" action="{{ route('admin.students.status', $s) }}" data-confirm="Reject this student?">@csrf @method('PATCH')
-                                <input type="hidden" name="status" value="rejected">
+                                <input type="hidden" name="status" value="{{ \App\Models\User::STATUS_REJECTED }}">
                                 <button class="text-xs bg-red-600 text-white rounded-sm px-2 py-1">Reject</button>
                             </form>
                         @endif

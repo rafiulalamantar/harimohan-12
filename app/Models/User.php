@@ -194,6 +194,16 @@ class User extends Authenticatable
         return $this->role === self::ROLE_STUDENT;
     }
 
+    /** Tailwind classes for the account status badge on the portal dashboard. */
+    public function statusColor(): string
+    {
+        return match ($this->status) {
+            self::STATUS_APPROVED => 'bg-green-100 text-green-800',
+            self::STATUS_REJECTED => 'bg-red-100 text-red-800',
+            default => 'bg-yellow-100 text-yellow-800',
+        };
+    }
+
     public function isApproved(): bool
     {
         return $this->status === self::STATUS_APPROVED;

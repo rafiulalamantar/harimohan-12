@@ -8,9 +8,9 @@
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
     @foreach ([
         ['Total registered', $totalStudents, route('admin.students.index')],
-        ['Pending approval', $pendingStudents, route('admin.students.index', ['status' => 'pending'])],
-        ['Paid (current event)', $paidCount, route('admin.payments.index', ['status' => 'completed'])],
-        ['Collected', '৳'.number_format($collected), route('admin.payments.index', ['status' => 'completed'])],
+        ['Pending approval', $pendingStudents, route('admin.students.index', ['status' => \App\Models\User::STATUS_PENDING])],
+        ['Paid (current event)', $paidCount, route('admin.payments.index', ['status' => \App\Models\Payment::STATUS_COMPLETED])],
+        ['Collected', '৳'.number_format($collected), route('admin.payments.index', ['status' => \App\Models\Payment::STATUS_COMPLETED])],
     ] as [$label, $value, $link])
         <a href="{{ $link }}" class="bg-white rounded-xl border p-5 hover:border-brand-600">
             <div class="text-xs text-gray-500">{{ $label }}</div>

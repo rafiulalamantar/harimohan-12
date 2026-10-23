@@ -20,12 +20,12 @@
                     <div class="min-w-0 flex-1">
                         <a href="{{ route('admin.students.show', $student) }}" class="block break-words text-sm font-semibold text-slate-900 hover:underline">{{ $student->name }}</a>
                         <div class="text-xs text-slate-500">SSC {{ $student->ssc_batch }} · registered {{ $student->created_at->diffForHumans() }}</div>
-                        @if ($student->status === 'pending')
+                        @if ($student->status === \App\Models\User::STATUS_PENDING)
                             <form method="POST" action="{{ route('admin.students.status', $student) }}" class="mt-1.5">@csrf @method('PATCH')
-                                <input type="hidden" name="status" value="approved">
+                                <input type="hidden" name="status" value="{{ \App\Models\User::STATUS_APPROVED }}">
                                 <button class="rounded-lg bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-700">Approve</button>
                             </form>
-                        @elseif ($student->status === 'approved')
+                        @elseif ($student->isApproved())
                             <div class="mt-1 text-xs font-medium text-green-700">✅ Approved{{ $student->reviewer ? ' by '.$student->reviewer->name : '' }}{{ $student->reviewed_at ? ' · '.$student->reviewed_at->diffForHumans() : '' }}</div>
                         @else
                             <div class="mt-1 text-xs font-medium text-rose-700">✖ Rejected{{ $student->reviewer ? ' by '.$student->reviewer->name : '' }}{{ $student->reviewed_at ? ' · '.$student->reviewed_at->diffForHumans() : '' }}</div>
@@ -36,6 +36,6 @@
                 <li class="px-3 py-6 text-center text-sm text-slate-500">No registrations yet.</li>
             @endforelse
         </ul>
-        <a href="{{ route('admin.students.index', ['status' => 'pending']) }}" class="mt-1 block rounded-xl px-3 py-2 text-center text-sm font-medium text-brand-700 hover:bg-brand-50">View all pending</a>
+        <a href="{{ route('admin.students.index', ['status' => \App\Models\User::STATUS_PENDING]) }}" class="mt-1 block rounded-xl px-3 py-2 text-center text-sm font-medium text-brand-700 hover:bg-brand-50">View all pending</a>
     </div>
 </details>
