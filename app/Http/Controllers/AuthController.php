@@ -42,7 +42,7 @@ class AuthController extends Controller
             'name.regex' => User::NAME_MESSAGE,
         ], StudentField::attributeNamesFor($fields));
 
-        $answers = $data['fields'] ?? [];
+        $answers = StudentField::answersFrom($fields, $data['fields'] ?? []);
         unset($data['fields'], $data['photo_thumbnail']);
 
         if ($request->hasFile('photo')) {

@@ -17,8 +17,34 @@
         <option value="">All batch</option>
         @foreach ($batches as $b)<option value="{{ $b }}" @selected((string) request('batch') === (string) $b)>{{ $b }}</option>@endforeach
     </select>
+    @foreach ($choiceFields as $f)
+        <select name="answer[{{ $f->id }}]" aria-label="{{ $f->label }}" class="border rounded-lg px-3 py-2 max-w-full">
+            <option value="">{{ $f->label }}: any</option>
+            @foreach ($f->options ?? [] as $option)<option value="{{ $option }}" @selected(($answerFilters[$f->id] ?? null) === $option)>{{ $f->label }}: {{ $option }}</option>@endforeach
+        </select>
+    @endforeach
     <button class="bg-brand-600 text-white rounded-lg px-4 py-2">Filter</button>
+    @if (request()->hasAny(['q', 'status', 'batch', 'answer']))
+        <a href="{{ route('admin.students.index') }}" class="self-center text-brand-700 underline">Clear</a>
+    @endif
 </form>
+
+@if ($choiceCounts)
+    <section class="bg-white rounded-xl border p-4 mb-4" aria-label="Answer totals">
+        <h2 class="text-sm font-semibold text-gray-700">Answer totals <span class="font-normal text-gray-500">for the {{ $students->total() }} {{ str('student')->plural($students->total()) }} listed</span></h2>
+        <div class="mt-2 space-y-2">
+            @foreach ($choiceFields as $f)
+                <div class="flex flex-wrap items-center gap-1.5 text-sm">
+                    <span class="mr-1 font-medium break-words">{{ $f->label }}:</span>
+                    @foreach ($choiceCounts[$f->id] as $option => $count)
+                        <a href="{{ request()->fullUrlWithQuery(['answer' => array_replace($answerFilters, [$f->id => $option]), 'page' => null]) }}"
+                           class="rounded-full px-2.5 py-0.5 ring-1 {{ ($answerFilters[$f->id] ?? null) === $option ? 'bg-brand-600 text-white ring-brand-600' : 'bg-gray-50 text-gray-700 ring-gray-200 hover:bg-gray-100' }}">{{ $option }} <strong>{{ $count }}</strong></a>
+                    @endforeach
+                </div>
+            @endforeach
+        </div>
+    </section>
+@endif
 
 {{-- Phones: one card per student --}}
 <div class="md:hidden space-y-3">
@@ -36,6 +62,10 @@
                 <dt class="text-gray-500">Batch</dt><dd>{{ $s->ssc_batch }}</dd>
                 <dt class="text-gray-500">Phone</dt><dd><a href="tel:{{ $s->phone }}">{{ $s->phone }}</a></dd>
                 <dt class="text-gray-500">Paid</dt><dd>{{ $s->paid_count ? '✅' : '—' }}</dd>
+                @php($answers = $s->readableFieldAnswers($fields))
+                @foreach ($fields as $f)
+                    <dt class="text-gray-500 break-words">{{ $f->label }}</dt><dd class="break-words min-w-0">{{ $answers[$f->id] ?? '—' }}</dd>
+                @endforeach
             </dl>
             <div class="mt-3 flex gap-2">
                 @if ($s->status !== 'approved')
@@ -61,7 +91,7 @@
 <div class="hidden md:block bg-white rounded-xl border overflow-x-auto">
     <table class="w-full text-sm">
         <thead class="bg-gray-50 text-left text-gray-600">
-            <tr><th class="p-3">Name</th><th class="p-3">Batch</th><th class="p-3">Phone</th><th class="p-3">Status</th><th class="p-3">Paid</th><th class="p-3">Action</th></tr>
+            <tr><th class="p-3">Name</th><th class="p-3">Batch</th><th class="p-3">Phone</th><th class="p-3">Status</th><th class="p-3">Paid</th>@foreach ($fields as $f)<th class="p-3">{{ $f->label }}</th>@endforeach<th class="p-3">Action</th></tr>
         </thead>
         <tbody class="divide-y">
         @forelse ($students as $s)
@@ -71,6 +101,10 @@
                 <td class="p-3">{{ $s->phone }}</td>
                 <td class="p-3">{{ ucfirst($s->status) }}</td>
                 <td class="p-3">{{ $s->paid_count ? '✅' : '—' }}</td>
+                @php($answers = $s->readableFieldAnswers($fields))
+                @foreach ($fields as $f)
+                    <td class="p-3 min-w-24">{{ $answers[$f->id] ?? '—' }}</td>
+                @endforeach
                 <td class="p-3">
                     <div class="flex gap-2">
                         @if ($s->isAdmin() && $s->status === 'approved')
@@ -92,7 +126,7 @@
                 </td>
             </tr>
         @empty
-            <tr><td colspan="6" class="p-6 text-center text-gray-500">No students found.</td></tr>
+            <tr><td colspan="{{ 6 + $fields->count() }}" class="p-6 text-center text-gray-500">No students found.</td></tr>
         @endforelse
         </tbody>
     </table>
