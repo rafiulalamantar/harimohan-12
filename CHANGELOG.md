@@ -1,6 +1,12 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.9...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.10...main)
+
+## [v1.4.10](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.9...v1.4.10) - 2026-10-23
+
+v1.4.10
+
+Fix: the framed-photo preview under the photo input ("Your photo as it will appear") showed as a broken image on the live site. The Content-Security-Policy now allows the blob: image the cropper makes in the browser.
 
 ## [v1.4.9](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.8...v1.4.9) - 2026-10-23
 
