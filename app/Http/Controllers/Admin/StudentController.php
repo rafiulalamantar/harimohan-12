@@ -122,7 +122,7 @@ class StudentController extends Controller
 
     /**
      * Replace the card/avatar copy of a student's photo with one an admin framed from the original
-     * (resources/js/app.js, data-reframe-photo). The original photo is kept, so it can be framed again.
+     * (resources/js/photos/reframe.js, data-reframe-photo). The original photo is kept, so it can be framed again.
      */
     public function updateCardPhoto(Request $request, User $student): RedirectResponse
     {

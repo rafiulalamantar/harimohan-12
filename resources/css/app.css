@@ -53,7 +53,7 @@
 
 /*
  * Alumni directory photos: a shimmer until every photo on the page has loaded, then they all fade in together
- * (resources/js/app.js adds .is-loaded). The delayed animation reveals photos even if that script never runs.
+ * (resources/js/directory.js adds .is-loaded). The delayed animation reveals photos even if that script never runs.
  */
 @keyframes photo-shimmer {
     from {

@@ -18,7 +18,7 @@ class PhotoThumbnail
     private const QUALITY = 80;
 
     /**
-     * Store the thumbnail the browser made (resources/js/app.js) next to the photo. Vercel's PHP has no GD,
+     * Store the thumbnail the browser made (resources/js/photos/process.js) next to the photo. Vercel's PHP has no GD,
      * so on the live site this is how new uploads get thumbnails; {@see create()} is the fallback.
      */
     public static function storeUploaded(UploadedFile $thumbnail, string $photoPath): ?string
