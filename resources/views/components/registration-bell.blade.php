@@ -18,7 +18,7 @@
                 <li class="flex items-start gap-3 px-3 py-2.5">
                     <x-avatar :user="$student" class="w-9 h-9 text-sm" />
                     <div class="min-w-0 flex-1">
-                        <a href="{{ route('admin.students.show', $student) }}" class="block truncate text-sm font-semibold text-slate-900 hover:underline">{{ $student->name }}</a>
+                        <a href="{{ route('admin.students.show', $student) }}" class="block break-words text-sm font-semibold text-slate-900 hover:underline">{{ $student->name }}</a>
                         <div class="text-xs text-slate-500">SSC {{ $student->ssc_batch }} · registered {{ $student->created_at->diffForHumans() }}</div>
                         @if ($student->status === 'pending')
                             <form method="POST" action="{{ route('admin.students.status', $student) }}" class="mt-1.5">@csrf @method('PATCH')

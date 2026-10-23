@@ -53,7 +53,7 @@
                 @endif
                 <div class="min-w-0">
                     <div class="text-xs font-semibold uppercase tracking-wider text-brand-200">Upcoming event</div>
-                    <div class="mt-0.5 font-bold text-lg truncate">{{ $event->title }}</div>
+                    <div class="mt-0.5 font-bold text-lg break-words">{{ $event->title }}</div>
                     <div class="text-sm text-white/70">
                         {{ $event->event_date?->format('d M Y') }} @if($event->venue) · {{ $event->venue }} @endif · Fee ৳{{ $event->formattedFee() }}
                     </div>
@@ -145,7 +145,7 @@
                             @endif
                         </div>
                         <div class="flex flex-1 flex-col p-3 sm:p-4">
-                            <h3 class="font-bold text-slate-900 leading-snug line-clamp-1" title="{{ $s->name }}">{{ $s->name }}</h3>
+                            <h3 class="text-sm sm:text-base font-bold text-slate-900 leading-snug break-words [overflow-wrap:anywhere]">{{ $s->name }}</h3>
                             @php($job = collect([$s->profession, $s->company_name])->filter()->join(' at '))
                             @if ($job)
                                 <p class="mt-0.5 text-xs sm:text-sm text-slate-500 break-words">{{ $job }}</p>

@@ -79,7 +79,7 @@
                     <div class="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
                         <div class="border-b border-slate-100 mb-2 px-3 pt-1 pb-2">
                             <div class="text-xs text-slate-500">Logged in as</div>
-                            <div class="truncate text-sm font-semibold text-slate-900">{{ $user->name }}</div>
+                            <div class="break-words text-sm font-semibold text-slate-900">{{ $user->name }}</div>
                             @if ($user->adminBadge())
                                 <div class="text-xs font-semibold text-brand-700">🛡️ {{ $user->adminBadge() }}</div>
                             @endif
