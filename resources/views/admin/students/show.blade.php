@@ -5,7 +5,21 @@
 <a href="{{ route('admin.students.index') }}" class="text-sm text-brand-700 underline">← Students</a>
 <div class="grid md:grid-cols-3 gap-6 mt-3">
     <section class="bg-white rounded-xl border p-6">
-        <x-avatar :user="$student" class="w-24 h-24 text-3xl" />
+        @if ($student->photoUrl())
+            {{-- The card photo as the alumni directory shows it (4:3, see welcome.blade.php). --}}
+            <div class="relative aspect-[4/3] max-w-xs overflow-hidden rounded-xl bg-brand-50 ring-1 ring-slate-200">
+                <img src="{{ $student->photoThumbUrl() }}" alt="{{ $student->name }}" class="absolute inset-0 h-full w-full object-cover object-top">
+            </div>
+            <form method="POST" action="{{ route('admin.students.card-photo', $student) }}" enctype="multipart/form-data" class="mt-2 flex flex-wrap items-center gap-2">
+                @csrf @method('PATCH')
+                <input type="file" name="photo_thumbnail" accept="image/jpeg" hidden aria-hidden="true" tabindex="-1">
+                <button type="button" data-reframe-photo="{{ $student->photoUrl() }}" class="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50">Adjust card photo</button>
+                <a href="{{ $student->photoUrl() }}" target="_blank" rel="noopener" class="text-xs text-brand-700 underline">Original photo</a>
+            </form>
+            @error('photo_thumbnail')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
+        @else
+            <x-avatar :user="$student" class="w-24 h-24 text-3xl" />
+        @endif
         <h1 class="text-xl font-bold mt-3">{{ $student->name }}</h1>
         <dl class="mt-4 text-sm space-y-2">
             @foreach (['Email' => $student->email, 'Phone' => $student->phone, 'SSC batch' => $student->ssc_batch, 'Blood group' => $student->blood_group,

@@ -84,4 +84,57 @@ class PhotoThumbnailTest extends TestCase
         $this->assertNull($broken->fresh()->photo_thumb);
         $this->assertSame($broken->photoUrl(), $broken->fresh()->photoThumbUrl());
     }
+
+    public function test_admin_reframes_a_card_photo_under_a_new_name_and_keeps_the_original(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('photos/karim.jpg', 'original');
+        Storage::disk('public')->put('photos/thumbs/karim.jpg', 'old-thumb');
+        $student = User::factory()->create(['photo' => 'photos/karim.jpg', 'photo_thumb' => 'photos/thumbs/karim.jpg']);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->patch(route('admin.students.card-photo', $student), ['photo_thumbnail' => UploadedFile::fake()->image('thumbnail.jpg', 480, 360)])
+            ->assertSessionHas('success', "Updated {$student->name}'s card photo.");
+
+        $newThumb = $student->fresh()->photo_thumb;
+        // A new name, because uploads are cached as immutable: the old URL would keep showing the old framing.
+        $this->assertMatchesRegularExpression('#^photos/thumbs/karim-[a-z0-9]{8}\.jpg$#', $newThumb);
+        Storage::disk('public')->assertExists($newThumb);
+        Storage::disk('public')->assertMissing('photos/thumbs/karim.jpg');
+        $this->assertSame('original', Storage::disk('public')->get('photos/karim.jpg'));
+        $this->assertSame('photos/karim.jpg', $student->fresh()->photo);
+    }
+
+    public function test_reframing_needs_a_framed_jpeg_and_a_student_with_a_photo(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+        $student = User::factory()->create(['photo' => 'photos/karim.jpg']);
+
+        $this->actingAs($admin)->patch(route('admin.students.card-photo', $student))
+            ->assertSessionHasErrors(['photo_thumbnail' => 'Frame the photo before saving.']);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.students.card-photo', User::factory()->create()), ['photo_thumbnail' => UploadedFile::fake()->image('thumbnail.jpg')])
+            ->assertNotFound();
+    }
+
+    public function test_students_cannot_reframe_card_photos(): void
+    {
+        $student = User::factory()->create(['photo' => 'photos/karim.jpg', 'photo_thumb' => 'photos/thumbs/karim.jpg']);
+
+        $this->actingAs(User::factory()->create())
+            ->patch(route('admin.students.card-photo', $student), ['photo_thumbnail' => UploadedFile::fake()->image('thumbnail.jpg')])
+            ->assertForbidden();
+        $this->assertSame('photos/thumbs/karim.jpg', $student->fresh()->photo_thumb);
+    }
+
+    public function test_admin_student_page_offers_to_adjust_the_card_photo(): void
+    {
+        $student = User::factory()->create(['photo' => 'photos/karim.jpg', 'photo_thumb' => 'photos/thumbs/karim.jpg']);
+
+        $this->actingAs(User::factory()->admin()->create())->get(route('admin.students.show', $student))
+            ->assertSee('data-reframe-photo="'.$student->photoUrl().'"', false)
+            ->assertSee($student->photoThumbUrl());
+    }
 }

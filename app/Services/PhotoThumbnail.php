@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -23,6 +24,17 @@ class PhotoThumbnail
     public static function storeUploaded(UploadedFile $thumbnail, string $photoPath): ?string
     {
         return Storage::disk('public')->putFileAs(self::directory($photoPath), $thumbnail, self::fileName($photoPath)) ?: null;
+    }
+
+    /**
+     * Store a thumbnail an admin re-framed from the original photo. It gets a new file name because uploads are
+     * cached as immutable for a year, so reusing the old name would keep showing the old framing.
+     */
+    public static function storeReframed(UploadedFile $thumbnail, string $photoPath): ?string
+    {
+        $fileName = pathinfo($photoPath, PATHINFO_FILENAME).'-'.Str::lower(Str::random(8)).'.jpg';
+
+        return Storage::disk('public')->putFileAs(self::directory($photoPath), $thumbnail, $fileName) ?: null;
     }
 
     /** The browser's thumbnail when it sent one, otherwise one made here with GD (null when that isn't possible). */
