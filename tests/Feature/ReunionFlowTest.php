@@ -560,7 +560,8 @@ class ReunionFlowTest extends TestCase
 
         $policy = $this->get('/up')->assertOk()->headers->get('Content-Security-Policy');
 
-        $this->assertStringContainsString("img-src 'self' data: https://pub-abc123.r2.dev;", $policy);
+        // blob: is the photo cropper's preview of the framed photo.
+        $this->assertStringContainsString("img-src 'self' data: blob: https://pub-abc123.r2.dev;", $policy);
     }
 
     public function test_content_security_policy_only_reports_in_local_environment(): void
