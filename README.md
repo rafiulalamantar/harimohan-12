@@ -1,65 +1,92 @@
-# Harimohan'12 Alumni Portal (Laravel 13)
+# Harimohan'12 Alumni Portal
 
-Ex-student registration, admin approval, a public alumni directory, a student portal with notices, and event fee payment through **bKash Tokenized Checkout**. Built with Laravel 13 and Tailwind CSS v4, mobile-first.
+Ex-student registration with admin approval, a public alumni directory, a member portal with notices, and event fee payment through **bKash Tokenized Checkout**. Laravel 13, PHP 8.4, Tailwind CSS v4, mobile-first.
+
+Live: https://harimohan-12.vercel.app · New to the code? Read this file, then **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 ## Features
 
-**Public welcome page**
-- Hero banner and upcoming event (editable by admin), latest notice
-- Alumni directory of approved students, searchable and filterable by batch: name, photo, SSC batch, job, LinkedIn and Facebook links when filled in
-- Phone numbers are shown to approved members only; guests see "Log in to contact"
+**Visitors** (welcome page)
+- Hero banner, latest notices, and the alumni directory of approved members: photo, SSC batch, job, blood group, LinkedIn / Facebook
+- Search by name, job or batch and filter by batch; phone numbers only for logged-in approved members ("Log in to contact")
 
-**Student**
-- Register with name, email, 11-digit mobile (01XXXXXXXXX), SSC batch, roll, profession, company, address, photo, LinkedIn / Facebook, plus any extra questions the admin adds
-- Login with email **or** mobile number (`+880`, spaces and dashes are accepted)
-- **Forgot password**: reset link by email
-- Portal: account status, current event, notice board (pinned first)
-- Pay event fee with bKash (only after admin approval), one payment per event
-- Payment history with bKash TrxID (cards on phones); profile edit
+**Members**
+- Register with name, email, 11-digit mobile (01XXXXXXXXX), SSC batch, optional details and photo, plus any extra questions the admin adds
+- Choose a photo and position it in a card-shaped frame (drag, zoom, pinch); iPhone HEIC photos are converted automatically
+- Log in with email **or** mobile number; logins are remembered for 10 days; **Forgot password** by email
+- Portal: account status, current event, notices (pinned first), payment history, My Profile
+- Pay the event fee with bKash once approved (switched off until bKash goes live)
 
-**Admin** (`/admin`)
-- Dashboard: total / pending registrations, paid count, total collected, batch-wise chart
-- Students: search, filter by batch/status, approve / reject, CSV export (Bangla-safe UTF-8)
-- Student fields: extra questions for students (text, number, long text, dropdown, optional reference image)
-- Announcements: create, edit, pin, banner image, schedule for later, draft
-- Events: title, date, venue, fee, deadline, active toggle
-- Payments: filter by status/event, search by TrxID/invoice/name/phone, CSV export
-- Welcome page: edit the hero heading, text and banner
-- Every list works on phones (cards below the `md` breakpoint, tables above)
+**Admins** (`/admin`, menu grouped into Members, Events and Communication)
+- Dashboard: registrations, paid count, money collected, batch chart; a 🔔 bell for new registrations
+- **Students**: search, filter by status, batch or any answer, approve / reject, answer columns and totals (e.g. T-shirt size XL: 12), CSV export, **Adjust card photo**
+- **Student fields**: extra questions as short text, number, long text, date, dropdown, radio buttons, checkboxes or an image only (e.g. a size chart)
+- **Announcements** with banner, pin, schedule and draft; **Email members** (one copy per member, Brevo daily limit shown); **Welcome page** hero editor
+- **Events** and **Payments** (filters, TrxID search, CSV export)
+- Super admins can make approved students admins
 
-## Setup
+## Run it on your computer
 
-Requirements: PHP 8.3+, Composer, Node.js (for the Tailwind/Vite build), MySQL 8 (or SQLite for a quick try).
+You need PHP 8.4, Composer, Node.js 22 and MySQL 8 (or SQLite for a quick look).
 
 ```bash
+git clone https://github.com/rafiulalamantar/harimohan-12.git && cd harimohan-12
 composer install
 npm install
 cp .env.example .env
 php artisan key:generate
-php artisan storage:link       # serves uploaded photos and banners
+php artisan storage:link        # serves uploaded photos and banners from storage/app/public
 ```
 
-Edit `.env` for MySQL:
+`.env.example` uses SQLite. For MySQL (closer to the live site), create a database and set:
 
 ```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=school_reunion
+DB_DATABASE=harimohan_local
 DB_USERNAME=root
-DB_PASSWORD=
+DB_PASSWORD=your-local-password
 ```
 
-Set the admin login and bKash credentials (see below), then:
+Create the tables and data, then start the app:
 
 ```bash
-php artisan migrate --seed     # creates tables, the admin user, a sample event and notice
-composer run dev               # app + Vite at http://localhost:8000
+php artisan migrate --seed                          # tables, the admin, a demo member, a sample event and notice
+php artisan db:seed --class=DemoAlumniSeeder        # optional: 120 realistic demo alumni
+composer run dev                                    # app + Vite at http://localhost:8000
 ```
 
-Admin login: the `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env` (default `admin@school.test` / `ChangeMe@123`; change it).
+| Login (local only) | Email | Password |
+|---|---|---|
+| Super admin | `ADMIN_EMAIL` in `.env` (default `admin@school.test`) | `ADMIN_PASSWORD` (default `ChangeMe@123`) |
+| Demo member | `student@school.test` | `Student@123` |
+| Demo alumni (DemoAlumniSeeder) | `alumni001@example.com` … `alumni120@example.com` | `password` |
 
-The UI is Tailwind CSS v4 built with Vite. Run `npm run build` before deploying (or after pulling CSS/view changes without `npm run dev` running).
+The demo seeders refuse to run in production. Locally, emails (password resets, member emails) are written to `storage/logs/laravel.log` instead of being sent.
+
+## Everyday commands
+
+```bash
+composer run dev                       # run the app with live CSS/JS reloading
+php artisan test --compact             # all tests (in-memory SQLite, no setup needed)
+php artisan test --compact --filter=StudentFieldTest
+vendor/bin/pint --dirty                # format the PHP files you changed
+npm run build                          # production CSS/JS (needed if you are not running composer run dev)
+php artisan route:list --except-vendor # every URL and its controller
+```
+
+If a page looks unstyled or you see "Unable to locate file in Vite manifest", run `npm run build` or `composer run dev`.
+
+## How we work
+
+1. Create a branch from `main` (`feat/...`, `fix/...`, `refactor/...`).
+2. Make the change with a test, run `vendor/bin/pint --dirty` and `php artisan test --compact`.
+3. Push the branch; GitHub Actions runs Pint, the tests and the asset build.
+4. When CI is green, merge into `main` with `git merge --no-ff` and push. **Pushing `main` deploys the live site.** Run new migrations on production first.
+5. For a release, bump `version` in `config/app.php` and push an annotated tag `vX.Y.Z` whose message holds the release notes. CI publishes the GitHub release and updates `CHANGELOG.md`.
+
+Where code belongs, naming rules and the main flows (photos, payments, student fields) are explained in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 ## Email (password reset)
 
@@ -105,23 +132,10 @@ BKASH_APP_SECRET=...
 ## Tests
 
 ```bash
-php artisan test
+php artisan test --compact
 ```
 
-- `tests/Feature/ReunionFlowTest.php`: registration, 11-digit mobile, phone login, approval gate, welcome directory privacy, successful payment (and that a callback refresh doesn't re-execute), amount mismatch rejection, execute→query fallback, cancel, admin access control, scheduled announcements, HTTPS redirect. bKash is mocked with `Http::fake`.
-- `tests/Feature/PasswordResetTest.php`: reset link email, same reply for unknown emails, valid / invalid reset links.
-- `tests/Feature/StudentFieldTest.php`: admin-defined student fields and clearing answers that no longer fit.
-
-## Deploy checklist
-
-- HTTPS on: in cPanel run **AutoSSL** (or install Let's Encrypt, both free). bKash live callbacks need HTTPS
-- `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://your-domain`. In production the app redirects `http://` to `https://`, builds every link with `https://`, and only answers to `APP_URL`'s host
-- SMTP settings filled in (see **Email** above)
-- `npm run build`, `php artisan storage:link`
-- `php artisan config:cache route:cache view:cache`
-- Point web root to `public/`; make `storage/` and `bootstrap/cache/` writable
-- Change the admin password after first login (or set a strong `ADMIN_PASSWORD` before seeding)
-- Daily DB backup (payments table is your money record)
+Feature tests live in `tests/Feature`, one file per area: `ReunionFlowTest` (registration, login, approval, directory privacy, bKash payments with `Http::fake`, admin menu, security headers), `StudentFieldTest` (extra fields, answers, Students-page filters and totals), `PhotoThumbnailTest` (card thumbnails and admin re-framing), `MemberEmailTest`, `PasswordResetTest`, `UploadCachingTest`, `ErrorPagesTest`, `DatabaseSeederTest`.
 
 ## Deploy to Vercel
 
@@ -174,22 +188,6 @@ php artisan migrate --seed --force
 (`/etc/ssl/cert.pem` is the macOS CA bundle.) Run `php artisan migrate --force` the same way after pulling new migrations.
 
 **Limits to know:** Vercel rejects request bodies over 4.5 MB, so keep photo uploads small; preview deployments get their own URL that does not match `APP_URL`, so test on the production URL.
-
-## Structure
-
-```
-app/Services/BkashService.php           bKash API client
-app/Http/Controllers/PaymentController  pay + callback
-app/Http/Controllers/PortalController   student portal
-app/Http/Controllers/AuthController     register / login
-app/Http/Controllers/PasswordResetController  forgot / reset password
-app/Http/Controllers/HomeController     public welcome page + alumni directory
-app/Http/Controllers/Admin/*            admin panel
-app/Http/Middleware/                    admin gate, rejected-user logout, HTTPS redirect, security headers
-app/Models/{User,Announcement,ReunionEvent,Payment,StudentField,StudentFieldValue,Setting}.php
-database/migrations/                    users (+alumni fields), announcements, reunion_events, payments, student fields, settings
-resources/views/                        Blade + Tailwind v4 (resources/css/app.css)
-```
 
 ## License
 
