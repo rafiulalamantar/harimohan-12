@@ -4,39 +4,35 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\StudentField;
-use App\Models\StudentFieldValue;
 use App\Models\User;
 use App\Services\CsvWriter;
 use App\Services\PhotoThumbnail;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\StudentAnswers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/** Admins review registrations, manage admin access and fix card photos. */
 class StudentController extends Controller
 {
+    /** The student list with search, filters, a column per extra field and choice totals. */
     public function index(Request $request): View
     {
         $fields = StudentField::active()->get()->filter->takesAnswer();
-        $choiceFields = $fields->filter(fn (StudentField $field) => $field->hasChoices())->keyBy('id');
-        $answerFilters = $this->answerFilters($request, $choiceFields);
+        $answers = new StudentAnswers($fields);
+        $answerFilters = $answers->filtersFrom($request->input('answer'));
 
-        $query = User::students()
-            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
-            ->when($request->batch, fn ($q, $b) => $q->where('ssc_batch', $b))
+        $query = $answers->applyFilters(User::students()
+            ->when($request->status, fn ($q, $status) => $q->where('status', $status))
+            ->when($request->batch, fn ($q, $batch) => $q->where('ssc_batch', $batch))
             ->when($request->q, fn ($q, $term) => $q->where(fn ($w) => $w
                 ->where('name', 'like', "%{$term}%")
                 ->orWhere('email', 'like', "%{$term}%")
-                ->orWhere('phone', 'like', "%{$term}%")));
-
-        foreach ($answerFilters as $fieldId => $choice) {
-            $query->whereIn('id', $this->studentsWhoChose($choiceFields[$fieldId], $choice));
-        }
+                ->orWhere('phone', 'like', "%{$term}%"))), $answerFilters);
 
         $students = (clone $query)
             ->with(['fieldValues' => fn ($q) => $q->whereIn('student_field_id', $fields->modelKeys())])
@@ -45,78 +41,14 @@ class StudentController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        $batches = User::students()->whereNotNull('ssc_batch')
-            ->distinct()->orderByDesc('ssc_batch')->pluck('ssc_batch');
-
         return view('admin.students.index', [
             'students' => $students,
-            'batches' => $batches,
+            'batches' => User::students()->whereNotNull('ssc_batch')->distinct()->orderByDesc('ssc_batch')->pluck('ssc_batch'),
             'fields' => $fields,
-            'choiceFields' => $choiceFields,
+            'choiceFields' => $answers->choiceFields,
             'answerFilters' => $answerFilters,
-            'choiceCounts' => $this->choiceCounts($choiceFields, $query),
+            'choiceCounts' => $answers->choiceCounts($query),
         ]);
-    }
-
-    /**
-     * Answer filters from ?answer[field id]=choice, keeping only real choices of active choice fields.
-     *
-     * @param  Collection<int, StudentField>  $choiceFields  keyed by field id
-     * @return array<int, string>
-     */
-    private function answerFilters(Request $request, Collection $choiceFields): array
-    {
-        $requested = $request->input('answer');
-
-        return collect(is_array($requested) ? $requested : [])
-            ->filter(fn ($choice, $fieldId) => is_string($choice)
-                && in_array($choice, $choiceFields->get($fieldId)?->options ?? [], true))
-            ->all();
-    }
-
-    /**
-     * Ids of students whose answer to $field includes $choice (checkbox answers hold several choices).
-     *
-     * @return Collection<int, int>
-     */
-    private function studentsWhoChose(StudentField $field, string $choice): Collection
-    {
-        if ($field->type !== 'checkboxes') {
-            return $field->values()->where('value', $choice)->pluck('user_id');
-        }
-
-        return $field->values()->whereNotNull('value')->get(['user_id', 'value'])
-            ->filter(fn ($answer) => in_array($choice, $field->answerInput($answer->value), true))
-            ->pluck('user_id');
-    }
-
-    /**
-     * How many of the listed students picked each choice, e.g. T-shirt size XL: 12.
-     *
-     * @param  Collection<int, StudentField>  $choiceFields  keyed by field id
-     * @return array<int, array<string, int>> choice => count, keyed by field id
-     */
-    private function choiceCounts(Collection $choiceFields, Builder $students): array
-    {
-        if ($choiceFields->isEmpty()) {
-            return [];
-        }
-
-        $counts = $choiceFields->map(fn (StudentField $field) => array_fill_keys($field->options ?? [], 0))->all();
-
-        StudentFieldValue::whereIn('student_field_id', $choiceFields->keys())
-            ->whereIn('user_id', (clone $students)->select('id'))
-            ->whereNotNull('value')
-            ->get(['student_field_id', 'value'])
-            ->each(function (StudentFieldValue $answer) use (&$counts, $choiceFields) {
-                foreach ((array) $choiceFields[$answer->student_field_id]->answerInput($answer->value) as $choice) {
-                    if (isset($counts[$answer->student_field_id][$choice])) {
-                        $counts[$answer->student_field_id][$choice]++;
-                    }
-                }
-            });
-
-        return $counts;
     }
 
     public function show(User $student): View
