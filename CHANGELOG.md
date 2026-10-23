@@ -1,6 +1,20 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.10...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.5.0...main)
+
+## [v1.5.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.10...v1.5.0) - 2026-10-23
+
+v1.5.0
+
+Code refactor so new developers can find their way. No change to what members or admins see.
+
+- Form Requests: registration and My Profile share one set of profile rules (StudentProfileRequest); events, announcements and student fields have their own requests.
+- Every controller method declares its return type.
+- Named model scopes and status lists (User::students(), User::withPaidCount(), Payment::completed(), User::STATUSES, Payment::STATUSES) replace repeated where-clauses and hand-typed status words in controllers and views.
+- The admin Students page filters and choice totals moved into an App\Services\StudentAnswers class.
+- resources/js/app.js split into one module per feature: confirm, photos/{process,cropper,upload,reframe}, dropdowns, directory, network-status.
+- New onboarding docs: a rewritten README (local setup with MySQL and demo data, local logins, everyday commands, branch to CI to release workflow) and docs/ARCHITECTURE.md (folder map, conventions, key flows, security notes, tests, glossary).
+- Includes v1.4.10's fix for the photo preview on the live site.
 
 ## [v1.4.10](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.9...v1.4.10) - 2026-10-23
 
