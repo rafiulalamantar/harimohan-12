@@ -47,7 +47,8 @@ class AddSecurityHeaders
             "worker-src 'self' blob:",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
-            "img-src 'self' data:".$this->uploadOrigin(),
+            // blob: shows the framed photo preview the cropper makes in the browser (resources/js/app.js).
+            "img-src 'self' data: blob:".$this->uploadOrigin(),
             "connect-src 'self'",
             "form-action 'self' https://*.bka.sh https://*.bkash.com",
             "frame-ancestors 'none'",
