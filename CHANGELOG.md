@@ -1,6 +1,15 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.7...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.8...main)
+
+## [v1.4.8](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.7...v1.4.8) - 2026-10-23
+
+v1.4.8
+
+Photo cropper and a tidier admin menu.
+
+- Photo cropper: after choosing a photo on My Profile or the registration form, students drag and zoom it (slider, pinch or mouse wheel) inside a frame shaped like the alumni directory card, with a guide oval for the face. Only the framed part is uploaded (JPEG up to 1200x900 plus the card thumbnail). A preview with "Adjust photo" appears under the input. Works with iPhone HEIC photos.
+- Admin menu grouped: Dashboard, Members (Students, Student fields), Events (Events, Payments), Communication (Announcements, Email members, Welcome page) and My portal. Dropdowns on wide screens, headed sections in the phone menu; the current page's group is highlighted. The full bar now fits from 1024 px wide.
 
 ## [v1.4.7](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.6...v1.4.7) - 2026-10-23
 
