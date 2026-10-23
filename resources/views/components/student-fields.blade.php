@@ -3,11 +3,10 @@
 @foreach ($fields as $f)
     @if (! $f->takesAnswer())
         @if ($f->image)
-            <div class="md:col-span-2 rounded-2xl bg-slate-50 ring-1 ring-slate-200/80 p-4">
-                <h3 class="text-sm font-semibold text-slate-700 break-words">{{ $f->label }}</h3>
-                @if ($f->help_text)<p class="text-xs text-slate-500 mt-1">{{ $f->help_text }}</p>@endif
-                <x-student-field-image :field="$f" />
-            </div>
+            {{-- Image-only: just the picture, tap to open full size. --}}
+            <a href="{{ $f->imageUrl() }}" target="_blank" rel="noopener" title="{{ $f->label }}" class="md:col-span-2 block w-full max-w-md">
+                <img src="{{ $f->imageUrl() }}" alt="{{ $f->label }}" loading="lazy" class="w-full max-h-80 object-contain rounded-xl border bg-white">
+            </a>
         @endif
         @continue
     @endif

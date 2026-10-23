@@ -274,7 +274,7 @@ class StudentFieldTest extends TestCase
         $student = User::factory()->create();
 
         $this->actingAs($student)->get(route('portal.profile'))
-            ->assertSee('T-shirt size chart')->assertSee($chart->imageUrl())
+            ->assertSee($chart->imageUrl())
             ->assertDontSee('name="fields['.$chart->id.']"', false);
         $this->actingAs($student)->get(route('portal.dashboard'))->assertDontSee($chart->imageUrl());
 
