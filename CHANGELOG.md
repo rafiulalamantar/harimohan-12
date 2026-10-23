@@ -1,6 +1,17 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.3...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.4...main)
+
+## [v1.4.4](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.3...v1.4.4) - 2026-10-23
+
+v1.4.4
+
+- **Blood group.** New optional dropdown (A+, A-, B+, B-, AB+, AB-, O+, O-) on the register and profile pages, so alumni can find donors in an emergency. It shows on the admin student page, in the CSV export ("Blood Group" column) and as a red badge on directory cards.
+  
+- **Previous / Next on desktop.** Laravel's default pagination showed only small arrow icons above phone width, so Safari and Chrome on desktop had no visible Previous/Next buttons. Every paginated list now shows labelled Previous and Next buttons at every width, with page numbers on desktop and "Page X of Y" on phones.
+  
+
+Needs the users.blood_group migration (already run on production).
 
 ## [v1.4.3](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.2...v1.4.3) - 2026-10-22
 
