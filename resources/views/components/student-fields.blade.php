@@ -4,6 +4,8 @@
     @if (! $f->takesAnswer())
         @if ($f->image)
             <div class="md:col-span-2 rounded-2xl bg-slate-50 ring-1 ring-slate-200/80 p-4">
+                <h3 class="text-sm font-semibold text-slate-700 break-words">{{ $f->label }}</h3>
+                @if ($f->help_text)<p class="text-xs text-slate-500 mt-1">{{ $f->help_text }}</p>@endif
                 <x-student-field-image :field="$f" />
             </div>
         @endif
@@ -11,7 +13,7 @@
     @endif
     @php($name = "fields.{$f->id}")
     @php($value = old($name, $f->answerInput($answers[$f->id] ?? null)))
-    <div class="md:col-span-2 rounded-2xl bg-slate-50 ring-1 ring-slate-200/80 p-4 {{ $f->image ? 'grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 items-start' : '' }}">
+    <div class="md:col-span-2 rounded-2xl bg-slate-50 ring-1 ring-slate-200/80 p-4">
         <div class="min-w-0">
             @php($inputClass = 'w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-slate-900 ring-1 ring-slate-200 shadow-xs focus:ring-2 focus:ring-brand-500 focus:outline-hidden transition')
             @if (in_array($f->type, ['radio', 'checkboxes'], true))
@@ -57,10 +59,7 @@
             @error("{$name}.*")<p class="text-sm text-rose-600 mt-1.5">{{ $message }}</p>@enderror
         </div>
         @if ($f->image)
-            <a href="{{ $f->imageUrl() }}" target="_blank" rel="noopener" title="Open full size">
-                <img src="{{ $f->imageUrl() }}" alt="{{ $f->label }} reference" class="w-full max-h-72 object-contain rounded-lg border bg-white">
-                <span class="block text-xs text-brand-700 underline mt-1">Open full size</span>
-            </a>
+            <x-student-field-image :field="$f" caption="View reference image" />
         @endif
     </div>
 @endforeach

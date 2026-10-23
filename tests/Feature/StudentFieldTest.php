@@ -273,16 +273,40 @@ class StudentFieldTest extends TestCase
         $chart = StudentField::factory()->create(['label' => 'T-shirt size chart', 'type' => 'image', 'image' => 'student-fields/chart.png']);
         $student = User::factory()->create();
 
-        $this->actingAs($student)->get(route('portal.dashboard'))->assertSee('T-shirt size chart')->assertSee($chart->imageUrl());
         $this->actingAs($student)->get(route('portal.profile'))
-            ->assertSee($chart->imageUrl())
+            ->assertSee('T-shirt size chart')->assertSee($chart->imageUrl())
             ->assertDontSee('name="fields['.$chart->id.']"', false);
+        $this->actingAs($student)->get(route('portal.dashboard'))->assertDontSee($chart->imageUrl());
 
         $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student, [$chart->id => 'x']))
-            ->assertSessionHas('success');
+            ->assertSessionHas('info', 'No changes to save.');
         $this->assertSame([], $student->fresh()->fieldAnswers());
 
         $this->actingAs(User::factory()->admin()->create())->get(route('admin.students.index'))->assertDontSee('T-shirt size chart');
+    }
+
+    public function test_inactive_image_only_field_is_hidden_from_students(): void
+    {
+        $chart = StudentField::factory()->inactive()->create(['label' => 'T-shirt size chart', 'type' => 'image', 'image' => 'student-fields/chart.png']);
+        $student = User::factory()->create();
+
+        $this->actingAs($student)->get(route('portal.profile'))->assertDontSee($chart->imageUrl());
+        $this->get(route('register'))->assertDontSee($chart->imageUrl());
+    }
+
+    public function test_saving_an_unchanged_profile_says_nothing_changed(): void
+    {
+        $field = StudentField::factory()->select()->create();
+        $student = User::factory()->create();
+        $student->saveFieldValues([$field->id => 'M']);
+
+        $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student, [$field->id => 'M']))
+            ->assertSessionHas('info', 'No changes to save.')
+            ->assertSessionMissing('success');
+
+        $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student, [$field->id => 'L']))
+            ->assertSessionHas('success', 'Profile updated.');
+        $this->assertSame([$field->id => 'L'], $student->fresh()->fieldAnswers());
     }
 
     public function test_student_sees_field_with_image_on_profile_and_saves_answer(): void
@@ -321,7 +345,7 @@ class StudentFieldTest extends TestCase
         $this->actingAs($student)->get(route('portal.profile'))->assertDontSee('Old question');
 
         $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student, [$inactive->id => 'x', 999 => 'y']))
-            ->assertSessionHas('success');
+            ->assertSessionHas('info', 'No changes to save.');
 
         $this->assertSame([], $student->fresh()->fieldAnswers());
     }

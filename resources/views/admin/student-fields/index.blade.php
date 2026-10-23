@@ -7,6 +7,10 @@
     <a href="{{ route('admin.student-fields.create') }}" class="bg-brand-600 text-white rounded-lg px-4 py-2 text-sm">+ New field</a>
 </div>
 <p class="text-sm text-gray-500 mb-4">Extra information to collect from students, e.g. a T-shirt size with a size chart. Answers can be text, a number, a date, a dropdown, radio buttons or checkboxes. Active fields appear on the registration form and on every student's profile page. Only admins see the answers, on the Students page, each student's page and the CSV export. Turn a field off to hide it while keeping the answers already collected.</p>
+<div class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900 mb-4">
+    <strong>Tip:</strong> for a T-shirt size, create one <em>Radio buttons</em> or <em>Dropdown</em> field with the sizes, upload the size chart as its reference image and tick Required, so students see the chart right where they choose.
+    Use <em>Image only</em> for a picture with no question. Students only see active fields; turning a field off hides it but keeps its answers, deleting it removes them.
+</div>
 <div class="bg-white rounded-xl border overflow-x-auto">
     <table class="w-full text-sm">
         <thead class="bg-gray-50 text-left text-gray-600">

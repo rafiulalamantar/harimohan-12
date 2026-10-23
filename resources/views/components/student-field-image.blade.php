@@ -1,9 +1,11 @@
-@props(['field'])
+@props(['field', 'caption' => 'Tap to view full size'])
 
-{{-- An image-only student field, e.g. a T-shirt size chart: a title, optional help text and the picture. --}}
-<h3 class="text-sm font-semibold text-slate-700 break-words">{{ $field->label }}</h3>
-@if ($field->help_text)<p class="text-xs text-slate-500 mt-1">{{ $field->help_text }}</p>@endif
-<a href="{{ $field->imageUrl() }}" target="_blank" rel="noopener" title="Open full size" class="mt-2 block">
-    <img src="{{ $field->imageUrl() }}" alt="{{ $field->label }}" class="w-full max-h-[32rem] object-contain rounded-lg border bg-white">
-    <span class="block text-xs text-brand-700 underline mt-1">Open full size</span>
+{{-- A field's picture (e.g. a T-shirt size chart) as a small thumbnail that opens full size. --}}
+<a href="{{ $field->imageUrl() }}" target="_blank" rel="noopener"
+   class="mt-2 flex max-w-sm items-center gap-3 rounded-xl bg-white p-2 ring-1 ring-slate-200 shadow-xs hover:ring-brand-300 transition">
+    <img src="{{ $field->imageUrl() }}" alt="{{ $field->label }}" loading="lazy" class="h-16 w-16 shrink-0 rounded-lg border object-cover object-top">
+    <span class="min-w-0 text-xs">
+        <span class="block font-semibold text-slate-700">🔍 {{ $caption }}</span>
+        <span class="block text-slate-500">Opens the image in a new tab</span>
+    </span>
 </a>

@@ -26,7 +26,6 @@ class PortalController extends Controller
             'hasPaid' => $event ? $user->hasPaidFor($event) : false,
             'announcements' => Announcement::feed()->take(5)->get(),
             'missingFields' => $user->missingRequiredFields(),
-            'imageFields' => StudentField::active()->where('type', 'image')->whereNotNull('image')->get(),
         ]);
     }
 
@@ -84,6 +83,12 @@ class PortalController extends Controller
 
         $answers = StudentField::answersFrom($fields, $data['fields'] ?? []);
         unset($data['fields'], $data['photo_thumbnail']);
+
+        $savedAnswers = $user->fieldAnswers();
+        $answersChanged = collect($answers)->contains(fn (?string $answer, int $fieldId) => ($savedAnswers[$fieldId] ?? null) !== $answer);
+        if (! $request->hasFile('photo') && ! $answersChanged && ! $user->fill($data)->isDirty()) {
+            return back()->with('info', 'No changes to save.');
+        }
 
         // Store the new photo first and only remove the old one once everything has saved,
         // so a failure never leaves the student without a photo.
