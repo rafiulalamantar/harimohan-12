@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
-            $students = User::where('role', User::ROLE_STUDENT);
+            $students = User::students();
 
             $view->with([
                 'pendingRegistrations' => (clone $students)->where('status', User::STATUS_PENDING)->count(),

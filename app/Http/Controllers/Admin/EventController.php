@@ -12,8 +12,8 @@ class EventController extends Controller
     public function index()
     {
         return view('admin.events.index', [
-            'events' => ReunionEvent::withCount(['payments as paid_count' => fn ($q) => $q->where('status', 'completed')])
-                ->withSum(['payments as collected' => fn ($q) => $q->where('status', 'completed')], 'amount')
+            'events' => ReunionEvent::withCount(['payments as paid_count' => fn ($payments) => $payments->completed()])
+                ->withSum(['payments as collected' => fn ($payments) => $payments->completed()], 'amount')
                 ->latest('event_date')->get(),
         ]);
     }

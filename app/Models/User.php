@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -44,6 +45,9 @@ class User extends Authenticatable
 
     public const STATUS_REJECTED = 'rejected';
 
+    /** Registration statuses in the order admin filters list them. */
+    public const STATUSES = [self::STATUS_PENDING, self::STATUS_APPROVED, self::STATUS_REJECTED];
+
     protected function casts(): array
     {
         return [
@@ -70,6 +74,18 @@ class User extends Authenticatable
         $digits = preg_replace('/[\s\-()]/', '', trim($phone));
 
         return preg_replace('/^\+?88(?=01\d{9}$)/', '', $digits);
+    }
+
+    /** Alumni accounts (students), including students who are also admins. */
+    public function scopeStudents(Builder $query): Builder
+    {
+        return $query->where('role', self::ROLE_STUDENT);
+    }
+
+    /** Adds paid_count: how many of the user's payments completed. */
+    public function scopeWithPaidCount(Builder $query): Builder
+    {
+        return $query->withCount(['payments as paid_count' => fn (Builder $payments) => $payments->completed()]);
     }
 
     /** The admin who last approved or rejected this registration. */
@@ -185,14 +201,14 @@ class User extends Authenticatable
 
     public function hasAnyCompletedPayment(): bool
     {
-        return $this->payments()->where('status', Payment::STATUS_COMPLETED)->exists();
+        return $this->payments()->completed()->exists();
     }
 
     public function hasPaidFor(ReunionEvent $event): bool
     {
         return $this->payments()
             ->where('reunion_event_id', $event->id)
-            ->where('status', Payment::STATUS_COMPLETED)
+            ->completed()
             ->exists();
     }
 }

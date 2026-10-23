@@ -16,7 +16,7 @@ class MemberEmailController extends Controller
 {
     public function create(): View
     {
-        $members = User::where('role', User::ROLE_STUDENT);
+        $members = User::students();
 
         return view('admin.member-emails.create', [
             'audienceCounts' => collect(MemberEmail::AUDIENCES)->map(fn ($label, $audience) => MemberEmail::recipients($audience)->count()),

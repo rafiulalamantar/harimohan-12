@@ -23,7 +23,7 @@ class StudentController extends Controller
         $choiceFields = $fields->filter(fn (StudentField $field) => $field->hasChoices())->keyBy('id');
         $answerFilters = $this->answerFilters($request, $choiceFields);
 
-        $query = User::where('role', User::ROLE_STUDENT)
+        $query = User::students()
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->batch, fn ($q, $b) => $q->where('ssc_batch', $b))
             ->when($request->q, fn ($q, $term) => $q->where(fn ($w) => $w
@@ -37,12 +37,12 @@ class StudentController extends Controller
 
         $students = (clone $query)
             ->with(['fieldValues' => fn ($q) => $q->whereIn('student_field_id', $fields->modelKeys())])
-            ->withCount(['payments as paid_count' => fn ($q) => $q->where('status', 'completed')])
+            ->withPaidCount()
             ->latest()
             ->paginate(25)
             ->withQueryString();
 
-        $batches = User::where('role', User::ROLE_STUDENT)->whereNotNull('ssc_batch')
+        $batches = User::students()->whereNotNull('ssc_batch')
             ->distinct()->orderByDesc('ssc_batch')->pluck('ssc_batch');
 
         return view('admin.students.index', [
@@ -221,9 +221,9 @@ class StudentController extends Controller
             fputcsv($out, ['Name', 'Email', 'Phone', 'SSC Batch', 'Blood Group', 'Profession', 'Company', 'LinkedIn', 'Facebook', 'Status', 'Paid', 'Registered At',
                 ...$fields->pluck('label')]);
 
-            User::where('role', User::ROLE_STUDENT)
+            User::students()
                 ->with('fieldValues')
-                ->withCount(['payments as paid_count' => fn ($q) => $q->where('status', 'completed')])
+                ->withPaidCount()
                 ->orderBy('ssc_batch')->orderBy('name')
                 ->chunk(500, function ($users) use ($out, $fields) {
                     foreach ($users as $u) {
