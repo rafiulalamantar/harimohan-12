@@ -20,7 +20,7 @@
         <x-field name="present_address" label="Present address" :value="$user->present_address" />
         <x-field name="linkedin_url" label="LinkedIn URL" type="url" :value="$user->linkedin_url" placeholder="https://www.linkedin.com/in/..." />
         <x-field name="facebook_url" label="Facebook URL" type="url" :value="$user->facebook_url" placeholder="https://www.facebook.com/..." />
-        <div class="md:col-span-2"><x-field name="photo" label="Photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif" data-thumbnail="photo_thumbnail" hint="Uploading a new photo replaces the old one. JPG, PNG, WebP or iPhone photo (converted to JPG). Large photos are resized automatically." /><input type="file" name="photo_thumbnail" accept="image/jpeg" hidden aria-hidden="true" tabindex="-1"></div>
+        <div class="md:col-span-2"><x-field name="photo" label="Photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif" data-thumbnail="photo_thumbnail" data-crop hint="Uploading a new photo replaces the old one. After choosing it you can move and zoom it to fit the directory card. JPG, PNG, WebP or iPhone photo (converted to JPG)." /><input type="file" name="photo_thumbnail" accept="image/jpeg" hidden aria-hidden="true" tabindex="-1"></div>
         <x-student-fields :fields="$fields" :answers="$user->fieldAnswers()" />
         <div class="md:col-span-2"><button class="bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg px-6 py-2.5">Save</button></div>
     </form>
