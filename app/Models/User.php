@@ -103,6 +103,20 @@ class User extends Authenticatable
     }
 
     /**
+     * Answers formatted for people to read (checkbox choices joined, dates spelled out), keyed by field id.
+     *
+     * @param  Collection<int, StudentField>  $fields
+     * @return array<int, string>
+     */
+    public function readableFieldAnswers(Collection $fields): array
+    {
+        $answers = $this->fieldAnswers();
+
+        return $fields->mapWithKeys(fn (StudentField $field) => [$field->id => $field->displayAnswer($answers[$field->id] ?? null)])
+            ->filter()->all();
+    }
+
+    /**
      * Answers keyed by student field id.
      *
      * @return array<int, ?string>

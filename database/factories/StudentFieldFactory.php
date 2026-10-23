@@ -40,4 +40,18 @@ class StudentFieldFactory extends Factory
     {
         return $this->state(fn () => ['type' => 'select', 'options' => $options]);
     }
+
+    /**
+     * @param  array<int, string>  $options
+     */
+    public function checkboxes(array $options = ['Lunch', 'Dinner', 'Cultural night']): static
+    {
+        return $this->state(fn () => ['type' => 'checkboxes', 'options' => $options]);
+    }
+
+    /** Answers shown to 'members' or 'everyone' on the alumni directory. */
+    public function visibleTo(string $visibility): static
+    {
+        return $this->state(fn () => ['visibility' => $visibility]);
+    }
 }

@@ -150,6 +150,18 @@
                             @if ($job)
                                 <p class="mt-0.5 text-xs sm:text-sm text-slate-500 break-words">{{ $job }}</p>
                             @endif
+                            @if ($directoryFields->isNotEmpty())
+                                @php($fieldAnswers = $s->readableFieldAnswers($directoryFields))
+                                @if ($fieldAnswers)
+                                    <dl class="mt-1.5 space-y-0.5 text-xs text-slate-600">
+                                        @foreach ($directoryFields as $f)
+                                            @isset($fieldAnswers[$f->id])
+                                                <div class="break-words [overflow-wrap:anywhere]"><dt class="inline font-semibold text-slate-700">{{ $f->label }}:</dt> <dd class="inline">{{ $fieldAnswers[$f->id] }}</dd></div>
+                                            @endisset
+                                        @endforeach
+                                    </dl>
+                                @endif
+                            @endif
                             <div class="mt-auto pt-3 space-y-2">
                                 @if ($s->linkedin_url || $s->facebook_url)
                                     <div class="flex items-center gap-2">

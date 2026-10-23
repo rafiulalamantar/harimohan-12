@@ -17,8 +17,8 @@
                 @endforeach
             </select>
         </div>
-        <x-field name="options" label="Dropdown choices" type="textarea" :value="implode(PHP_EOL, $field->options ?? [])"
-                 hint="Only for dropdown fields. Put each choice on its own line (a choice may contain commas)." />
+        <x-field name="options" label="Choices" type="textarea" :value="implode(PHP_EOL, $field->options ?? [])"
+                 hint="Only for dropdown, radio button and checkbox fields. Put each choice on its own line (a choice may contain commas)." />
         <x-field name="help_text" label="Help text (optional)" :value="$field->help_text" placeholder="Check the size chart and pick your chest size." />
         @if ($field->image)
             <div>
@@ -28,6 +28,16 @@
         @endif
         <x-field name="image" :label="$field->image ? 'Change reference image' : 'Reference image (optional)'" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
                  hint="Shown to students next to the field, e.g. a T-shirt size chart. PNG/JPG, max 4 MB" />
+        <div>
+            <label for="visibility" class="block text-sm font-medium mb-1">Who can see answers <span class="text-red-600">*</span></label>
+            <select id="visibility" name="visibility" class="w-full rounded-lg border-gray-300 border px-3 py-2">
+                @foreach (\App\Models\StudentField::VISIBILITIES as $value => $name)
+                    <option value="{{ $value }}" @selected(old('visibility', $field->visibility) === $value)>{{ $name }}</option>
+                @endforeach
+            </select>
+            <p class="text-xs text-gray-500 mt-1">Admins always see every answer. Students are told who will see theirs.</p>
+            @error('visibility')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
+        </div>
         <x-field name="sort_order" label="Order" type="number" min="0" :value="$field->sort_order ?? 0" hint="Lower numbers appear first." />
         <label class="flex items-center gap-2 text-sm">
             <input type="checkbox" name="is_required" value="1" @checked(old('is_required', $field->is_required))> Required (students must answer before saving their profile)

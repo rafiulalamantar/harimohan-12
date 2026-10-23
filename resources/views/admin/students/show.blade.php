@@ -13,9 +13,9 @@
                        'Registered' => $student->created_at->format('d M Y')] as $k => $v)
                 <div class="flex justify-between gap-3"><dt class="text-gray-500">{{ $k }}</dt><dd class="text-right">{{ $v ?: '—' }}</dd></div>
             @endforeach
-            @php($answers = $student->fieldAnswers())
+            @php($answers = $student->readableFieldAnswers($fields))
             @foreach ($fields as $f)
-                <div class="flex justify-between gap-3"><dt class="text-gray-500">{{ $f->label }}@unless($f->is_active) <span class="text-xs">(off)</span>@endunless</dt><dd class="text-right whitespace-pre-line">{{ ($answers[$f->id] ?? null) ?: '—' }}</dd></div>
+                <div class="flex justify-between gap-3"><dt class="text-gray-500">{{ $f->label }}@unless($f->is_active) <span class="text-xs">(off)</span>@endunless</dt><dd class="text-right whitespace-pre-line">{{ $answers[$f->id] ?? '—' }}</dd></div>
             @endforeach
             @foreach (['LinkedIn' => $student->linkedin_url, 'Facebook' => $student->facebook_url] as $k => $url)
                 <div class="flex justify-between gap-3"><dt class="text-gray-500">{{ $k }}</dt>

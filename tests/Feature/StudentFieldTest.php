@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\TestWith;
 use Tests\TestCase;
 
 class StudentFieldTest extends TestCase
@@ -101,6 +102,139 @@ class StudentFieldTest extends TestCase
             ->assertSessionHasErrors('options');
     }
 
+    #[TestWith(['radio'])]
+    #[TestWith(['checkboxes'])]
+    public function test_radio_and_checkbox_fields_need_choices(string $type): void
+    {
+        $this->actingAs(User::factory()->admin()->create())
+            ->post(route('admin.student-fields.store'), ['label' => 'Meals', 'type' => $type, 'options' => ''])
+            ->assertSessionHasErrors(['options' => 'Add at least one choice for a dropdown, radio button or checkbox field.']);
+    }
+
+    public function test_admin_can_create_checkbox_field_visible_to_everyone(): void
+    {
+        $this->actingAs(User::factory()->admin()->create())->post(route('admin.student-fields.store'), [
+            'label' => 'Meals',
+            'type' => 'checkboxes',
+            'options' => "Lunch\nDinner",
+            'visibility' => 'everyone',
+            'is_active' => '1',
+        ])->assertRedirect(route('admin.student-fields.index'));
+
+        $field = StudentField::sole();
+        $this->assertSame(['Lunch', 'Dinner'], $field->options);
+        $this->assertSame('everyone', $field->visibility);
+
+        $this->get(route('admin.student-fields.index'))->assertSee('Lunch, Dinner')->assertSee('Everyone');
+    }
+
+    public function test_new_field_without_visibility_is_admin_only(): void
+    {
+        $this->actingAs(User::factory()->admin()->create())
+            ->post(route('admin.student-fields.store'), ['label' => 'Guests', 'type' => 'number', 'is_active' => '1']);
+
+        $this->assertSame('admins', StudentField::sole()->visibility);
+    }
+
+    public function test_student_saves_and_clears_checkbox_answers(): void
+    {
+        $field = StudentField::factory()->checkboxes()->create(['label' => 'Meals']);
+        $student = User::factory()->create();
+
+        $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student, [$field->id => ['Lunch', 'Cultural night']]))
+            ->assertSessionHas('success');
+        $this->assertSame([$field->id => "Lunch\nCultural night"], $student->fresh()->fieldAnswers());
+
+        $this->actingAs($student)->get(route('portal.profile'))
+            ->assertSee('value="Lunch" checked', false)
+            ->assertDontSee('value="Dinner" checked', false)
+            ->assertSee('Only admins see this answer.');
+
+        $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student))
+            ->assertSessionHas('success');
+        $this->assertSame([$field->id => null], $student->fresh()->fieldAnswers());
+    }
+
+    public function test_profile_rejects_unknown_checkbox_choice_and_missing_required_choice(): void
+    {
+        $field = StudentField::factory()->checkboxes()->required()->create(['label' => 'Meals']);
+        $student = User::factory()->create();
+
+        $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student, [$field->id => ['Lunch', 'Breakfast']]))
+            ->assertSessionHasErrors(["fields.{$field->id}.1" => 'The selected Meals is invalid.']);
+
+        $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student))
+            ->assertSessionHasErrors(["fields.{$field->id}" => 'The Meals field is required.']);
+
+        $this->assertSame([], $student->fresh()->fieldAnswers());
+    }
+
+    public function test_radio_field_accepts_only_its_choices(): void
+    {
+        $field = StudentField::factory()->create(['label' => 'Attending', 'type' => 'radio', 'options' => ['Yes', 'No']]);
+        $student = User::factory()->create();
+
+        $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student, [$field->id => 'Maybe']))
+            ->assertSessionHasErrors("fields.{$field->id}");
+
+        $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student, [$field->id => 'Yes']))
+            ->assertSessionHas('success');
+        $this->assertSame([$field->id => 'Yes'], $student->fresh()->fieldAnswers());
+    }
+
+    public function test_date_field_rejects_invalid_dates_and_admin_sees_it_spelled_out(): void
+    {
+        $field = StudentField::factory()->create(['label' => 'Arrival date', 'type' => 'date']);
+        $student = User::factory()->create();
+
+        $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student, [$field->id => '2026-02-30']))
+            ->assertSessionHasErrors("fields.{$field->id}");
+
+        $this->actingAs($student)->put(route('portal.profile.update'), $this->profileData($student, [$field->id => '2026-12-05']))
+            ->assertSessionHas('success');
+
+        $this->actingAs(User::factory()->admin()->create())->get(route('admin.students.show', $student))->assertSee('05 Dec 2026');
+    }
+
+    public function test_removing_a_checkbox_choice_clears_answers_that_used_it(): void
+    {
+        $field = StudentField::factory()->checkboxes(['Lunch', 'Dinner'])->create(['label' => 'Meals']);
+        $keptChoicesStudent = User::factory()->create();
+        $removedChoiceStudent = User::factory()->create();
+        $keptChoicesStudent->saveFieldValues([$field->id => 'Lunch']);
+        $removedChoiceStudent->saveFieldValues([$field->id => "Lunch\nDinner"]);
+
+        $this->actingAs(User::factory()->admin()->create())->put(route('admin.student-fields.update', $field), [
+            'label' => 'Meals',
+            'type' => 'checkboxes',
+            'options' => 'Lunch',
+            'is_active' => '1',
+        ])->assertSessionHas('success', 'Student field updated. Cleared 1 saved answer that no longer fit this field; those students will be asked to answer again.');
+
+        $this->assertSame([$field->id => 'Lunch'], $keptChoicesStudent->fresh()->fieldAnswers());
+        $this->assertSame([$field->id => null], $removedChoiceStudent->fresh()->fieldAnswers());
+    }
+
+    public function test_directory_shows_answers_only_to_the_chosen_audience(): void
+    {
+        $adminsOnly = StudentField::factory()->create(['label' => 'Chest size']);
+        $membersOnly = StudentField::factory()->visibleTo('members')->create(['label' => 'Home district']);
+        $everyone = StudentField::factory()->checkboxes()->visibleTo('everyone')->create(['label' => 'Meals']);
+        $hidden = StudentField::factory()->inactive()->visibleTo('everyone')->create(['label' => 'Old question']);
+        $alumnus = User::factory()->create();
+        $alumnus->saveFieldValues([$adminsOnly->id => '42', $membersOnly->id => 'Bogura', $everyone->id => "Lunch\nDinner", $hidden->id => 'Old answer']);
+
+        $this->get(route('home'))
+            ->assertSee('Meals:')->assertSee('Lunch, Dinner')
+            ->assertDontSee('Bogura')->assertDontSee('Chest size')->assertDontSee('Old answer');
+
+        $this->actingAs(User::factory()->pending()->create())->get(route('home'))->assertDontSee('Bogura');
+
+        $this->actingAs(User::factory()->create())->get(route('home'))
+            ->assertSee('Lunch, Dinner')->assertSee('Home district:')->assertSee('Bogura')
+            ->assertDontSee('Chest size')->assertDontSee('Old answer');
+    }
+
     public function test_student_sees_field_with_image_on_profile_and_saves_answer(): void
     {
         $field = StudentField::factory()->select()->required()->create(['label' => 'Polo T-shirt size', 'image' => 'student-fields/chart.png']);
@@ -180,6 +314,16 @@ class StudentFieldTest extends TestCase
         $csv = $this->actingAs($admin)->get(route('admin.students.export'))->streamedContent();
         $this->assertStringContainsString('"Polo T-shirt size"', $csv);
         $this->assertStringContainsString('XXL', $csv);
+    }
+
+    public function test_export_lists_checkbox_answers_separated_by_commas(): void
+    {
+        $field = StudentField::factory()->checkboxes()->create(['label' => 'Meals']);
+        User::factory()->create()->saveFieldValues([$field->id => "Lunch\nDinner"]);
+
+        $csv = $this->actingAs(User::factory()->admin()->create())->get(route('admin.students.export'))->streamedContent();
+
+        $this->assertStringContainsString('"Lunch, Dinner"', $csv);
     }
 
     public function test_deleting_field_removes_its_answers(): void

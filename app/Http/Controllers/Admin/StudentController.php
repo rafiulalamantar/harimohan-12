@@ -118,7 +118,7 @@ class StudentController extends Controller
                 ->orderBy('ssc_batch')->orderBy('name')
                 ->chunk(500, function ($users) use ($out, $fields) {
                     foreach ($users as $u) {
-                        $answers = $u->fieldAnswers();
+                        $answers = $u->readableFieldAnswers($fields);
                         CsvWriter::writeRow($out, [$u->name, $u->email, $u->phone, $u->ssc_batch, $u->blood_group,
                             $u->profession, $u->company_name, $u->linkedin_url, $u->facebook_url, $u->status, $u->paid_count > 0 ? 'Yes' : 'No', $u->created_at,
                             ...$fields->map(fn ($f) => $answers[$f->id] ?? '')]);

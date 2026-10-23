@@ -81,7 +81,7 @@ class PortalController extends Controller
             'name.regex' => User::NAME_MESSAGE,
         ], StudentField::attributeNamesFor($fields));
 
-        $answers = $data['fields'] ?? [];
+        $answers = StudentField::answersFrom($fields, $data['fields'] ?? []);
         unset($data['fields'], $data['photo_thumbnail']);
 
         // Store the new photo first and only remove the old one once everything has saved,
