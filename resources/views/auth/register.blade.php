@@ -13,6 +13,7 @@
         <x-field name="email" label="Email" type="email" required />
         <x-field name="phone" label="Mobile (bKash number preferred)" required placeholder="01XXXXXXXXX" inputmode="numeric" maxlength="11" pattern="01[3-9][0-9]{8}" title="11-digit mobile number, like 01XXXXXXXXX" hint="11 digits, e.g. 01712345678" />
         <x-field name="ssc_batch" label="SSC batch (year)" type="number" required min="1950" max="{{ date('Y') }}" placeholder="2010" />
+        <x-field name="blood_group" label="Blood group (optional)" type="select" :options="\App\Models\User::BLOOD_GROUPS" />
         <x-field name="profession" label="Profession (optional)" />
         <x-field name="company_name" label="Company / organization (optional)" />
         <x-field name="present_address" label="Present address (optional)" />

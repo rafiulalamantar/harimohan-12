@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\PhotoThumbnail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
@@ -26,6 +27,7 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:190', 'unique:users,email'],
             'phone' => ['required', 'regex:/^01[3-9]\d{8}$/', 'unique:users,phone'],
             'ssc_batch' => ['required', 'integer', 'min:1950', 'max:'.now()->year],
+            'blood_group' => ['nullable', Rule::in(User::BLOOD_GROUPS)],
             'profession' => ['nullable', 'string', 'max:150'],
             'company_name' => ['nullable', 'string', 'max:150'],
             'linkedin_url' => ['nullable', 'url', 'max:255'],

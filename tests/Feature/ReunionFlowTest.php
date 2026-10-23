@@ -261,6 +261,43 @@ class ReunionFlowTest extends TestCase
         Storage::disk('public')->assertExists($user->photo);
     }
 
+    public function test_student_can_register_with_a_blood_group_shown_in_the_directory(): void
+    {
+        $this->get('/register')->assertSee('<option value="AB-"', false);
+
+        $this->post('/register', [
+            'name' => 'Karim', 'email' => 'karim@example.com', 'phone' => '01712345679', 'ssc_batch' => 2012,
+            'blood_group' => 'AB-', 'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ])->assertRedirect(route('portal.dashboard'));
+
+        $user = User::where('email', 'karim@example.com')->first();
+        $this->assertSame('AB-', $user->blood_group);
+
+        auth()->logout();
+        User::factory()->create(['blood_group' => 'O+']);
+        $this->get(route('home'))->assertSee('🩸 O+');
+    }
+
+    public function test_registration_rejects_an_unknown_blood_group(): void
+    {
+        $this->post('/register', [
+            'name' => 'Karim', 'email' => 'karim@example.com', 'phone' => '01712345679', 'ssc_batch' => 2012,
+            'blood_group' => 'C+', 'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ])->assertSessionHasErrors('blood_group');
+    }
+
+    public function test_student_can_change_blood_group_on_profile(): void
+    {
+        $user = User::factory()->create(['blood_group' => 'A+']);
+
+        $this->actingAs($user)->get(route('portal.profile'))->assertSee('<option value="A+" selected', false);
+        $this->actingAs($user)->put(route('portal.profile.update'), [
+            'name' => $user->name, 'phone' => $user->phone, 'blood_group' => 'O-',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('O-', $user->fresh()->blood_group);
+    }
+
     public function test_server_rejects_heic_photos_the_browser_did_not_convert(): void
     {
         Storage::fake('public');
@@ -339,6 +376,15 @@ class ReunionFlowTest extends TestCase
             ->assertSee('(30)')->assertSee('Showing 1–24 of 30 alumni');
         $this->get(route('home', ['page' => 2]))->assertOk()
             ->assertSee('Showing 25–30 of 30 alumni');
+    }
+
+    public function test_pagination_shows_labelled_previous_and_next_buttons(): void
+    {
+        User::factory()->count(30)->create();
+
+        // Laravel's default view hid these labels above the sm breakpoint, leaving only small chevrons.
+        $this->get(route('home', ['page' => 2]))->assertOk()
+            ->assertSeeInOrder(['rel="prev"', 'Previous', 'Page 2 of 2', 'Next'], false);
     }
 
     public function test_welcome_directory_filters_by_search_term_and_batch(): void

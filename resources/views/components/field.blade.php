@@ -1,10 +1,18 @@
-@props(['name', 'label', 'type' => 'text', 'value' => null, 'required' => false, 'hint' => null])
+@props(['name', 'label', 'type' => 'text', 'value' => null, 'required' => false, 'hint' => null, 'options' => []])
 
 <div>
     <label for="{{ $name }}" class="block text-sm font-semibold text-slate-700 mb-1.5">
         {{ $label }} @if($required)<span class="text-rose-600">*</span>@endif
     </label>
-    @if ($type === 'textarea')
+    @if ($type === 'select')
+        <select id="{{ $name }}" name="{{ $name }}" @required($required)
+            {{ $attributes->merge(['class' => 'w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-slate-900 ring-1 ring-slate-200 shadow-xs focus:ring-2 focus:ring-brand-500 focus:outline-hidden transition']) }}>
+            <option value="">Choose…</option>
+            @foreach ($options as $option)
+                <option value="{{ $option }}" @selected((string) old($name, $value) === (string) $option)>{{ $option }}</option>
+            @endforeach
+        </select>
+    @elseif ($type === 'textarea')
         <textarea id="{{ $name }}" name="{{ $name }}" rows="6" @required($required)
             {{ $attributes->merge(['class' => 'w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-slate-900 ring-1 ring-slate-200 shadow-xs placeholder:text-slate-400 file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-3 file:py-1 file:text-sm file:font-semibold file:text-brand-800 focus:ring-2 focus:ring-brand-500 focus:outline-hidden transition']) }}>{{ old($name, $value) }}</textarea>
     @else

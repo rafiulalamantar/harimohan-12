@@ -109,7 +109,7 @@ class StudentController extends Controller
         return response()->streamDownload(function () use ($fields) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF"); // UTF-8 BOM so Excel shows Unicode correctly
-            fputcsv($out, ['Name', 'Email', 'Phone', 'SSC Batch', 'Profession', 'Company', 'LinkedIn', 'Facebook', 'Status', 'Paid', 'Registered At',
+            fputcsv($out, ['Name', 'Email', 'Phone', 'SSC Batch', 'Blood Group', 'Profession', 'Company', 'LinkedIn', 'Facebook', 'Status', 'Paid', 'Registered At',
                 ...$fields->pluck('label')]);
 
             User::where('role', User::ROLE_STUDENT)
@@ -119,7 +119,7 @@ class StudentController extends Controller
                 ->chunk(500, function ($users) use ($out, $fields) {
                     foreach ($users as $u) {
                         $answers = $u->fieldAnswers();
-                        CsvWriter::writeRow($out, [$u->name, $u->email, $u->phone, $u->ssc_batch,
+                        CsvWriter::writeRow($out, [$u->name, $u->email, $u->phone, $u->ssc_batch, $u->blood_group,
                             $u->profession, $u->company_name, $u->linkedin_url, $u->facebook_url, $u->status, $u->paid_count > 0 ? 'Yes' : 'No', $u->created_at,
                             ...$fields->map(fn ($f) => $answers[$f->id] ?? '')]);
                     }
