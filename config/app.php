@@ -19,7 +19,7 @@ return [
     | The release shown in the site footer. Bump it with every GitHub release.
     */
 
-    'version' => '1.4.7',
+    'version' => '1.4.8',
 
     /*
     |--------------------------------------------------------------------------

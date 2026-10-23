@@ -707,7 +707,18 @@ class ReunionFlowTest extends TestCase
         $html = $this->actingAs(User::factory()->admin()->create())->get('/admin')->getContent();
 
         // resources/js/app.js closes every other details[data-dropdown] when one opens, so they never overlap.
-        $this->assertSame(2, substr_count($html, '<details class="relative" data-dropdown>') + substr_count($html, '<details class="relative xl:hidden" data-dropdown>'));
+        // The bell, the three admin menu groups (Members, Events, Communication) and the ☰ menu.
+        $this->assertSame(5, substr_count($html, ' data-dropdown>'));
+    }
+
+    public function test_admin_menu_groups_its_pages(): void
+    {
+        $response = $this->actingAs(User::factory()->admin()->create())->get(route('admin.payments.index'))
+            ->assertSeeInOrder(['Dashboard', 'Members', 'Students', 'Student fields', 'Events', 'Events', 'Payments', 'Communication', 'Announcements', 'Email members', 'Welcome page']);
+
+        // The group holding the current page is highlighted; the others are not.
+        $this->assertMatchesRegularExpression('/bg-brand-50 text-brand-800">\s*Events\s*<svg/', $response->getContent());
+        $this->assertDoesNotMatchRegularExpression('/bg-brand-50 text-brand-800">\s*Members\s*<svg/', $response->getContent());
     }
 
     public function test_admin_bell_shows_an_empty_state_and_caps_the_count_at_99(): void
