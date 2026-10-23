@@ -67,6 +67,7 @@ class PortalController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120', 'regex:'.User::NAME_PATTERN],
             'phone' => ['required', 'regex:/^01[3-9]\d{8}$/', Rule::unique('users')->ignore($user->id)],
+            'blood_group' => ['nullable', Rule::in(User::BLOOD_GROUPS)],
             'profession' => ['nullable', 'string', 'max:150'],
             'company_name' => ['nullable', 'string', 'max:150'],
             'linkedin_url' => ['nullable', 'url', 'max:255'],

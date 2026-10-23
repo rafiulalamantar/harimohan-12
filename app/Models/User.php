@@ -13,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'photo', 'photo_thumb', 'email', 'phone', 'ssc_batch', 'profession', 'company_name', 'linkedin_url', 'facebook_url', 'present_address', 'password'])]
+#[Fillable(['name', 'photo', 'photo_thumb', 'email', 'phone', 'ssc_batch', 'blood_group', 'profession', 'company_name', 'linkedin_url', 'facebook_url', 'present_address', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -34,6 +34,9 @@ class User extends Authenticatable
     public const NAME_PATTERN = "/^[\\p{L}\\p{M}\\s.'\\-]+$/u";
 
     public const NAME_MESSAGE = 'Name can only contain letters, spaces, dots, hyphens and apostrophes.';
+
+    /** Every ABO/Rh blood group, in the order the dropdown lists them. */
+    public const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
     public const STATUS_PENDING = 'pending';
 

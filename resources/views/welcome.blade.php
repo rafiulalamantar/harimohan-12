@@ -140,6 +140,9 @@
                             @if ($s->ssc_batch)
                                 <span class="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-brand-800 shadow-xs backdrop-blur-sm">SSC {{ $s->ssc_batch }}</span>
                             @endif
+                            @if ($s->blood_group)
+                                <span class="absolute right-3 top-3 rounded-full bg-rose-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs" title="Blood group">🩸 {{ $s->blood_group }}</span>
+                            @endif
                         </div>
                         <div class="flex flex-1 flex-col p-3 sm:p-4">
                             <h3 class="font-bold text-slate-900 leading-snug line-clamp-1" title="{{ $s->name }}">{{ $s->name }}</h3>
