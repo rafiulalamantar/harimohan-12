@@ -44,7 +44,7 @@
                 @endif
             @endif
             @if ($f->help_text)<p class="text-xs text-slate-500 mt-1.5">{{ $f->help_text }}</p>@endif
-            <p class="text-xs text-slate-400 mt-1">{{ $f->visibilityNote() }}</p>
+            <p class="text-xs text-slate-400 mt-1">Only admins see this answer.</p>
             @error($name)<p class="text-sm text-rose-600 mt-1.5">{{ $message }}</p>@enderror
             @error("{$name}.*")<p class="text-sm text-rose-600 mt-1.5">{{ $message }}</p>@enderror
         </div>

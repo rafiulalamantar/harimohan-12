@@ -48,10 +48,4 @@ class StudentFieldFactory extends Factory
     {
         return $this->state(fn () => ['type' => 'checkboxes', 'options' => $options]);
     }
-
-    /** Answers shown to 'members' or 'everyone' on the alumni directory. */
-    public function visibleTo(string $visibility): static
-    {
-        return $this->state(fn () => ['visibility' => $visibility]);
-    }
 }

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Announcement;
 use App\Models\ReunionEvent;
 use App\Models\Setting;
-use App\Models\StudentField;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -18,8 +17,7 @@ class HomeController extends Controller
     /**
      * Public welcome page with a searchable alumni directory.
      *
-     * Phone numbers are only shown to (and searchable by) approved members, and so are
-     * student field answers the admin made visible to members.
+     * Phone numbers are only shown to (and searchable by) approved members.
      */
     public function __invoke(Request $request): View
     {
@@ -47,11 +45,6 @@ class HomeController extends Controller
             ->withQueryString()
             ->fragment('alumni');
 
-        $directoryFields = StudentField::shownOnDirectory($canSeeContacts)->get();
-        if ($directoryFields->isNotEmpty()) {
-            $students->load(['fieldValues' => fn ($query) => $query->whereIn('student_field_id', $directoryFields->modelKeys())]);
-        }
-
         return view('welcome', [
             'settings' => Setting::values(),
             'event' => ReunionEvent::current(),
@@ -62,7 +55,6 @@ class HomeController extends Controller
             'search' => $term,
             'selectedBatch' => $batch,
             'canSeeContacts' => $canSeeContacts,
-            'directoryFields' => $directoryFields,
         ]);
     }
 }

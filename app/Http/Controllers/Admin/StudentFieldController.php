@@ -22,7 +22,7 @@ class StudentFieldController extends Controller
 
     public function create()
     {
-        return view('admin.student-fields.form', ['field' => new StudentField(['type' => 'text', 'is_active' => true, 'visibility' => 'admins'])]);
+        return view('admin.student-fields.form', ['field' => new StudentField(['type' => 'text', 'is_active' => true])]);
     }
 
     public function store(Request $request)
@@ -77,14 +77,12 @@ class StudentFieldController extends Controller
             'options' => ['nullable', Rule::requiredIf(in_array($request->input('type'), StudentField::CHOICE_TYPES, true)), 'string', 'max:2000'],
             'help_text' => ['nullable', 'string', 'max:500'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
-            'visibility' => ['nullable', Rule::in(array_keys(StudentField::VISIBILITIES))],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:1000'],
         ], ['options.required' => 'Add at least one choice for a dropdown, radio button or checkbox field.']);
 
         $data['options'] = in_array($data['type'], StudentField::CHOICE_TYPES, true)
             ? collect(preg_split('/\r\n|\r|\n/', $data['options'] ?? ''))->map(fn ($o) => trim($o))->filter()->unique()->values()->all()
             : null;
-        $data['visibility'] ??= 'admins';
         $data['is_required'] = $request->boolean('is_required');
         $data['is_active'] = $request->boolean('is_active');
         $data['sort_order'] = (int) ($data['sort_order'] ?? 0);

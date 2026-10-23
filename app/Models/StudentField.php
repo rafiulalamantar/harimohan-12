@@ -31,18 +31,7 @@ class StudentField extends Model
     /** Types whose answers must be one (or, for checkboxes, several) of the admin's choices. */
     public const CHOICE_TYPES = ['select', 'radio', 'checkboxes'];
 
-    /** Who can see a student's answer. Admins always can. */
-    public const VISIBILITIES = [
-        'admins' => 'Admins only',
-        'members' => 'Approved members (on alumni directory cards)',
-        'everyone' => 'Everyone (on public alumni directory cards)',
-    ];
-
-    protected $fillable = ['label', 'type', 'options', 'help_text', 'image', 'is_required', 'is_active', 'visibility', 'sort_order'];
-
-    protected $attributes = [
-        'visibility' => 'admins',
-    ];
+    protected $fillable = ['label', 'type', 'options', 'help_text', 'image', 'is_required', 'is_active', 'sort_order'];
 
     protected function casts(): array
     {
@@ -63,27 +52,9 @@ class StudentField extends Model
         return $query->where('is_active', true)->orderBy('sort_order')->orderBy('id');
     }
 
-    /**
-     * Active fields whose answers appear on alumni directory cards for this viewer.
-     */
-    public function scopeShownOnDirectory(Builder $query, bool $viewerIsMember): Builder
-    {
-        return $query->active()->whereIn('visibility', $viewerIsMember ? ['members', 'everyone'] : ['everyone']);
-    }
-
     public function hasChoices(): bool
     {
         return in_array($this->type, self::CHOICE_TYPES, true);
-    }
-
-    /** Short note telling students who will see their answer. */
-    public function visibilityNote(): string
-    {
-        return match ($this->visibility) {
-            'everyone' => 'Shown to everyone on the alumni directory.',
-            'members' => 'Shown to approved members on the alumni directory.',
-            default => 'Only admins see this answer.',
-        };
     }
 
     public function imageUrl(): ?string

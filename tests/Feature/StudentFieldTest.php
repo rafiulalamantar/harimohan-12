@@ -111,29 +111,17 @@ class StudentFieldTest extends TestCase
             ->assertSessionHasErrors(['options' => 'Add at least one choice for a dropdown, radio button or checkbox field.']);
     }
 
-    public function test_admin_can_create_checkbox_field_visible_to_everyone(): void
+    public function test_admin_can_create_checkbox_field(): void
     {
         $this->actingAs(User::factory()->admin()->create())->post(route('admin.student-fields.store'), [
             'label' => 'Meals',
             'type' => 'checkboxes',
             'options' => "Lunch\nDinner",
-            'visibility' => 'everyone',
             'is_active' => '1',
         ])->assertRedirect(route('admin.student-fields.index'));
 
-        $field = StudentField::sole();
-        $this->assertSame(['Lunch', 'Dinner'], $field->options);
-        $this->assertSame('everyone', $field->visibility);
-
-        $this->get(route('admin.student-fields.index'))->assertSee('Lunch, Dinner')->assertSee('Everyone');
-    }
-
-    public function test_new_field_without_visibility_is_admin_only(): void
-    {
-        $this->actingAs(User::factory()->admin()->create())
-            ->post(route('admin.student-fields.store'), ['label' => 'Guests', 'type' => 'number', 'is_active' => '1']);
-
-        $this->assertSame('admins', StudentField::sole()->visibility);
+        $this->assertSame(['Lunch', 'Dinner'], StudentField::sole()->options);
+        $this->get(route('admin.student-fields.index'))->assertSee('Lunch, Dinner');
     }
 
     public function test_student_saves_and_clears_checkbox_answers(): void
@@ -215,24 +203,43 @@ class StudentFieldTest extends TestCase
         $this->assertSame([$field->id => null], $removedChoiceStudent->fresh()->fieldAnswers());
     }
 
-    public function test_directory_shows_answers_only_to_the_chosen_audience(): void
+    public function test_alumni_directory_never_shows_field_answers(): void
     {
-        $adminsOnly = StudentField::factory()->create(['label' => 'Chest size']);
-        $membersOnly = StudentField::factory()->visibleTo('members')->create(['label' => 'Home district']);
-        $everyone = StudentField::factory()->checkboxes()->visibleTo('everyone')->create(['label' => 'Meals']);
-        $hidden = StudentField::factory()->inactive()->visibleTo('everyone')->create(['label' => 'Old question']);
-        $alumnus = User::factory()->create();
-        $alumnus->saveFieldValues([$adminsOnly->id => '42', $membersOnly->id => 'Bogura', $everyone->id => "Lunch\nDinner", $hidden->id => 'Old answer']);
+        $field = StudentField::factory()->create(['label' => 'Polo T-shirt size']);
+        User::factory()->create()->saveFieldValues([$field->id => 'XXL']);
 
-        $this->get(route('home'))
-            ->assertSee('Meals:')->assertSee('Lunch, Dinner')
-            ->assertDontSee('Bogura')->assertDontSee('Chest size')->assertDontSee('Old answer');
+        $this->get(route('home'))->assertDontSee('Polo T-shirt size')->assertDontSee('XXL');
+        $this->actingAs(User::factory()->create())->get(route('home'))->assertDontSee('Polo T-shirt size')->assertDontSee('XXL');
+    }
 
-        $this->actingAs(User::factory()->pending()->create())->get(route('home'))->assertDontSee('Bogura');
+    public function test_students_page_lists_answers_and_choice_totals(): void
+    {
+        $size = StudentField::factory()->select(['M', 'XL'])->create(['label' => 'Polo T-shirt size']);
+        $meals = StudentField::factory()->checkboxes()->create(['label' => 'Meals']);
+        User::factory()->create(['name' => 'Karim'])->saveFieldValues([$size->id => 'XL', $meals->id => "Lunch\nDinner"]);
+        User::factory()->create(['name' => 'Rahim'])->saveFieldValues([$size->id => 'XL', $meals->id => 'Lunch']);
+        User::factory()->create(['name' => 'Salma'])->saveFieldValues([$size->id => 'M']);
 
-        $this->actingAs(User::factory()->create())->get(route('home'))
-            ->assertSee('Lunch, Dinner')->assertSee('Home district:')->assertSee('Bogura')
-            ->assertDontSee('Chest size')->assertDontSee('Old answer');
+        $this->actingAs(User::factory()->admin()->create())->get(route('admin.students.index'))
+            ->assertSee('Polo T-shirt size')
+            ->assertSee('Lunch, Dinner')
+            ->assertSeeInOrder(['Answer totals', 'Polo T-shirt size:', 'M', '<strong>1</strong>', 'XL', '<strong>2</strong>', 'Meals:', 'Lunch', '<strong>2</strong>', 'Dinner', '<strong>1</strong>', 'Cultural night', '<strong>0</strong>'], false);
+    }
+
+    public function test_students_page_filters_by_dropdown_and_checkbox_answers(): void
+    {
+        $size = StudentField::factory()->select(['M', 'XL'])->create();
+        $meals = StudentField::factory()->checkboxes()->create();
+        User::factory()->create(['email' => 'karim@example.com'])->saveFieldValues([$size->id => 'XL', $meals->id => "Lunch\nDinner"]);
+        User::factory()->create(['email' => 'rahim@example.com'])->saveFieldValues([$size->id => 'XL', $meals->id => 'Lunch']);
+        User::factory()->create(['email' => 'salma@example.com'])->saveFieldValues([$size->id => 'M', $meals->id => 'Dinner']);
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->get(route('admin.students.index', ['answer' => [$size->id => 'XL', $meals->id => 'Dinner']]))
+            ->assertSee('karim@example.com')->assertDontSee('rahim@example.com')->assertDontSee('salma@example.com');
+
+        $this->actingAs($admin)->get(route('admin.students.index', ['answer' => [$size->id => 'Huge']]))
+            ->assertSee('karim@example.com')->assertSee('rahim@example.com')->assertSee('salma@example.com');
     }
 
     public function test_student_sees_field_with_image_on_profile_and_saves_answer(): void
