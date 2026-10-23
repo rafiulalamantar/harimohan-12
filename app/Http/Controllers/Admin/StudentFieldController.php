@@ -3,16 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StudentFieldRequest;
 use App\Models\StudentField;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
+/** Admins manage the extra questions students answer on registration and My Profile. */
 class StudentFieldController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         return view('admin.student-fields.index', [
             'fields' => StudentField::withCount(['values as answered_count' => fn ($q) => $q->whereNotNull('value')->where('value', '!=', '')])
@@ -20,26 +22,26 @@ class StudentFieldController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): View
     {
         return view('admin.student-fields.form', ['field' => new StudentField(['type' => 'text', 'is_active' => true])]);
     }
 
-    public function store(Request $request)
+    public function store(StudentFieldRequest $request): RedirectResponse
     {
-        StudentField::create($this->validated($request, new StudentField));
+        StudentField::create($this->fieldData($request));
 
         return redirect()->route('admin.student-fields.index')->with('success', 'Student field created.');
     }
 
-    public function edit(StudentField $studentField)
+    public function edit(StudentField $studentField): View
     {
         return view('admin.student-fields.form', ['field' => $studentField]);
     }
 
-    public function update(Request $request, StudentField $studentField)
+    public function update(StudentFieldRequest $request, StudentField $studentField): RedirectResponse
     {
-        $data = $this->validated($request, $studentField);
+        $data = $this->fieldData($request);
 
         if (isset($data['image']) || $request->boolean('remove_image')) {
             $this->deleteImage($studentField);
@@ -61,7 +63,8 @@ class StudentFieldController extends Controller
         return redirect()->route('admin.student-fields.index')->with('success', $message);
     }
 
-    public function destroy(StudentField $studentField)
+    /** Deleting a field also deletes every answer to it; turning it off keeps them. */
+    public function destroy(StudentField $studentField): RedirectResponse
     {
         $this->deleteImage($studentField);
         $studentField->delete();
@@ -69,33 +72,17 @@ class StudentFieldController extends Controller
         return back()->with('success', 'Student field deleted.');
     }
 
-    private function validated(Request $request, StudentField $field): array
+    /**
+     * The field's columns, with the uploaded image stored when there is one.
+     *
+     * @return array<string, mixed>
+     */
+    private function fieldData(StudentFieldRequest $request): array
     {
-        $keepsCurrentImage = $field->image && ! $request->boolean('remove_image');
-
-        $data = $request->validate([
-            'label' => ['required', 'string', 'max:150'],
-            'type' => ['required', Rule::in(array_keys(StudentField::TYPES))],
-            'options' => ['nullable', Rule::requiredIf(in_array($request->input('type'), StudentField::CHOICE_TYPES, true)), 'string', 'max:2000'],
-            'help_text' => ['nullable', 'string', 'max:500'],
-            'image' => ['nullable', Rule::requiredIf($request->input('type') === 'image' && ! $keepsCurrentImage), 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
-            'sort_order' => ['nullable', 'integer', 'min:0', 'max:1000'],
-        ], [
-            'options.required' => 'Add at least one choice for a dropdown, radio button or checkbox field.',
-            'image.required' => 'Upload the image students should see.',
-        ]);
-
-        $data['options'] = in_array($data['type'], StudentField::CHOICE_TYPES, true)
-            ? collect(preg_split('/\r\n|\r|\n/', $data['options'] ?? ''))->map(fn ($o) => trim($o))->filter()->unique()->values()->all()
-            : null;
-        $data['is_required'] = $data['type'] !== 'image' && $request->boolean('is_required');
-        $data['is_active'] = $request->boolean('is_active');
-        $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
+        $data = $request->fieldData();
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('student-fields', 'public');
-        } else {
-            unset($data['image']);
         }
 
         return $data;

@@ -4,17 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
+/** The welcome page's hero heading, text and banner. */
 class SettingController extends Controller
 {
-    public function edit()
+    public function edit(): View
     {
         return view('admin.settings', ['settings' => Setting::values()]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'hero_title' => ['required', 'string', 'max:200'],

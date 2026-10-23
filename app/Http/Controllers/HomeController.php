@@ -25,7 +25,7 @@ class HomeController extends Controller
         $term = is_string($request->query('q')) ? trim($request->query('q')) : '';
         $batch = $request->integer('batch') ?: null;
 
-        $approvedStudents = User::where('role', User::ROLE_STUDENT)->where('status', User::STATUS_APPROVED);
+        $approvedStudents = User::students()->where('status', User::STATUS_APPROVED);
 
         $columns = ['id', 'name', 'photo', 'photo_thumb', 'ssc_batch', 'blood_group', 'profession', 'company_name', 'linkedin_url', 'facebook_url'];
         if ($canSeeContacts) {

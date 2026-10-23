@@ -11,7 +11,7 @@
     <input name="q" value="{{ request('q') }}" placeholder="TrxID / invoice / name / phone" class="border rounded-lg px-3 py-2">
     <select name="status" class="border rounded-lg px-3 py-2">
         <option value="">All status</option>
-        @foreach (['completed', 'initiated', 'failed', 'cancelled'] as $s)<option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>@endforeach
+        @foreach (\App\Models\Payment::STATUSES as $s)<option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>@endforeach
     </select>
     <select name="event" class="border rounded-lg px-3 py-2">
         <option value="">All events</option>

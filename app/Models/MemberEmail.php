@@ -50,7 +50,7 @@ class MemberEmail extends Model
             default => [User::STATUS_APPROVED, User::STATUS_PENDING],
         };
 
-        return User::where('role', User::ROLE_STUDENT)
+        return User::students()
             ->whereIn('status', $statuses)
             ->whereNotNull('email')
             ->when($sscBatch, fn (Builder $query) => $query->where('ssc_batch', $sscBatch));

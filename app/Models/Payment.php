@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -16,6 +17,9 @@ class Payment extends Model
 
     public const STATUS_CANCELLED = 'cancelled';
 
+    /** Payment statuses in the order admin filters list them. */
+    public const STATUSES = [self::STATUS_COMPLETED, self::STATUS_INITIATED, self::STATUS_FAILED, self::STATUS_CANCELLED];
+
     protected $fillable = [
         'user_id', 'reunion_event_id', 'amount', 'invoice_no', 'method', 'status',
         'bkash_payment_id', 'trx_id', 'payer_msisdn', 'gateway_response', 'paid_at',
@@ -28,6 +32,12 @@ class Payment extends Model
             'gateway_response' => 'array',
             'paid_at' => 'datetime',
         ];
+    }
+
+    /** Payments bKash confirmed; only these count as paid. */
+    public function scopeCompleted(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_COMPLETED);
     }
 
     public function user(): BelongsTo

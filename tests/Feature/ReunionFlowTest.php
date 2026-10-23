@@ -78,7 +78,7 @@ class ReunionFlowTest extends TestCase
     {
         User::factory()->count(25)->create();
 
-        // resources/js/app.js swaps #alumni for links inside [data-directory-pages] instead of reloading the page.
+        // resources/js/directory.js swaps #alumni for links inside [data-directory-pages] instead of reloading the page.
         $this->get('/')->assertSee('data-directory-pages', false)->assertSee('?page=2#alumni', false);
         $this->get('/?page=2')->assertOk()->assertSee('id="alumni"', false);
     }
@@ -309,7 +309,7 @@ class ReunionFlowTest extends TestCase
         ])->assertSessionHasErrors('photo');
 
         $this->assertDatabaseMissing('users', ['email' => 'karim@example.com']);
-        // The picker offers HEIC so resources/js/app.js can convert it to JPEG before upload.
+        // The picker offers HEIC so resources/js/photos/process.js can convert it to JPEG before upload.
         $this->get('/register')->assertSee('accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"', false);
     }
 
@@ -707,7 +707,7 @@ class ReunionFlowTest extends TestCase
     {
         $html = $this->actingAs(User::factory()->admin()->create())->get('/admin')->getContent();
 
-        // resources/js/app.js closes every other details[data-dropdown] when one opens, so they never overlap.
+        // resources/js/dropdowns.js closes every other details[data-dropdown] when one opens, so they never overlap.
         // The bell, the three admin menu groups (Members, Events, Communication) and the ☰ menu.
         $this->assertSame(5, substr_count($html, ' data-dropdown>'));
     }

@@ -5,17 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Models\ReunionEvent;
 use App\Services\BkashService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+/** Members pay an event fee through bKash Tokenized Checkout ({@see BkashService}). */
 class PaymentController extends Controller
 {
     public function __construct(private BkashService $bkash) {}
 
     /** Student clicks "Pay with bKash". */
-    public function pay(Request $request, ReunionEvent $event)
+    public function pay(Request $request, ReunionEvent $event): RedirectResponse
     {
         $user = $request->user();
 
@@ -65,7 +67,7 @@ class PaymentController extends Controller
      * bKash redirects here: ?paymentID=...&status=success|failure|cancel
      * Not behind auth — the session may have expired while the user was on bKash.
      */
-    public function callback(Request $request)
+    public function callback(Request $request): RedirectResponse
     {
         $paymentId = (string) $request->query('paymentID');
         $status = (string) $request->query('status');
@@ -127,7 +129,7 @@ class PaymentController extends Controller
         return $this->finish(...$result);
     }
 
-    private function finish(?Payment $payment, string $type, string $message)
+    private function finish(?Payment $payment, string $type, string $message): RedirectResponse
     {
         return redirect()->route('portal.payments')->with($type, $message);
     }

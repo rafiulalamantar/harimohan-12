@@ -38,7 +38,7 @@
         </dl>
         <form method="POST" action="{{ route('admin.students.status', $student) }}" class="mt-5 flex gap-2">@csrf @method('PATCH')
             <select name="status" class="border rounded-lg px-3 py-2 text-sm flex-1">
-                @foreach (['pending', 'approved', 'rejected'] as $s)<option value="{{ $s }}" @selected($student->status === $s)>{{ ucfirst($s) }}</option>@endforeach
+                @foreach (\App\Models\User::STATUSES as $s)<option value="{{ $s }}" @selected($student->status === $s)>{{ ucfirst($s) }}</option>@endforeach
             </select>
             <button class="bg-brand-600 text-white rounded-lg px-4 text-sm">Update</button>
         </form>

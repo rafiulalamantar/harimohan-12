@@ -2,20 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateProfileRequest;
 use App\Models\Announcement;
 use App\Models\ReunionEvent;
 use App\Models\StudentField;
 use App\Models\User;
 use App\Services\PhotoThumbnail;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 use Throwable;
 
+/** The member portal: dashboard, notices, payment history and My Profile. */
 class PortalController extends Controller
 {
-    public function dashboard(Request $request)
+    public function dashboard(Request $request): View
     {
         $user = $request->user();
         $event = ReunionEvent::current();
@@ -29,28 +32,29 @@ class PortalController extends Controller
         ]);
     }
 
-    public function announcements()
+    public function announcements(): View
     {
         return view('portal.announcements', [
             'announcements' => Announcement::feed()->paginate(10),
         ]);
     }
 
-    public function showAnnouncement(Announcement $announcement)
+    /** Drafts and scheduled notices are not visible yet. */
+    public function showAnnouncement(Announcement $announcement): View
     {
         abort_if($announcement->published_at === null || $announcement->published_at->isFuture(), 404);
 
         return view('portal.announcement', compact('announcement'));
     }
 
-    public function payments(Request $request)
+    public function payments(Request $request): View
     {
         return view('portal.payments', [
             'payments' => $request->user()->payments()->with('event')->latest()->paginate(15),
         ]);
     }
 
-    public function editProfile(Request $request)
+    public function editProfile(Request $request): View
     {
         return view('portal.profile', [
             'user' => $request->user(),
@@ -58,35 +62,13 @@ class PortalController extends Controller
         ]);
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(UpdateProfileRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $fields = StudentField::active()->get();
-        $request->merge(['phone' => User::normalizePhone($request->input('phone'))]);
+        $data = $request->profileData();
+        $answers = $request->fieldAnswers();
 
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:120', 'regex:'.User::NAME_PATTERN],
-            'phone' => ['required', 'regex:/^01[3-9]\d{8}$/', Rule::unique('users')->ignore($user->id)],
-            'blood_group' => ['nullable', Rule::in(User::BLOOD_GROUPS)],
-            'profession' => ['nullable', 'string', 'max:150'],
-            'company_name' => ['nullable', 'string', 'max:150'],
-            'linkedin_url' => ['nullable', 'url', 'max:255'],
-            'facebook_url' => ['nullable', 'url', 'max:255'],
-            'present_address' => ['nullable', 'string', 'max:255'],
-            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
-            'photo_thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg', 'max:512'],
-            ...StudentField::rulesFor($fields),
-        ], [
-            'phone.regex' => 'Mobile number must be 11 digits, like 01XXXXXXXXX.',
-            'name.regex' => User::NAME_MESSAGE,
-        ], StudentField::attributeNamesFor($fields));
-
-        $answers = StudentField::answersFrom($fields, $data['fields'] ?? []);
-        unset($data['fields'], $data['photo_thumbnail']);
-
-        $savedAnswers = $user->fieldAnswers();
-        $answersChanged = collect($answers)->contains(fn (?string $answer, int $fieldId) => ($savedAnswers[$fieldId] ?? null) !== $answer);
-        if (! $request->hasFile('photo') && ! $answersChanged && ! $user->fill($data)->isDirty()) {
+        if (! $request->hasFile('photo') && ! $this->answersChanged($user, $answers) && ! $user->fill($data)->isDirty()) {
             return back()->with('info', 'No changes to save.');
         }
 
@@ -116,5 +98,15 @@ class PortalController extends Controller
         }
 
         return back()->with('success', 'Profile updated.');
+    }
+
+    /**
+     * @param  array<int, ?string>  $answers  keyed by student field id
+     */
+    private function answersChanged(User $user, array $answers): bool
+    {
+        $savedAnswers = $user->fieldAnswers();
+
+        return collect($answers)->contains(fn (?string $answer, int $fieldId) => ($savedAnswers[$fieldId] ?? null) !== $answer);
     }
 }
