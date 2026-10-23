@@ -1,6 +1,15 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.8...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.9...main)
+
+## [v1.4.9](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.8...v1.4.9) - 2026-10-23
+
+v1.4.9
+
+Admins can re-frame a student's card photo.
+
+- The admin student page shows the card photo exactly as the alumni directory does, with an "Adjust card photo" button.
+- It opens the original photo in the cropper; only a new 4:3 card thumbnail is saved, under a new file name so phones show it straight away. The original photo is never changed, so it can be framed again.
 
 ## [v1.4.8](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.7...v1.4.8) - 2026-10-23
 
