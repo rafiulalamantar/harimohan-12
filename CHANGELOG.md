@@ -1,6 +1,15 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.5...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.6...main)
+
+## [v1.4.6](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.5...v1.4.6) - 2026-10-23
+
+v1.4.6
+
+Mobile fix: long names no longer get cut off with "…".
+
+- Alumni directory cards: names wrap onto the next line instead of being clipped to one line (reported on Safari, iPhone 12 Pro); slightly smaller name text on phones; very long single words break inside the card.
+- Same wrapping for the upcoming event title, names in the admin registration bell, and the "Logged in as" name in the menu.
 
 ## [v1.4.5](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.4...v1.4.5) - 2026-10-23
 
