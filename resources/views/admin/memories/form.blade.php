@@ -4,7 +4,7 @@
 @section('content')
 <div class="max-w-3xl mx-auto bg-white rounded-2xl border p-6 md:p-8">
     <h1 class="text-2xl font-bold">{{ $memory->exists ? 'Edit memory' : 'New memory' }}</h1>
-    <form method="POST" enctype="multipart/form-data" class="mt-6 space-y-4"
+    <form method="POST" enctype="multipart/form-data" class="mt-6 space-y-4" data-submit-once
           action="{{ $memory->exists ? route('admin.memories.update', $memory) : route('admin.memories.store') }}">
         @csrf
         @if($memory->exists) @method('PUT') @endif
@@ -31,7 +31,7 @@
                 <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
                     @foreach ($memory->photos as $photo)
                         <label class="block text-xs">
-                            <img src="{{ $photo->url() }}" alt="" class="w-full aspect-square object-cover rounded-lg border">
+                            <img src="{{ $photo->url() }}" alt="" data-fallback class="w-full aspect-square object-cover rounded-lg border">
                             <span class="mt-1 flex items-center gap-1.5">
                                 <input type="checkbox" name="remove_photos[]" value="{{ $photo->id }}" @checked(in_array($photo->id, old('remove_photos', [])))> Remove
                             </span>

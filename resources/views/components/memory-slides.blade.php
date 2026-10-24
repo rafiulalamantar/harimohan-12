@@ -28,7 +28,7 @@
     <div @class(['relative aspect-[4/3] overflow-hidden', 'slides-calm' => $memory->isRemembering(), 'slides-contain rounded-3xl bg-slate-950' => $large, 'bg-slate-100' => ! $large])>
         @unless ($large)<a href="{{ route('memories.show', $memory) }}" tabindex="-1" aria-hidden="true" class="absolute inset-0">@endunless
             @foreach ($photos as $photo)
-                <img src="{{ $photo->url() }}" alt="{{ $memory->title }} — photo {{ $loop->iteration }} of {{ $photos->count() }}" draggable="false"
+                <img src="{{ $photo->url() }}" alt="{{ $memory->title }} — photo {{ $loop->iteration }} of {{ $photos->count() }}" draggable="false" data-fallback
                      data-slide @class(['is-active' => $loop->first]) @if (! $loop->first) aria-hidden="true" @endif
                      loading="{{ $loop->first && $large ? 'eager' : 'lazy' }}" decoding="async">
             @endforeach
@@ -75,7 +75,7 @@
             @foreach ($photos as $photo)
                 <button type="button" data-slide-dot aria-label="Show photo {{ $loop->iteration }}" @if ($loop->first) aria-current="true" @endif
                         class="shrink-0 overflow-hidden rounded-xl ring-2 ring-transparent opacity-60 transition hover:opacity-100 aria-[current=true]:opacity-100 aria-[current=true]:ring-brand-500">
-                    <img src="{{ $photo->url() }}" alt="" loading="lazy" decoding="async" draggable="false" class="h-16 w-20 object-cover">
+                    <img src="{{ $photo->url() }}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback class="h-16 w-20 object-cover">
                 </button>
             @endforeach
         </div>

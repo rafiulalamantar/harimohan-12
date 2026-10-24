@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Mockery;
 use Tests\TestCase;
 
 class MemoryTest extends TestCase
@@ -78,6 +79,65 @@ class MemoryTest extends TestCase
             ->assertSee('Bus broke down')
             ->assertSee($memory->photos[0]->url())
             ->assertSee($memory->photos[1]->url());
+    }
+
+    /** Storage that saves the first file, then fails like an unreachable Supabase (the disk returns false). */
+    private function storageFailsAfterFirstPhoto(): void
+    {
+        $realDisk = Storage::fake('public');
+        $savedOnce = false;
+
+        $failingDisk = Mockery::mock($realDisk)->makePartial();
+        $failingDisk->shouldReceive('putFileAs')->andReturnUsing(function (...$arguments) use ($realDisk, &$savedOnce) {
+            if ($savedOnce) {
+                return false;
+            }
+            $savedOnce = true;
+
+            return $realDisk->putFileAs(...$arguments);
+        });
+
+        Storage::set('public', $failingDisk);
+    }
+
+    public function test_failed_photo_upload_saves_nothing_and_keeps_what_admin_typed(): void
+    {
+        $this->storageFailsAfterFirstPhoto();
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->from(route('admin.memories.create'))
+            ->post(route('admin.memories.store'), [
+                'kind' => Memory::KIND_MEMORY, 'title' => 'Sports day', 'story' => 'We won',
+                'photos' => [UploadedFile::fake()->image('a.jpg'), UploadedFile::fake()->image('b.jpg')],
+            ])
+            ->assertRedirect(route('admin.memories.create'))
+            ->assertSessionHasErrors(['photos' => "Couldn't save the photos. Please try again in a minute."])
+            ->assertSessionHasInput('title', 'Sports day');
+
+        $this->assertDatabaseCount('memories', 0);
+        $this->assertDatabaseCount('memory_photos', 0);
+        $this->assertSame([], Storage::disk('public')->allFiles('memories'));
+    }
+
+    public function test_failed_photo_upload_on_edit_keeps_photos_ticked_for_removal(): void
+    {
+        Storage::fake('public');
+        $memory = $this->memoryWithPhotos(['keep.jpg']);
+        $tickedPhoto = $memory->photos()->sole();
+        $this->storageFailsAfterFirstPhoto();
+        Storage::disk('public')->put($tickedPhoto->path, 'photo');
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->put(route('admin.memories.update', $memory), [
+                'kind' => Memory::KIND_MEMORY, 'title' => 'Picnic at Sonargaon',
+                'remove_photos' => [$tickedPhoto->id],
+                'photos' => [UploadedFile::fake()->image('a.jpg'), UploadedFile::fake()->image('b.jpg')],
+            ])
+            ->assertSessionHasErrors('photos');
+
+        $this->assertModelExists($tickedPhoto);
+        Storage::disk('public')->assertExists($tickedPhoto->path);
+        $this->assertCount(1, $memory->photos()->get());
     }
 
     public function test_memory_story_is_escaped(): void

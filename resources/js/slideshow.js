@@ -47,7 +47,9 @@ function setUpSlideshow(root) {
             counter.textContent = state.current + 1;
         }
         if (fullSizeLink) {
-            fullSizeLink.href = slides[state.current].currentSrc || slides[state.current].src;
+            const photo = slides[state.current];
+            fullSizeLink.href = photo.currentSrc || photo.src;
+            fullSizeLink.hidden = 'broken' in photo.dataset; // nothing to open when the photo is missing (photo-fallback.js)
         }
 
         restartTimer();

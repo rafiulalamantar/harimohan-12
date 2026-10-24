@@ -65,6 +65,13 @@ A registration moves **pending → approved** or **pending → rejected** (`User
 ### Memories (welcome page)
 Admins share old photos, funny moments and stories on **Communication → Memories** (`Admin\MemoryController`, validated by `MemoryRequest`). A post (`Memory`) has a type (`Memory::KINDS`; "Remembering" honours a friend who passed away and is shown calmly: grey badge, slower slideshow, no zoom), a title, an optional story and up to `Memory::MAX_PHOTOS` pictures, one `MemoryPhoto` row each. A post needs a story or at least one photo. The welcome page shows the newest three (`x-memory-card`); everyone can open `/memories` and each post (`MemoryController`). A post's photos play as a slideshow (`x-memory-slides` + `resources/js/slideshow.js`): they change every few seconds, pause on mouse-over, keyboard focus, off-screen or with the Pause button, and never autoplay for visitors whose device asks for reduced motion; arrows, dots/thumbnails, swipe and ← → keys always work. The story keeps its line breaks with `whitespace-pre-line`, and Blade's `{{ }}` still escapes it. Pictures are shrunk in the browser like every image input (`photos/upload.js`); the six-photo limit keeps one save under Vercel's 4.5 MB request cap. Saving and deleting photos lives on the model, so the controller stays short: `Memory::addPhotos`, `Memory::removePhotos` (only that post's photos) and `Memory::deleteWithPhotos` also delete the files from storage. Slide timing is `Memory::slideInterval`.
 
+When things go wrong:
+- **Storage down while saving:** the disk returns `false` instead of throwing, so `Memory::addPhotos` throws `PhotoNotSavedException`; the controller saves inside a DB transaction, so nothing is half-saved, and sends the admin back to the form with their text and the message. New photos are stored before ticked ones are removed, so a failed edit never loses existing photos.
+- **A photo file missing or not loading:** images with `data-fallback` show a "Photo not available" tile (`photo-fallback.js`); the slideshow hides Full size for it.
+- **Upload too big for Vercel (4.5 MB):** `form-guards.js` stops any upload form over 4 MB before sending (GIFs aren't shrunk) and explains what to do.
+- **Double tap on Save:** `<form data-submit-once>` disables the button after the first submit.
+- **Offline:** `network-status.js` holds every form and keeps what was typed; `public/sw.js` shows the offline page.
+
 ### Extra student fields
 Admins define questions on **Members → Student fields** (`StudentField`): short text, number, long text, date, dropdown, radio buttons, checkboxes, or an image only (a picture with no answer, such as a size chart). Each member's answer is one `StudentFieldValue` row stored as text; checkbox choices are stored one per line. Answers are admin-only: they appear on the Students page (with filters and totals from `StudentAnswers`), the student's admin page and the CSV export. Changing a field clears saved answers that no longer fit, so those members are asked again.
 
@@ -104,6 +111,8 @@ Admins can re-frame an existing photo from a student's admin page (`photos/refra
 | `photos/reframe.js` | Admin **Adjust card photo** button |
 | `dropdowns.js` | Header menus and the 🔔 bell: one open at a time, Escape closes |
 | `directory.js` | In-place directory paging and the photo shimmer |
+| `form-guards.js` | Before a form is sent: upload size limit, `data-submit-once` |
+| `photo-fallback.js` | "Photo not available" tile for `<img data-fallback>` that fail to load |
 | `slideshow.js` | Memory photo slideshows: autoplay, arrows, dots, swipe, keyboard, pause |
 | `network-status.js` | Offline / back-online bar; holds forms while offline |
 

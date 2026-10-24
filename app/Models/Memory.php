@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Exceptions\PhotoNotSavedException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * A post in the welcome page's Memories section: a type, a title, an optional story and up to MAX_PHOTOS pictures.
@@ -86,12 +88,28 @@ class Memory extends Model
      * Saves uploaded pictures as new photos of this post. Files get random names, so a browser's
      * year-long cached copy of an old picture can never show up in place of a new one.
      *
+     * All or nothing: if one picture can't be stored, the pictures already stored in this call are
+     * deleted again and PhotoNotSavedException is thrown (call it inside a DB transaction, so the rows go too).
+     *
      * @param  array<int, UploadedFile>  $files
+     *
+     * @throws PhotoNotSavedException
      */
     public function addPhotos(array $files): void
     {
+        $storedPaths = [];
+
         foreach ($files as $file) {
-            $this->photos()->create(['path' => $file->store('memories', 'public')]);
+            $path = $file->store('memories', 'public');
+
+            if ($path === false) {
+                Storage::disk('public')->delete($storedPaths);
+
+                throw new PhotoNotSavedException;
+            }
+
+            $storedPaths[] = $path;
+            $this->photos()->create(['path' => $path]);
         }
     }
 

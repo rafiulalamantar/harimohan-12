@@ -10,7 +10,7 @@
     @forelse ($memories as $m)
         <div class="p-4 flex flex-wrap items-start justify-between gap-3">
             <div class="flex items-start gap-3 min-w-0">
-                @if ($m->photos->isNotEmpty())<img src="{{ $m->photos->first()->url() }}" alt="" class="w-24 h-18 object-cover rounded-sm border">@endif
+                @if ($m->photos->isNotEmpty())<img src="{{ $m->photos->first()->url() }}" alt="" data-fallback class="w-24 h-18 object-cover rounded-sm border">@endif
                 <div class="min-w-0">
                     <div class="font-semibold break-words">{{ $m->title }}</div>
                     <div class="text-xs text-gray-500">{{ $m->kindLabel() }} · {{ $m->photos->count() }} photos · {{ $m->created_at->format('d M Y, h:i A') }}</div>
