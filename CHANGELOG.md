@@ -1,6 +1,27 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.7.0...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.8.0...main)
+
+## [v1.8.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.7.0...v1.8.0) - 2026-10-24
+
+v1.8.0: Faster memory photos
+
+- **Memory photos load much faster.** Cards and slideshows now use a card-size copy of each photo (800 px) instead of the full original (up to 2048 px and 0.5 MB). The post page and Full size still show the original.
+  
+- **No more waiting before photos appear on the Memories page.** The top cards' photos start loading straight away instead of waiting about a second (measured in Safari).
+  
+- **Slideshows don't flash an empty slide:** the next photo loads while the current one is showing.
+  
+- **Fonts come from this site.** Pages no longer wait for Google Fonts before showing text; one 27 KB file covers every weight of Plus Jakarta Sans.
+  
+- Nothing changes when sharing a memory: the browser makes the card copy itself while preparing the photos.
+  
+- New column `memory_photos.thumb_path` (run the migration), `MemoryPhoto::cardUrl()`, and the `priority` prop on `x-memory-card`.
+  
+- `php artisan app:make-photo-thumbnails` now also makes card copies for memory photos.
+  
+- Fonts are set up in `vite.config.js` (Google provider, downloaded at build time) and printed with `@fonts`; the CSP no longer allows Google Fonts.
+  
 
 ## [v1.7.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.6.0...v1.7.0) - 2026-10-24
 
