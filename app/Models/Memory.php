@@ -64,10 +64,16 @@ class Memory extends Model
         return $this->hasMany(MemoryPhoto::class)->orderBy('id');
     }
 
-    /** Newest posts first, with their pictures loaded in one query. */
+    /**
+     * The order posts are listed in everywhere (welcome page, /memories, admin list):
+     * Remembering posts always first, then newest first. Pictures are loaded in one query.
+     */
     public function scopeFeed(Builder $query): Builder
     {
-        return $query->with('photos')->latest()->orderByDesc('id');
+        return $query->with('photos')
+            ->orderByRaw('CASE WHEN kind = ? THEN 0 ELSE 1 END', [self::KIND_REMEMBERING])
+            ->latest()
+            ->orderByDesc('id');
     }
 
     public function kindLabel(): string

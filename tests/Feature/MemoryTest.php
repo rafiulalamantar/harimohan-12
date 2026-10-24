@@ -73,6 +73,17 @@ class MemoryTest extends TestCase
             ->assertDontSee('line-clamp-4', false);
     }
 
+    public function test_remembering_posts_are_always_listed_first(): void
+    {
+        $this->travelTo(now()->subWeek());
+        Memory::create(['kind' => Memory::KIND_REMEMBERING, 'title' => 'Remembering our friend', 'story' => 'Forever in our hearts']);
+        $this->travelBack();
+        Memory::create(['kind' => Memory::KIND_FUNNY, 'title' => 'Newest funny moment', 'story' => 'Ha']);
+
+        $this->get(route('home'))->assertSeeInOrder(['Remembering our friend', 'Newest funny moment']);
+        $this->get(route('memories.index'))->assertSeeInOrder(['Remembering our friend', 'Newest funny moment']);
+    }
+
     public function test_remembering_post_allows_only_one_photo(): void
     {
         Storage::fake('public');
