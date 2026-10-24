@@ -52,7 +52,12 @@ class MainMenu
         return $user->isStudent() && $this->request->routeIs('portal.*');
     }
 
-    /** @return array<int, MenuSection> */
+    /**
+     * Guests have no menu bar: these links sit next to Login (and in the ☰ menu on phones),
+     * so keep them in one section without a label.
+     *
+     * @return array<int, MenuSection>
+     */
     private function guestMenu(): array
     {
         return [

@@ -32,8 +32,7 @@
             @foreach ($menuSections as $section)
                 @if ($section['label'] === null)
                     @foreach ($section['links'] as $link)
-                        <a href="{{ $link['url'] }}"
-                           class="whitespace-nowrap rounded-full px-3 py-1.5 transition {{ $link['isActive'] ? 'bg-brand-50 text-brand-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">{{ $link['label'] }}</a>
+                        <x-menu-link :link="$link" variant="bar" />
                     @endforeach
                 @else
                     <details class="relative" data-dropdown>
@@ -43,8 +42,7 @@
                         </summary>
                         <div class="absolute left-0 mt-2 w-52 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl z-50">
                             @foreach ($section['links'] as $link)
-                                <a href="{{ $link['url'] }}"
-                                   class="block rounded-xl px-3 py-2 {{ $link['isActive'] ? 'bg-brand-50 text-brand-800' : 'text-slate-700 hover:bg-slate-50' }}">{{ $link['label'] }}</a>
+                                <x-menu-link :link="$link" variant="dropdown" />
                             @endforeach
                         </div>
                     </details>
@@ -68,8 +66,7 @@
                 {{-- Guest links (Memories ⚡), then Login. On phones both move into the ☰ menu, so Register and ☰ fit next to the name. --}}
                 @foreach ($menuSections as $section)
                     @foreach ($section['links'] as $link)
-                        <a href="{{ $link['url'] }}"
-                           class="hidden sm:inline-block whitespace-nowrap rounded-full px-4 py-1.5 transition {{ $link['isActive'] ? 'bg-brand-50 text-brand-800' : 'text-slate-700 hover:bg-slate-100' }}">{{ $link['label'] }}</a>
+                        <x-menu-link :link="$link" variant="beside-login" />
                     @endforeach
                 @endforeach
                 <a href="{{ route('login') }}" class="hidden sm:inline-block rounded-full px-4 py-1.5 text-slate-700 hover:bg-slate-100 transition">Login</a>
@@ -96,8 +93,7 @@
                             <div class="px-3 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">{{ $section['label'] }}</div>
                         @endif
                         @foreach ($section['links'] as $link)
-                            <a href="{{ $link['url'] }}"
-                               class="block rounded-xl px-3 py-2 font-medium {{ $link['isActive'] ? 'bg-brand-50 text-brand-800' : 'text-slate-700 hover:bg-slate-50' }}">{{ $link['label'] }}</a>
+                            <x-menu-link :link="$link" variant="panel" />
                         @endforeach
                     @endforeach
                     @auth

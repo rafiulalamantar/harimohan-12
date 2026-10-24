@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
 
         // The header menu: which links this visitor sees is decided in MainMenu, the layout only displays them.
         View::composer('layouts.app', function ($view): void {
-            $view->with('menuSections', (new MainMenu(request()))->sectionsFor(auth()->user()));
+            $view->with('menuSections', app(MainMenu::class)->sectionsFor(auth()->user()));
         });
 
         // Admins see a notification bell with the newest registrations on every page.

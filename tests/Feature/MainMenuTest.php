@@ -29,6 +29,17 @@ class MainMenuTest extends TestCase
         $this->get(route('memories.index'))->assertOk();
     }
 
+    public function test_memories_link_is_marked_current_only_on_memories_page(): void
+    {
+        $this->get(route('memories.index'))
+            ->assertOk()
+            ->assertSee('aria-current="page"', false);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertDontSee('aria-current="page"', false);
+    }
+
     public function test_member_menu_links_to_memories_page(): void
     {
         $member = User::factory()->create();
