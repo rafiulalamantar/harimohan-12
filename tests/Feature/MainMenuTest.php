@@ -15,11 +15,16 @@ class MainMenuTest extends TestCase
         return 'href="'.route('memories.index').'"';
     }
 
-    public function test_guest_menu_links_to_memories_page(): void
+    public function test_guest_sees_memories_link_left_of_login_on_welcome_page(): void
     {
-        $this->get(route('login'))
+        $this->get(route('home'))
             ->assertOk()
-            ->assertSee($this->memoriesMenuLink(), false);
+            ->assertSeeInOrder([
+                $this->memoriesMenuLink(),
+                'Memories ⚡',
+                'href="'.route('login').'"',
+                'href="'.route('register').'"',
+            ], false);
 
         $this->get(route('memories.index'))->assertOk();
     }

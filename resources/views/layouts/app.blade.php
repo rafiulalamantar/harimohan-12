@@ -23,7 +23,11 @@
             <span class="font-extrabold tracking-tight text-slate-900 text-lg">{{ config('app.name') }}</span>
         </a>
 
-        {{-- Wide screens: plain links, and a dropdown for each labelled section. The links come from App\Services\MainMenu. --}}
+        {{--
+            Wide screens: plain links, and a dropdown for each labelled section. The links come from App\Services\MainMenu.
+            Guests have no menu bar: their few links sit next to Login on the right instead.
+        --}}
+        @auth
         <nav class="hidden lg:flex items-center gap-0.5 text-sm font-medium" aria-label="Main">
             @foreach ($menuSections as $section)
                 @if ($section['label'] === null)
@@ -47,6 +51,7 @@
                 @endif
             @endforeach
         </nav>
+        @endauth
 
         <div class="flex items-center gap-2 text-sm font-semibold">
             @auth
@@ -60,13 +65,19 @@
                     <button class="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-slate-700 hover:bg-slate-50 transition">Logout</button>
                 </form>
             @else
-                {{-- On phones Login moves into the ☰ menu, so Register, Login and ☰ all fit next to the name. --}}
+                {{-- Guest links (Memories ⚡), then Login. On phones both move into the ☰ menu, so Register and ☰ fit next to the name. --}}
+                @foreach ($menuSections as $section)
+                    @foreach ($section['links'] as $link)
+                        <a href="{{ $link['url'] }}"
+                           class="hidden sm:inline-block whitespace-nowrap rounded-full px-4 py-1.5 transition {{ $link['isActive'] ? 'bg-brand-50 text-brand-800' : 'text-slate-700 hover:bg-slate-100' }}">{{ $link['label'] }}</a>
+                    @endforeach
+                @endforeach
                 <a href="{{ route('login') }}" class="hidden sm:inline-block rounded-full px-4 py-1.5 text-slate-700 hover:bg-slate-100 transition">Login</a>
                 <a href="{{ route('register') }}" class="rounded-full bg-slate-900 px-4 py-1.5 text-white hover:bg-brand-800 transition">Register</a>
             @endauth
 
-            {{-- Phones and tablets: the same links in the ☰ menu, labelled sections as headed groups. --}}
-            <details class="relative lg:hidden" data-dropdown>
+            {{-- The same links in the ☰ menu, labelled sections as headed groups: up to tablets when logged in, only on phones for guests. --}}
+            <details @class(['relative', 'lg:hidden' => $user, 'sm:hidden' => ! $user]) data-dropdown>
                 <summary class="list-none cursor-pointer grid place-items-center w-9 h-9 rounded-full border border-slate-200 bg-white text-slate-700" aria-label="Menu">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
                 </summary>

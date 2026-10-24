@@ -121,7 +121,7 @@ class MainMenu
      */
     private function memoriesLink(): array
     {
-        return $this->link('memories.index', 'Memories', 'memories.*');
+        return $this->link('memories.index', 'Memories ⚡', 'memories.*');
     }
 
     /**
