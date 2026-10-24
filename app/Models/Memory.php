@@ -76,6 +76,12 @@ class Memory extends Model
             ->orderByDesc('id');
     }
 
+    /** Only Remembering posts: the welcome page shows these; every other post lives on /memories. */
+    public function scopeRemembering(Builder $query): Builder
+    {
+        return $query->where('kind', self::KIND_REMEMBERING);
+    }
+
     public function kindLabel(): string
     {
         return self::KINDS[$this->kind] ?? self::KINDS[self::KIND_MEMORY];
