@@ -3,7 +3,8 @@
     Normal posts show the start of the story and open the post's own page when tapped.
     Remembering posts show the whole tribute on the card and link nowhere (Memory::linksToPostPage).
 --}}
-@props(['memory'])
+{{-- priority: the card is near the top of the page, so its first photo loads straight away (see x-memory-slides). --}}
+@props(['memory', 'priority' => false])
 
 @php($linksToPost = $memory->linksToPostPage())
 <article @class([
@@ -11,7 +12,7 @@
     'hover:-translate-y-1 hover:shadow-xl transition duration-300' => $linksToPost,
 ])>
     @if ($memory->photos->isNotEmpty())
-        <x-memory-slides :memory="$memory" />
+        <x-memory-slides :memory="$memory" :priority="$priority" />
     @endif
     <div class="relative flex flex-1 flex-col p-6">
         <div class="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">

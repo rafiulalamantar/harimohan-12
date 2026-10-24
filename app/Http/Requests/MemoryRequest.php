@@ -12,7 +12,8 @@ use Illuminate\Validation\Validator;
 /**
  * Create / edit a memory post (admin/memories/form.blade.php).
  *
- * The form sends: kind, title, story, photos[] (new pictures) and, when editing, remove_photos[] (ids of ticked photos).
+ * The form sends: kind, title, story, photos[] (new pictures), photo_thumbnails[] (their card-size copies, made by
+ * the browser) and, when editing, remove_photos[] (ids of ticked photos).
  */
 class MemoryRequest extends FormRequest
 {
@@ -33,6 +34,8 @@ class MemoryRequest extends FormRequest
             'story' => ['nullable', 'string', 'max:5000'],
             'photos' => ['nullable', 'array', 'max:'.$this->maxPhotos()],
             'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
+            'photo_thumbnails' => ['nullable', 'array'],
+            'photo_thumbnails.*' => ['image', 'mimes:jpg,jpeg', 'max:512'],
             'remove_photos' => ['nullable', 'array'],
             'remove_photos.*' => ['integer'],
         ];
@@ -95,6 +98,19 @@ class MemoryRequest extends FormRequest
     public function newPhotos(): array
     {
         return $this->file('photos', []);
+    }
+
+    /**
+     * The browser's card-size copies of newPhotos(), in the same order. The browser sends one for every photo or
+     * none at all, so a count that doesn't match means something went wrong: then no copies are used.
+     *
+     * @return array<int, UploadedFile>
+     */
+    public function newPhotoCardCopies(): array
+    {
+        $copies = $this->file('photo_thumbnails', []);
+
+        return count($copies) === count($this->newPhotos()) ? array_values($copies) : [];
     }
 
     /**

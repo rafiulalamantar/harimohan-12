@@ -83,6 +83,12 @@ Vercel's PHP has no image library, so **the browser does the image work** before
 3. `photos/upload.js` puts the framed JPEG (up to 1200×900) and a 480 px card thumbnail into the form.
 4. The server stores both (`PhotoThumbnail::forUpload`). Cards and avatars use the thumbnail.
 
+Memory photos get the same treatment without the cropper: `upload.js` makes an **800 px card copy** of every picked photo (`data-thumbnail-width`, sent as `photo_thumbnails[]` in the same order; one per photo or none). `Memory::addPhotos` stores each copy as `MemoryPhoto::thumb_path`. Cards and the post page's thumbnail strip use `MemoryPhoto::cardUrl()`, which falls back to the full photo when there is no copy; the post page's slideshow and Full size use the full photo. Older photos get copies with `php artisan app:make-photo-thumbnails` (needs GD, so run it from a computer with `--env=production`).
+
+Loading: on `/memories` the first three cards load their first photo at once with `fetchpriority="high"` (the `priority` prop of `x-memory-card`); every other slide is lazy, and `slideshow.js` starts loading the next photo while the current one shows.
+
+Fonts (Plus Jakarta Sans, Hind Siliguri for Bangla) are downloaded from Google Fonts **at build time** by `vite.config.js` and served from `/build`, printed by `@fonts` in the layout. Pages never wait on another website for text, and the CSP only allows fonts from the site itself.
+
 Admins can re-frame an existing photo from a student's admin page (`photos/reframe.js` → `StudentController::updateCardPhoto`). Only a new thumbnail is saved, under a **new file name**, because uploads are cached by browsers for a year (`immutable`); the original photo is kept.
 
 ### Payments (bKash)

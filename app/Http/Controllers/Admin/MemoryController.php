@@ -36,7 +36,7 @@ class MemoryController extends Controller
         try {
             DB::transaction(function () use ($request) {
                 $memory = Memory::create($request->memoryData() + ['user_id' => $request->user()->id]);
-                $memory->addPhotos($request->newPhotos());
+                $memory->addPhotos($request->newPhotos(), $request->newPhotoCardCopies());
             });
         } catch (PhotoNotSavedException $exception) {
             return back()->withInput()->withErrors(['photos' => $exception->getMessage()]);
@@ -56,7 +56,7 @@ class MemoryController extends Controller
             DB::transaction(function () use ($request, $memory) {
                 $memory->update($request->memoryData());
                 // New photos first: if they fail, the photos ticked for removal are still there.
-                $memory->addPhotos($request->newPhotos());
+                $memory->addPhotos($request->newPhotos(), $request->newPhotoCardCopies());
                 $memory->removePhotos($request->photoIdsToRemove());
             });
         } catch (PhotoNotSavedException $exception) {

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Memory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -68,6 +69,18 @@ class PhotoThumbnailTest extends TestCase
         $this->assertStringEndsWith('.jpg', $student->photo_thumb);
     }
 
+    public function test_the_backfill_command_makes_800px_card_copies_of_memory_photos(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->putFileAs('memories', UploadedFile::fake()->image('picnic.jpg', 2048, 1536), 'picnic.jpg');
+        $photo = Memory::create(['kind' => Memory::KIND_MEMORY, 'title' => 'Picnic'])->photos()->create(['path' => 'memories/picnic.jpg']);
+
+        $this->artisan('app:make-photo-thumbnails')->expectsOutput('Made 1 memory photo card copies.')->assertSuccessful();
+
+        $this->assertSame('memories/thumbs/picnic.jpg', $photo->fresh()->thumb_path);
+        $this->assertSame([800, 600], array_slice(getimagesizefromstring(Storage::disk('public')->get('memories/thumbs/picnic.jpg')), 0, 2));
+    }
+
     public function test_the_backfill_command_thumbnails_existing_photos_and_skips_unreadable_ones(): void
     {
         Storage::fake('public');
@@ -76,7 +89,7 @@ class PhotoThumbnailTest extends TestCase
         $withPhoto = User::factory()->create(['photo' => 'photos/big.jpg']);
         $broken = User::factory()->create(['photo' => 'photos/broken.jpg']);
 
-        $this->artisan('app:make-photo-thumbnails')->expectsOutput('Made 1 thumbnail(s).')->assertSuccessful();
+        $this->artisan('app:make-photo-thumbnails')->expectsOutput('Made 1 profile photo thumbnail(s).')->assertSuccessful();
 
         $this->assertSame('photos/thumbs/big.jpg', $withPhoto->fresh()->photo_thumb);
         $this->assertSame([480, 320], array_slice(getimagesizefromstring(Storage::disk('public')->get('photos/thumbs/big.jpg')), 0, 2));

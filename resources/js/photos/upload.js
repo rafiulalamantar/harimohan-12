@@ -61,14 +61,16 @@ async function preparePhoto(input, original) {
         files.forEach((file) => transfer.items.add(file));
         input.files = transfer.files;
 
-        // Profile photos also get a small copy for directory cards and avatars (sent as e.g. photo_thumbnail);
-        // Vercel's PHP can't resize images, so the browser makes it.
+        // Profile and memory photos also get a small copy for cards (sent as e.g. photo_thumbnail or
+        // photo_thumbnails[]); Vercel's PHP can't resize images, so the browser makes them.
         const thumbnailInput = input.dataset.thumbnail && input.form?.querySelector(`input[name="${input.dataset.thumbnail}"]`);
         if (thumbnailInput) {
-            const thumbnail = await makeThumbnail(files[0]).catch(() => null);
+            const width = Number(input.dataset.thumbnailWidth) || undefined;
+            const thumbnails = await Promise.all(files.map((file) => makeThumbnail(file, width).catch(() => null)));
             const thumbnailTransfer = new DataTransfer();
-            if (thumbnail) {
-                thumbnailTransfer.items.add(thumbnail);
+            // One copy per photo or none at all: the server pairs them with the photos by order.
+            if (thumbnails.every(Boolean)) {
+                thumbnails.forEach((thumbnail) => thumbnailTransfer.items.add(thumbnail));
             }
             thumbnailInput.files = thumbnailTransfer.files;
         }
