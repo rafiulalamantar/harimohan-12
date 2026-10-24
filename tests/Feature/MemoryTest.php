@@ -26,7 +26,7 @@ class MemoryTest extends TestCase
         return $memory;
     }
 
-    public function test_admin_shares_memory_with_photos_and_story_lines_on_welcome_page(): void
+    public function test_admin_shares_memory_with_photos_and_story_lines_on_memories_page(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
@@ -44,7 +44,8 @@ class MemoryTest extends TestCase
         $this->assertCount(2, $memory->photos);
         $memory->photos->each(fn ($photo) => Storage::disk('public')->assertExists($photo->path));
 
-        $this->get(route('home'))
+        $this->get(route('memories.index'))
+            ->assertOk()
             ->assertSee('Sir caught us')
             ->assertSee('😂 Funny moment')
             ->assertSee('data-slideshow', false)
@@ -80,8 +81,21 @@ class MemoryTest extends TestCase
         $this->travelBack();
         Memory::create(['kind' => Memory::KIND_FUNNY, 'title' => 'Newest funny moment', 'story' => 'Ha']);
 
-        $this->get(route('home'))->assertSeeInOrder(['Remembering our friend', 'Newest funny moment']);
         $this->get(route('memories.index'))->assertSeeInOrder(['Remembering our friend', 'Newest funny moment']);
+    }
+
+    public function test_welcome_page_shows_only_remembering_posts_and_links_to_the_rest(): void
+    {
+        Memory::create(['kind' => Memory::KIND_REMEMBERING, 'title' => 'Remembering our friend', 'story' => 'Forever in our hearts']);
+        Memory::create(['kind' => Memory::KIND_FUNNY, 'title' => 'Sir caught us', 'story' => 'Ha']);
+        Memory::create(['kind' => Memory::KIND_MEMORY, 'title' => 'Picnic at Sonargaon', 'story' => 'Bus broke down']);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Remembering our friend')
+            ->assertDontSee('Sir caught us')
+            ->assertDontSee('Picnic at Sonargaon')
+            ->assertSee('See all 3 memories');
     }
 
     public function test_remembering_post_allows_only_one_photo(): void
@@ -184,7 +198,7 @@ class MemoryTest extends TestCase
     {
         Memory::create(['kind' => Memory::KIND_STORY, 'title' => 'Tiffin', 'story' => '<script>alert(1)</script>']);
 
-        $this->get(route('home'))
+        $this->get(route('memories.index'))
             ->assertDontSee('<script>alert(1)</script>', false)
             ->assertSee('&lt;script&gt;alert(1)&lt;/script&gt;', false);
     }

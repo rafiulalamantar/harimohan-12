@@ -14,43 +14,7 @@
 <body class="bg-[#f6f7f6] text-slate-800 font-sans min-h-screen flex flex-col selection:bg-brand-200">
 <div aria-hidden="true" class="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[420px] bg-[radial-gradient(60%_60%_at_50%_0%,rgb(16_185_129/.12),transparent)]"></div>
 
-@php
-    $user = auth()->user();
-    // A student who is also an admin sees the portal menu on portal pages and the admin menu everywhere else.
-    $showPortalNav = $user && (! $user->isAdmin() || ($user->isStudent() && request()->routeIs('portal.*')));
-    // Menu sections: a section with a label is a dropdown on wide screens and a headed group in the ☰ menu.
-    $navGroups = $user
-        ? (! $showPortalNav
-            ? [
-                ['label' => null, 'links' => [['admin.dashboard', 'Dashboard', 'admin.dashboard']]],
-                ['label' => 'Members', 'links' => [
-                    ['admin.students.index', 'Students', 'admin.students.*'],
-                    ['admin.student-fields.index', 'Student fields', 'admin.student-fields.*'],
-                ]],
-                ['label' => 'Events', 'links' => [
-                    ['admin.events.index', 'Events', 'admin.events.*'],
-                    ['admin.payments.index', 'Payments', 'admin.payments.*'],
-                ]],
-                ['label' => 'Communication', 'links' => [
-                    ['admin.announcements.index', 'Announcements', 'admin.announcements.*'],
-                    ['admin.memories.index', 'Memories', 'admin.memories.*'],
-                    ['admin.member-emails.create', 'Email members', 'admin.member-emails.*'],
-                    ['admin.settings.edit', 'Welcome page', 'admin.settings.*'],
-                ]],
-                ...($user->isStudent() ? [['label' => null, 'links' => [['portal.dashboard', 'My portal', 'portal.*']]]] : []),
-            ]
-            : [
-                ['label' => null, 'links' => [
-                    ['portal.dashboard', 'Home', 'portal.dashboard'],
-                    ['portal.announcements', 'Notice', 'portal.announcements*'],
-                    ['portal.payments', 'My Payments', 'portal.payments'],
-                    ['portal.profile', 'Profile', 'portal.profile'],
-                    ...($user->isAdmin() ? [['admin.dashboard', 'Admin panel', 'admin.*']] : []),
-                ]],
-            ])
-        : [];
-    $isActiveGroup = fn (array $group): bool => collect($group['links'])->contains(fn ($link) => request()->routeIs($link[2]));
-@endphp
+@php($user = auth()->user())
 
 <header class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/75 backdrop-blur-xl">
     <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
@@ -59,29 +23,33 @@
             <span class="font-extrabold tracking-tight text-slate-900 text-lg">{{ config('app.name') }}</span>
         </a>
 
+        {{--
+            Wide screens: plain links, and a dropdown for each labelled section. The links come from App\Services\MainMenu.
+            Guests have no menu bar: their few links sit next to Login on the right instead.
+        --}}
+        @auth
         <nav class="hidden lg:flex items-center gap-0.5 text-sm font-medium" aria-label="Main">
-            @foreach ($navGroups as $group)
-                @if ($group['label'] === null)
-                    @foreach ($group['links'] as [$route, $label, $pattern])
-                        <a href="{{ route($route) }}"
-                           class="whitespace-nowrap rounded-full px-3 py-1.5 transition {{ request()->routeIs($pattern) ? 'bg-brand-50 text-brand-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">{{ $label }}</a>
+            @foreach ($menuSections as $section)
+                @if ($section['label'] === null)
+                    @foreach ($section['links'] as $link)
+                        <x-menu-link :link="$link" variant="bar" />
                     @endforeach
                 @else
                     <details class="relative" data-dropdown>
-                        <summary class="list-none cursor-pointer inline-flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-1.5 transition {{ $isActiveGroup($group) ? 'bg-brand-50 text-brand-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-                            {{ $group['label'] }}
+                        <summary class="list-none cursor-pointer inline-flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-1.5 transition {{ $section['isActive'] ? 'bg-brand-50 text-brand-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                            {{ $section['label'] }}
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
                         </summary>
                         <div class="absolute left-0 mt-2 w-52 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl z-50">
-                            @foreach ($group['links'] as [$route, $label, $pattern])
-                                <a href="{{ route($route) }}"
-                                   class="block rounded-xl px-3 py-2 {{ request()->routeIs($pattern) ? 'bg-brand-50 text-brand-800' : 'text-slate-700 hover:bg-slate-50' }}">{{ $label }}</a>
+                            @foreach ($section['links'] as $link)
+                                <x-menu-link :link="$link" variant="dropdown" />
                             @endforeach
                         </div>
                     </details>
                 @endif
             @endforeach
         </nav>
+        @endauth
 
         <div class="flex items-center gap-2 text-sm font-semibold">
             @auth
@@ -95,16 +63,23 @@
                     <button class="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-slate-700 hover:bg-slate-50 transition">Logout</button>
                 </form>
             @else
-                <a href="{{ route('login') }}" class="rounded-full px-4 py-1.5 text-slate-700 hover:bg-slate-100 transition">Login</a>
+                {{-- Guest links (Memories ⚡), then Login. On phones both move into the ☰ menu, so Register and ☰ fit next to the name. --}}
+                @foreach ($menuSections as $section)
+                    @foreach ($section['links'] as $link)
+                        <x-menu-link :link="$link" variant="beside-login" />
+                    @endforeach
+                @endforeach
+                <a href="{{ route('login') }}" class="hidden sm:inline-block rounded-full px-4 py-1.5 text-slate-700 hover:bg-slate-100 transition">Login</a>
                 <a href="{{ route('register') }}" class="rounded-full bg-slate-900 px-4 py-1.5 text-white hover:bg-brand-800 transition">Register</a>
             @endauth
 
-            @if ($navGroups)
-                <details class="relative lg:hidden" data-dropdown>
-                    <summary class="list-none cursor-pointer grid place-items-center w-9 h-9 rounded-full border border-slate-200 bg-white text-slate-700" aria-label="Menu">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
-                    </summary>
-                    <div class="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+            {{-- The same links in the ☰ menu, labelled sections as headed groups: up to tablets when logged in, only on phones for guests. --}}
+            <details @class(['relative', 'lg:hidden' => $user, 'sm:hidden' => ! $user]) data-dropdown>
+                <summary class="list-none cursor-pointer grid place-items-center w-9 h-9 rounded-full border border-slate-200 bg-white text-slate-700" aria-label="Menu">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+                </summary>
+                <div class="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                    @auth
                         <div class="border-b border-slate-100 mb-2 px-3 pt-1 pb-2">
                             <div class="text-xs text-slate-500">Logged in as</div>
                             <div class="break-words text-sm font-semibold text-slate-900">{{ $user->name }}</div>
@@ -112,21 +87,26 @@
                                 <div class="text-xs font-semibold text-brand-700">🛡️ {{ $user->adminBadge() }}</div>
                             @endif
                         </div>
-                        @foreach ($navGroups as $group)
-                            @if ($group['label'] !== null)
-                                <div class="px-3 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">{{ $group['label'] }}</div>
-                            @endif
-                            @foreach ($group['links'] as [$route, $label, $pattern])
-                                <a href="{{ route($route) }}"
-                                   class="block rounded-xl px-3 py-2 font-medium {{ request()->routeIs($pattern) ? 'bg-brand-50 text-brand-800' : 'text-slate-700 hover:bg-slate-50' }}">{{ $label }}</a>
-                            @endforeach
+                    @endauth
+                    @foreach ($menuSections as $section)
+                        @if ($section['label'] !== null)
+                            <div class="px-3 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">{{ $section['label'] }}</div>
+                        @endif
+                        @foreach ($section['links'] as $link)
+                            <x-menu-link :link="$link" variant="panel" />
                         @endforeach
+                    @endforeach
+                    @auth
                         <form method="POST" action="{{ route('logout') }}" class="sm:hidden border-t border-slate-100 mt-2 pt-2">@csrf
                             <button class="w-full text-left rounded-xl px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Logout</button>
                         </form>
-                    </div>
-                </details>
-            @endif
+                    @else
+                        <div class="sm:hidden border-t border-slate-100 mt-2 pt-2">
+                            <a href="{{ route('login') }}" class="block rounded-xl px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Login</a>
+                        </div>
+                    @endauth
+                </div>
+            </details>
         </div>
     </div>
 </header>

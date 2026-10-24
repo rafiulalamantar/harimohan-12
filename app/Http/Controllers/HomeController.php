@@ -15,7 +15,10 @@ class HomeController extends Controller
     /** Alumni cards shown per directory page. */
     private const DIRECTORY_PAGE_SIZE = 24;
 
-    /** Newest memory posts shown on the welcome page; the rest are on /memories. */
+    /**
+     * Remembering posts shown on the welcome page. Other memory posts (photo slideshows)
+     * are only on /memories, which every visitor reaches from the Memories menu link.
+     */
     private const MEMORIES_SHOWN = 3;
 
     /**
@@ -53,7 +56,7 @@ class HomeController extends Controller
             'settings' => Setting::values(),
             'event' => ReunionEvent::current(),
             'announcements' => Announcement::feed()->take(3)->get(),
-            'memories' => Memory::feed()->take(self::MEMORIES_SHOWN)->get(),
+            'memories' => Memory::feed()->remembering()->take(self::MEMORIES_SHOWN)->get(),
             'totalMemories' => Memory::count(),
             'students' => $students,
             'totalAlumni' => (clone $approvedStudents)->count(),
