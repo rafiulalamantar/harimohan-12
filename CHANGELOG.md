@@ -1,6 +1,22 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.5.0...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.6.0...main)
+
+## [v1.6.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.5.0...v1.6.0) - 2026-10-24
+
+v1.6.0: Memories on the welcome page
+
+Admins can share school memories on the welcome page: Communication → Memories.
+
+- Four post types: 📸 Memory, 😂 Funny moment, 📝 Story and 🕊️ Remembering (for friends who have passed away: always listed first, one photo, a calm grey badge, and the whole tribute shown on the card without a separate page).
+- A title, a story with as many lines as needed (line breaks are kept), and up to 6 photos. iPhone HEIC photos are converted and big photos are shrunk in the browser before upload.
+- Photos play as an automatic slideshow with a counter, progress bar, arrows, dots or thumbnails, swipe, arrow keys, and Pause / Full size on the post page. It pauses on mouse-over, keyboard focus, off-screen and hidden tabs, and never autoplays for visitors who ask their device for reduced motion.
+- The welcome page shows the first three (Remembering first, then newest); everyone can open /memories and each post.
+- Removing a photo or deleting a post also deletes the files from storage.
+- Errors handled: storage down while saving (nothing half-saved, form kept), missing photos ("Photo not available"), uploads over 4 MB stopped before Vercel's limit, double taps on Save, offline.
+- Code refactored for new developers; docs/ARCHITECTURE.md explains the Memories flow.
+
+Needs the production migration (memories, memory_photos tables) before deploying.
 
 ## [v1.5.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.4.10...v1.5.0) - 2026-10-23
 
