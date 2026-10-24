@@ -92,3 +92,49 @@
         animation: none;
     }
 }
+
+/*
+ * Memory slideshows (components/memory-slides.blade.php, resources/js/slideshow.js).
+ * Photos sit on top of each other; the .is-active one fades in and slowly zooms (a gentle "Ken Burns" effect).
+ * On the post page (.slides-contain) whole photos are shown on a dark backdrop, without zoom.
+ */
+[data-slide] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1);
+    transition: opacity 0.7s ease, transform 6s linear;
+    -webkit-user-drag: none;
+}
+
+[data-slide].is-active {
+    opacity: 1;
+    transform: scale(1.06);
+}
+
+.slides-contain [data-slide],
+.slides-contain [data-slide].is-active {
+    object-fit: contain;
+    transform: none;
+}
+
+/* Remembering posts: the one photo stays still (no zoom). */
+.slides-calm [data-slide].is-active {
+    transform: none;
+}
+
+/* Let the page scroll up and down while sideways swipes go to the slideshow. */
+[data-slideshow] {
+    touch-action: pan-y;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-slide],
+    [data-slide].is-active {
+        transition: none;
+        transform: none;
+    }
+}

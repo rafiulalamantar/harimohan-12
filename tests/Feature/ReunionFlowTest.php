@@ -715,7 +715,7 @@ class ReunionFlowTest extends TestCase
     public function test_admin_menu_groups_its_pages(): void
     {
         $response = $this->actingAs(User::factory()->admin()->create())->get(route('admin.payments.index'))
-            ->assertSeeInOrder(['Dashboard', 'Members', 'Students', 'Student fields', 'Events', 'Events', 'Payments', 'Communication', 'Announcements', 'Email members', 'Welcome page']);
+            ->assertSeeInOrder(['Dashboard', 'Members', 'Students', 'Student fields', 'Events', 'Events', 'Payments', 'Communication', 'Announcements', 'Memories', 'Email members', 'Welcome page']);
 
         // The group holding the current page is highlighted; the others are not.
         $this->assertMatchesRegularExpression('/bg-brand-50 text-brand-800">\s*Events\s*<svg/', $response->getContent());
