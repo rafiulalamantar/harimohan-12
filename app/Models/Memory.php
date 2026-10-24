@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\PhotoNotSavedException;
+use App\Services\PhotoThumbnail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -111,21 +112,25 @@ class Memory extends Model
     }
 
     /**
-     * Saves uploaded pictures as new photos of this post. Files get random names, so a browser's
-     * year-long cached copy of an old picture can never show up in place of a new one.
+     * Saves uploaded pictures as new photos of this post, each with its card-size copy. Files get random names,
+     * so a browser's year-long cached copy of an old picture can never show up in place of a new one.
+     *
+     * $cardCopies are the copies the browser made, in the same order as $files (resources/js/photos/upload.js).
+     * Without them a copy is made here when the server can (not on Vercel); otherwise cards show the full photo.
      *
      * All or nothing: if one picture can't be stored, the pictures already stored in this call are
      * deleted again and PhotoNotSavedException is thrown (call it inside a DB transaction, so the rows go too).
      *
      * @param  array<int, UploadedFile>  $files
+     * @param  array<int, UploadedFile>  $cardCopies
      *
      * @throws PhotoNotSavedException
      */
-    public function addPhotos(array $files): void
+    public function addPhotos(array $files, array $cardCopies = []): void
     {
         $storedPaths = [];
 
-        foreach ($files as $file) {
+        foreach (array_values($files) as $index => $file) {
             $path = $file->store('memories', 'public');
 
             if ($path === false) {
@@ -134,8 +139,10 @@ class Memory extends Model
                 throw new PhotoNotSavedException;
             }
 
-            $storedPaths[] = $path;
-            $this->photos()->create(['path' => $path]);
+            $thumbPath = PhotoThumbnail::forUpload($cardCopies[$index] ?? null, $path, PhotoThumbnail::MEMORY_CARD_WIDTH);
+
+            $storedPaths = [...$storedPaths, ...array_filter([$path, $thumbPath])];
+            $this->photos()->create(['path' => $path, 'thumb_path' => $thumbPath]);
         }
     }
 

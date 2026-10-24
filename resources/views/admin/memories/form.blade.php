@@ -50,8 +50,11 @@
         @php($photoLimit = \App\Models\Memory::maxPhotosFor(old('kind', $memory->kind) ?? \App\Models\Memory::KIND_MEMORY))
         <div>
             <label for="photos" class="block text-sm font-semibold text-slate-700 mb-1.5">{{ $memory->photos->isNotEmpty() ? 'Add photos' : 'Photos' }}</label>
-            <input id="photos" name="photos[]" type="file" @if ($photoLimit > 1) multiple @endif data-photo-limit-input accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
+            {{-- data-thumbnail: the browser also makes an 800 px card copy of each photo (resources/js/photos/upload.js). --}}
+            <input id="photos" name="photos[]" type="file" @if ($photoLimit > 1) multiple @endif data-photo-limit-input
+                   data-thumbnail="photo_thumbnails[]" data-thumbnail-width="{{ \App\Services\PhotoThumbnail::MEMORY_CARD_WIDTH }}" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
                    class="w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-slate-900 ring-1 ring-slate-200 shadow-xs file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-3 file:py-1 file:text-sm file:font-semibold file:text-brand-800 focus:ring-2 focus:ring-brand-500 focus:outline-hidden transition">
+            <input type="file" name="photo_thumbnails[]" multiple accept="image/jpeg" hidden aria-hidden="true" tabindex="-1">
             <p class="text-xs text-slate-500 mt-1.5" data-photo-limit-hint>
                 @if ($photoLimit > 1)
                     Up to {{ $photoLimit }} photos per memory. Pick several at once; big photos are shrunk before upload.

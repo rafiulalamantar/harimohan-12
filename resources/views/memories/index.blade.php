@@ -12,7 +12,8 @@
 @else
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         @foreach ($memories as $memory)
-            <x-memory-card :memory="$memory" />
+            {{-- The first three cards are on screen (or nearly) when the page opens. --}}
+            <x-memory-card :memory="$memory" :priority="$loop->index < 3" />
         @endforeach
     </div>
     <div class="mt-6">{{ $memories->links() }}</div>

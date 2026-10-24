@@ -8,12 +8,16 @@ use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * Makes the small JPEG copy of a profile photo that directory cards and avatars show.
- * Cards are about 230 px wide, so 480 px stays sharp on phone screens at a fraction of the size.
+ * Makes the small JPEG copy of a photo that cards show, stored in a thumbs/ folder next to the photo.
+ * Profile photos: directory cards are about 230 px wide, so 480 px stays sharp on phone screens.
+ * Memory photos: their cards are as wide as a phone screen, so they get MEMORY_CARD_WIDTH.
  */
 class PhotoThumbnail
 {
     public const WIDTH = 480;
+
+    /** Memory cards fill a phone's width (about 360 px), so 800 px stays sharp on high-density screens. */
+    public const MEMORY_CARD_WIDTH = 800;
 
     private const QUALITY = 80;
 
@@ -38,16 +42,16 @@ class PhotoThumbnail
     }
 
     /** The browser's thumbnail when it sent one, otherwise one made here with GD (null when that isn't possible). */
-    public static function forUpload(?UploadedFile $thumbnail, string $photoPath): ?string
+    public static function forUpload(?UploadedFile $thumbnail, string $photoPath, int $width = self::WIDTH): ?string
     {
-        return $thumbnail ? self::storeUploaded($thumbnail, $photoPath) : self::create($photoPath);
+        return $thumbnail ? self::storeUploaded($thumbnail, $photoPath) : self::create($photoPath, $width);
     }
 
     /**
      * Store a thumbnail next to the photo (photos/thumbs/…jpg) and return its path,
      * or null when the photo can't be read, so callers fall back to the full photo.
      */
-    public static function create(string $photoPath): ?string
+    public static function create(string $photoPath, int $targetWidth = self::WIDTH): ?string
     {
         try {
             $bytes = Storage::disk('public')->get($photoPath);
@@ -62,7 +66,7 @@ class PhotoThumbnail
             $width = imagesx($image);
             $height = imagesy($image);
             $sideways = in_array($orientation, [6, 8], true);
-            $scale = min(1, self::WIDTH / ($sideways ? $height : $width));
+            $scale = min(1, $targetWidth / ($sideways ? $height : $width));
 
             $thumb = imagecreatetruecolor((int) round($width * $scale), (int) round($height * $scale));
             // White behind transparent PNGs instead of black.

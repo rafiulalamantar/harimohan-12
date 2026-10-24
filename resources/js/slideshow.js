@@ -52,7 +52,16 @@ function setUpSlideshow(root) {
             fullSizeLink.hidden = 'broken' in photo.dataset; // nothing to open when the photo is missing (photo-fallback.js)
         }
 
+        preloadNextPhoto();
         restartTimer();
+    }
+
+    // Photos after the first are lazy (memory-slides.blade.php). Start loading the next one while this one shows,
+    // so it is ready when the slideshow moves on. Only on screen: slideshows nobody is looking at use no data.
+    function preloadNextPhoto() {
+        if (state.onScreen) {
+            slides[(state.current + 1) % slides.length].loading = 'eager';
+        }
     }
 
     const showNext = () => show(state.current + 1);
@@ -135,6 +144,7 @@ function setUpSlideshow(root) {
     // Play only while at least half of the slideshow is on screen, and never in a hidden browser tab.
     new IntersectionObserver(([entry]) => {
         state.onScreen = entry.isIntersecting;
+        preloadNextPhoto();
         restartTimer();
     }, { threshold: 0.5 }).observe(root);
 

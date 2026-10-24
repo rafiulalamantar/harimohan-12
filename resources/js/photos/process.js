@@ -58,12 +58,12 @@ export async function shrinkImage(file) {
     return new File([blob], name, { type, lastModified: Date.now() });
 }
 
-// Matches App\Services\PhotoThumbnail::WIDTH.
+// Matches App\Services\PhotoThumbnail::WIDTH. Memory photos ask for a wider copy (data-thumbnail-width).
 const THUMBNAIL_WIDTH = 480;
 
-export async function makeThumbnail(file) {
+export async function makeThumbnail(file, width = THUMBNAIL_WIDTH) {
     const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
-    const scale = Math.min(1, THUMBNAIL_WIDTH / bitmap.width);
+    const scale = Math.min(1, width / bitmap.width);
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(bitmap.width * scale);
     canvas.height = Math.round(bitmap.height * scale);

@@ -45,8 +45,8 @@ class AddSecurityHeaders
             // unlike 'unsafe-eval' they don't allow running strings as JavaScript.
             "script-src 'self' 'wasm-unsafe-eval'",
             "worker-src 'self' blob:",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-            "font-src 'self' https://fonts.gstatic.com",
+            "style-src 'self' 'unsafe-inline'",
+            "font-src 'self'",
             // blob: shows the framed photo preview the cropper makes in the browser (resources/js/photos/upload.js).
             "img-src 'self' data: blob:".$this->uploadOrigin(),
             "connect-src 'self'",

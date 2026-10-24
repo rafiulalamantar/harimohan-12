@@ -49,8 +49,90 @@ class MemoryTest extends TestCase
             ->assertSee('Sir caught us')
             ->assertSee('😂 Funny moment')
             ->assertSee('data-slideshow', false)
-            ->assertSee($memory->photos[0]->url())
-            ->assertSee($memory->photos[1]->url());
+            ->assertSee($memory->photos[0]->cardUrl())
+            ->assertSee($memory->photos[1]->cardUrl());
+    }
+
+    public function test_cards_show_the_browser_made_card_copies_and_the_post_page_shows_full_photos(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs(User::factory()->admin()->create())->post(route('admin.memories.store'), [
+            'kind' => Memory::KIND_MEMORY,
+            'title' => 'Picnic at Sonargaon',
+            'photos' => [UploadedFile::fake()->image('a.jpg', 1600, 1200), UploadedFile::fake()->image('b.jpg', 1600, 1200)],
+            'photo_thumbnails' => [UploadedFile::fake()->image('thumbnail.jpg', 800, 600), UploadedFile::fake()->image('thumbnail.jpg', 800, 600)],
+        ])->assertRedirect(route('admin.memories.index'));
+
+        $photos = Memory::sole()->photos;
+        $photos->each(fn ($photo) => Storage::disk('public')->assertExists($photo->thumb_path));
+        $this->assertStringStartsWith('memories/thumbs/', $photos[0]->thumb_path);
+
+        $this->get(route('memories.index'))
+            ->assertOk()
+            ->assertSee($photos[0]->cardUrl())
+            ->assertSee($photos[1]->cardUrl())
+            ->assertDontSee($photos[0]->url());
+
+        $this->get(route('memories.show', Memory::sole()))
+            ->assertOk()
+            ->assertSee($photos[0]->url())
+            ->assertSee($photos[1]->url());
+    }
+
+    public function test_without_browser_copies_the_server_makes_800px_card_copies(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs(User::factory()->admin()->create())->post(route('admin.memories.store'), [
+            'kind' => Memory::KIND_MEMORY,
+            'title' => 'Picnic at Sonargaon',
+            'photos' => [UploadedFile::fake()->image('a.jpg', 1600, 1200)],
+        ])->assertRedirect(route('admin.memories.index'));
+
+        $thumbPath = Memory::sole()->photos()->sole()->thumb_path;
+        $this->assertSame([800, 600], array_slice(getimagesizefromstring(Storage::disk('public')->get($thumbPath)), 0, 2));
+    }
+
+    public function test_card_copies_are_ignored_when_there_is_not_one_per_photo(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs(User::factory()->admin()->create())->post(route('admin.memories.store'), [
+            'kind' => Memory::KIND_MEMORY,
+            'title' => 'Picnic at Sonargaon',
+            'photos' => [UploadedFile::fake()->image('a.jpg', 1600, 1200), UploadedFile::fake()->image('b.jpg', 1600, 1200)],
+            'photo_thumbnails' => [UploadedFile::fake()->image('thumbnail.jpg', 10, 10)],
+        ])->assertRedirect(route('admin.memories.index'));
+
+        // The single copy can't be matched to a photo, so both copies are made on the server instead.
+        Memory::sole()->photos->each(fn ($photo) => $this->assertSame(
+            [800, 600],
+            array_slice(getimagesizefromstring(Storage::disk('public')->get($photo->thumb_path)), 0, 2),
+        ));
+    }
+
+    public function test_card_shows_the_full_photo_when_there_is_no_card_copy(): void
+    {
+        Storage::fake('public');
+        $memory = $this->memoryWithPhotos();
+
+        $this->get(route('memories.index'))
+            ->assertOk()
+            ->assertSee($memory->photos()->sole()->url());
+    }
+
+    public function test_only_the_first_three_cards_load_their_first_photo_at_once(): void
+    {
+        Storage::fake('public');
+        foreach (range(1, 4) as $number) {
+            $this->memoryWithPhotos(['one.jpg', 'two.jpg']);
+        }
+
+        $page = $this->get(route('memories.index'))->assertOk()->getContent();
+
+        $this->assertSame(3, substr_count($page, 'fetchpriority="high"'));
+        $this->assertSame(3, substr_count($page, 'loading="eager"'));
     }
 
     public function test_remembering_card_shows_whole_tribute_without_linking_to_a_page(): void
@@ -259,6 +341,20 @@ class MemoryTest extends TestCase
         $this->assertModelMissing($memory);
         $this->assertDatabaseCount('memory_photos', 0);
         Storage::disk('public')->assertMissing($path);
+    }
+
+    public function test_deleting_memory_also_deletes_card_copies(): void
+    {
+        Storage::fake('public');
+        $memory = $this->memoryWithPhotos();
+        $photo = $memory->photos()->sole();
+        Storage::disk('public')->put('memories/thumbs/one.jpg', 'card copy');
+        $photo->update(['thumb_path' => 'memories/thumbs/one.jpg']);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->delete(route('admin.memories.destroy', $memory));
+
+        Storage::disk('public')->assertMissing(['memories/thumbs/one.jpg', $photo->path]);
     }
 
     public function test_student_cannot_post_memory(): void

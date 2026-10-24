@@ -7,15 +7,20 @@
     - Post page (large): whole photos on a dark backdrop, thumbnails, Pause and Full size buttons.
     Remembering posts have one photo, shown without the zoom (.slides-calm). A single photo shows with no controls.
 
+    Which file: cards show the card-size copy (MemoryPhoto::cardUrl), the post page the full photo (url).
+    Loading: the first photo of the post page, or of a card marked priority (near the top of the page), loads straight
+    away with high priority; every other photo is lazy, and slideshow.js loads the next one just before it is shown.
+
     The data-* attributes are what slideshow.js looks for: data-slide (a photo), data-slide-prev / -next / -dot (buttons),
     data-slide-number, data-slide-progress, data-slide-pause, data-slide-open.
 --}}
-@props(['memory', 'large' => false])
+@props(['memory', 'large' => false, 'priority' => false])
 
 @php
     $photos = $memory->photos;
     $isSlideshow = $photos->count() > 1;
     $photoLinksToPost = ! $large && $memory->linksToPostPage();
+    $firstPhotoLoadsAtOnce = $large || $priority;
     $arrowClasses = 'absolute top-1/2 -translate-y-1/2 z-10 grid place-items-center rounded-full bg-white/85 text-slate-900 shadow-lg backdrop-blur-sm transition hover:bg-white '
         // Hidden until hover or keyboard focus with a mouse; always visible on touch screens, which can't hover.
         .'[@media(hover:hover)]:opacity-0 group-hover/slides:opacity-100 group-focus-within/slides:opacity-100 '
@@ -30,9 +35,9 @@
     <div @class(['relative aspect-[4/3] overflow-hidden', 'slides-calm' => $memory->isRemembering(), 'slides-contain rounded-3xl bg-slate-950' => $large, 'bg-slate-100' => ! $large])>
         @if ($photoLinksToPost)<a href="{{ route('memories.show', $memory) }}" tabindex="-1" aria-hidden="true" class="absolute inset-0">@endif
             @foreach ($photos as $photo)
-                <img src="{{ $photo->url() }}" alt="{{ $memory->title }} — photo {{ $loop->iteration }} of {{ $photos->count() }}" draggable="false" data-fallback
+                <img src="{{ $large ? $photo->url() : $photo->cardUrl() }}" alt="{{ $memory->title }} — photo {{ $loop->iteration }} of {{ $photos->count() }}" draggable="false" data-fallback
                      data-slide @class(['is-active' => $loop->first]) @if (! $loop->first) aria-hidden="true" @endif
-                     loading="{{ $loop->first && $large ? 'eager' : 'lazy' }}" decoding="async">
+                     @if ($loop->first && $firstPhotoLoadsAtOnce) loading="eager" fetchpriority="high" @else loading="lazy" @endif decoding="async">
             @endforeach
         @if ($photoLinksToPost)</a>@endif
 
@@ -77,7 +82,7 @@
             @foreach ($photos as $photo)
                 <button type="button" data-slide-dot aria-label="Show photo {{ $loop->iteration }}" @if ($loop->first) aria-current="true" @endif
                         class="shrink-0 overflow-hidden rounded-xl ring-2 ring-transparent opacity-60 transition hover:opacity-100 aria-[current=true]:opacity-100 aria-[current=true]:ring-brand-500">
-                    <img src="{{ $photo->url() }}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback class="h-16 w-20 object-cover">
+                    <img src="{{ $photo->cardUrl() }}" alt="" loading="lazy" decoding="async" draggable="false" data-fallback class="h-16 w-20 object-cover">
                 </button>
             @endforeach
         </div>
