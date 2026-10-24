@@ -5,10 +5,15 @@ namespace App\Http\Requests;
 use App\Models\Memory;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-/** Create / edit a memory post (admin/memories/form.blade.php). */
+/**
+ * Create / edit a memory post (admin/memories/form.blade.php).
+ *
+ * The form sends: kind, title, story, photos[] (new pictures) and, when editing, remove_photos[] (ids of ticked photos).
+ */
 class MemoryRequest extends FormRequest
 {
     /** Only admins reach this request (the "admin" route middleware). */
@@ -45,8 +50,9 @@ class MemoryRequest extends FormRequest
     }
 
     /**
-     * Checks that need the post's current photos: the total stays within MAX_PHOTOS,
-     * and a post always has a story or at least one photo.
+     * Checks that need the post's saved photos, run after the rules above pass:
+     * 1. the post will not have more than MAX_PHOTOS photos;
+     * 2. the post will have a story or at least one photo.
      *
      * @return array<int, callable>
      */
@@ -58,7 +64,7 @@ class MemoryRequest extends FormRequest
                     return;
                 }
 
-                $photoCount = $this->keptPhotoCount() + count($this->file('photos', []));
+                $photoCount = $this->photoCountAfterSave();
 
                 if ($photoCount > Memory::MAX_PHOTOS) {
                     $validator->errors()->add('photos', 'A memory can have at most '.Memory::MAX_PHOTOS.' photos. Remove some first.');
@@ -72,24 +78,45 @@ class MemoryRequest extends FormRequest
     }
 
     /**
-     * The text columns. Photos are stored by the controller.
+     * The post's text columns.
      *
      * @return array{kind: string, title: string, story: ?string}
      */
     public function memoryData(): array
     {
-        return $this->safe()->only(['kind', 'title']) + ['story' => $this->validated('story')];
+        return [
+            'kind' => $this->validated('kind'),
+            'title' => $this->validated('title'),
+            'story' => $this->validated('story'),
+        ];
     }
 
-    /** Photos the post already has that the admin did not tick to remove (0 for a new post). */
-    private function keptPhotoCount(): int
+    /** @return array<int, UploadedFile> */
+    public function newPhotos(): array
     {
-        $memory = $this->route('memory');
+        return $this->file('photos', []);
+    }
 
-        if (! $memory instanceof Memory) {
-            return 0;
-        }
+    /**
+     * Ids of the saved photos the admin ticked "Remove" on. Read from the input (not validated()),
+     * because after() calls this too, and validated() inside after() would run the validation again.
+     *
+     * @return array<int, int>
+     */
+    public function photoIdsToRemove(): array
+    {
+        return array_map('intval', (array) $this->input('remove_photos', []));
+    }
 
-        return $memory->photos()->whereNotIn('id', $this->input('remove_photos', []))->count();
+    /** Photos the post will have once saved: the ones it keeps plus the new uploads. */
+    private function photoCountAfterSave(): int
+    {
+        $memory = $this->route('memory'); // null when creating a new post
+
+        $keptPhotos = $memory instanceof Memory
+            ? $memory->photos()->whereNotIn('id', $this->photoIdsToRemove())->count()
+            : 0;
+
+        return $keptPhotos + count($this->newPhotos());
     }
 }
