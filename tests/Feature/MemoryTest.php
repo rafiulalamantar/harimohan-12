@@ -51,6 +51,23 @@ class MemoryTest extends TestCase
             ->assertSee($memory->photos[1]->url());
     }
 
+    public function test_remembering_post_shows_in_the_calm_style(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs(User::factory()->admin()->create())->post(route('admin.memories.store'), [
+            'kind' => Memory::KIND_REMEMBERING,
+            'title' => 'Remembering our friend',
+            'story' => "1995 – 2019\nForever in our hearts.",
+            'photos' => [UploadedFile::fake()->image('a.jpg'), UploadedFile::fake()->image('b.jpg')],
+        ])->assertRedirect(route('admin.memories.index'));
+
+        $this->get(route('memories.show', Memory::sole()))
+            ->assertSee('🕊️ Remembering')
+            ->assertSee('slides-calm', false)
+            ->assertSee('data-interval="7000"', false);
+    }
+
     public function test_guest_can_open_memory_and_see_every_photo(): void
     {
         Storage::fake('public');

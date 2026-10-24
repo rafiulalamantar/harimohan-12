@@ -121,6 +121,15 @@
     transform: none;
 }
 
+/* Remembering posts: a slow, quiet fade and no zoom. */
+.slides-calm [data-slide] {
+    transition: opacity 1.5s ease;
+}
+
+.slides-calm [data-slide].is-active {
+    transform: none;
+}
+
 /* Let the page scroll up and down while sideways swipes go to the slideshow. */
 [data-slideshow] {
     touch-action: pan-y;

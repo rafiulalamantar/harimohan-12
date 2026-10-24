@@ -7,7 +7,7 @@
     @endif
     <div class="relative flex flex-1 flex-col p-6">
         <div class="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
-            <span class="rounded-full bg-brand-50 px-2 py-0.5 font-semibold text-brand-800 ring-1 ring-brand-100">{{ $memory->kindLabel() }}</span>
+            <x-memory-kind :memory="$memory" />
             <span>{{ $memory->created_at->diffForHumans() }}</span>
         </div>
         <h3 class="mt-3 text-lg font-bold leading-snug text-slate-900 break-words">

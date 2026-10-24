@@ -3,14 +3,16 @@
     Card ($large = false): photos fill a 4:3 frame, slide every 4 s, small dots, the photo links to the post.
     Post page ($large = true): whole photos on a dark backdrop, slide every 5 s, thumbnails, pause and full-size buttons.
     One photo shows as a plain picture, with no controls.
+    Remembering posts (a friend who passed away) slide more slowly and without the zoom (.slides-calm).
 --}}
 @props(['memory', 'large' => false])
 
 @php($photos = $memory->photos)
 @php($hasMany = $photos->count() > 1)
-<div @if ($hasMany) data-slideshow data-interval="{{ $large ? 5000 : 4000 }}" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Photos of {{ $memory->title }}" @endif
+@php($interval = ($large ? 5000 : 4000) + ($memory->isRemembering() ? 2000 : 0))
+<div @if ($hasMany) data-slideshow data-interval="{{ $interval }}" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Photos of {{ $memory->title }}" @endif
      {{ $attributes->class(['group/slides select-none outline-none focus-visible:ring-4 focus-visible:ring-brand-300', 'rounded-3xl' => $large]) }}>
-    <div @class(['relative aspect-[4/3] overflow-hidden', 'slides-contain rounded-3xl bg-slate-950' => $large, 'bg-slate-100' => ! $large])>
+    <div @class(['relative aspect-[4/3] overflow-hidden', 'slides-calm' => $memory->isRemembering(), 'slides-contain rounded-3xl bg-slate-950' => $large, 'bg-slate-100' => ! $large])>
         @unless ($large)<a href="{{ route('memories.show', $memory) }}" tabindex="-1" aria-hidden="true" class="absolute inset-0">@endunless
             @foreach ($photos as $photo)
                 <img src="{{ $photo->url() }}" alt="{{ $memory->title }} — photo {{ $loop->iteration }} of {{ $photos->count() }}" draggable="false"

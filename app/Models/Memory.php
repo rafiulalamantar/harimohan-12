@@ -16,11 +16,15 @@ class Memory extends Model
 
     public const KIND_STORY = 'story';
 
+    /** In memory of a friend who has passed away: shown in a calm style (grey badge, slower slideshow, no zoom). */
+    public const KIND_REMEMBERING = 'remembering';
+
     /** @var array<string, string> */
     public const KINDS = [
         self::KIND_MEMORY => '📸 Memory',
         self::KIND_FUNNY => '😂 Funny moment',
         self::KIND_STORY => '📝 Story',
+        self::KIND_REMEMBERING => '🕊️ Remembering',
     ];
 
     /**
@@ -45,6 +49,11 @@ class Memory extends Model
     public function kindLabel(): string
     {
         return self::KINDS[$this->kind] ?? self::KINDS[self::KIND_MEMORY];
+    }
+
+    public function isRemembering(): bool
+    {
+        return $this->kind === self::KIND_REMEMBERING;
     }
 
     /** Newest posts first, with their pictures loaded in one query. */
