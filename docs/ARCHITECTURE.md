@@ -34,10 +34,10 @@ A registration moves **pending → approved** or **pending → rejected** (`User
 |---|---|
 | `routes/web.php` | Every URL. Grouped by who may open it: guest, `portal` (members), `admin`. |
 | `app/Http/Controllers` | Public and member pages: `HomeController` (welcome + directory), `AuthController`, `PasswordResetController`, `PortalController`, `PaymentController` (bKash). |
-| `app/Http/Controllers/Admin` | One controller per admin page: students, student fields, announcements, email members, events, payments, welcome page, dashboard. |
+| `app/Http/Controllers/Admin` | One controller per admin page: students, student fields, announcements, memories, email members, events, payments, welcome page, dashboard. |
 | `app/Http/Requests` | Validation for the bigger forms. `StudentProfileRequest` holds the rules registration and My Profile share. |
 | `app/Http/Middleware` | `EnsureAdmin`, `EnsureStudent`, `EnsureNotRejected`, `RedirectToHttps`, `AddSecurityHeaders` (Content-Security-Policy). |
-| `app/Models` | `User`, `Payment`, `ReunionEvent`, `Announcement`, `StudentField` + `StudentFieldValue`, `MemberEmail`, `Setting`. |
+| `app/Models` | `User`, `Payment`, `ReunionEvent`, `Announcement`, `Memory` + `MemoryPhoto`, `StudentField` + `StudentFieldValue`, `MemberEmail`, `Setting`. |
 | `app/Services` | Code that isn't a model or a controller: `BkashService` (payment API), `PhotoThumbnail` (card-size photo copies), `StudentAnswers` (Students-page filters and totals), `CsvWriter`. |
 | `app/Console/Commands` | One-off maintenance commands (thumbnails backfill, replace a photo, refresh upload cache headers). |
 | `resources/views` | Blade templates. `layouts/app.blade.php` is the shell (header, menus, flash messages). `components/` holds reusable pieces such as `x-field` and `x-avatar`. |
@@ -61,6 +61,9 @@ A registration moves **pending → approved** or **pending → rejected** (`User
 
 ### The alumni directory (welcome page)
 `HomeController` lists approved members, 24 per page, with search and a batch filter. Phone numbers are only selected, shown and searchable when the viewer is an approved member. `resources/js/directory.js` swaps directory pages in place, and reveals a page's photos together once they have loaded.
+
+### Memories (welcome page)
+Admins share old photos, funny moments and stories on **Communication → Memories** (`Admin\MemoryController`, validated by `MemoryRequest`). A post (`Memory`) has a type (`Memory::KINDS`), a title, an optional story and up to `Memory::MAX_PHOTOS` pictures, one `MemoryPhoto` row each. A post needs a story or at least one photo. The welcome page shows the newest three (`x-memory-card`); everyone can open `/memories` and each post (`MemoryController`). The story keeps its line breaks with `whitespace-pre-line`, and Blade's `{{ }}` still escapes it. Pictures are shrunk in the browser like every image input (`photos/upload.js`); the six-photo limit keeps one save under Vercel's 4.5 MB request cap. Deleting a post or ticking **Remove** on a photo also deletes the file (`MemoryPhoto::deleteWithFile`).
 
 ### Extra student fields
 Admins define questions on **Members → Student fields** (`StudentField`): short text, number, long text, date, dropdown, radio buttons, checkboxes, or an image only (a picture with no answer, such as a size chart). Each member's answer is one `StudentFieldValue` row stored as text; checkbox choices are stored one per line. Answers are admin-only: they appear on the Students page (with filters and totals from `StudentAnswers`), the student's admin page and the CSV export. Changing a field clears saved answers that no longer fit, so those members are asked again.
@@ -120,4 +123,5 @@ Work on a branch, push it, and wait for CI to pass. Then merge into `main` with 
 | Student field | An extra question the admin adds (`StudentField`); its answers are `StudentFieldValue`s. |
 | Card photo / thumbnail | The 480 px 4:3 copy shown on directory cards and avatars (`photo_thumb`). |
 | Notice / announcement | A post on the welcome page and portal (`Announcement`). |
+| Memory | A photo/story post in the welcome page's Memories section (`Memory`, pictures in `MemoryPhoto`). |
 | Event | A paid event members can pay for (`ReunionEvent`). |

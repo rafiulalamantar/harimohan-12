@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Announcement;
+use App\Models\Memory;
 use App\Models\ReunionEvent;
 use App\Models\Setting;
 use App\Models\User;
@@ -13,6 +14,9 @@ class HomeController extends Controller
 {
     /** Alumni cards shown per directory page. */
     private const DIRECTORY_PAGE_SIZE = 24;
+
+    /** Newest memory posts shown on the welcome page; the rest are on /memories. */
+    private const MEMORIES_SHOWN = 3;
 
     /**
      * Public welcome page with a searchable alumni directory.
@@ -49,6 +53,8 @@ class HomeController extends Controller
             'settings' => Setting::values(),
             'event' => ReunionEvent::current(),
             'announcements' => Announcement::feed()->take(3)->get(),
+            'memories' => Memory::feed()->take(self::MEMORIES_SHOWN)->get(),
+            'totalMemories' => Memory::count(),
             'students' => $students,
             'totalAlumni' => (clone $approvedStudents)->count(),
             'batches' => (clone $approvedStudents)->whereNotNull('ssc_batch')->distinct()->orderByDesc('ssc_batch')->pluck('ssc_batch'),

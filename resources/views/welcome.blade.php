@@ -95,6 +95,25 @@
     </section>
 @endif
 
+@if ($memories->isNotEmpty())
+    <section id="memories" class="mt-16 scroll-mt-24">
+        <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+            <div>
+                <p class="text-sm font-semibold text-brand-700">Those School Days</p>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Memories</h2>
+            </div>
+            @if ($totalMemories > $memories->count())
+                <a href="{{ route('memories.index') }}" class="text-sm font-semibold text-brand-700 hover:underline">See all {{ $totalMemories }} memories →</a>
+            @endif
+        </div>
+        <div class="grid md:grid-cols-3 gap-5">
+            @foreach ($memories as $memory)
+                <x-memory-card :memory="$memory" />
+            @endforeach
+        </div>
+    </section>
+@endif
+
 @if ($totalAlumni > 0)
     <section id="alumni" class="mt-16 scroll-mt-24">
         <form method="GET" action="{{ route('home') }}#alumni" class="flex flex-wrap items-end justify-between gap-4 mb-6">

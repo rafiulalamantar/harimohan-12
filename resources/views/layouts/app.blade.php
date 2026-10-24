@@ -33,6 +33,7 @@
                 ]],
                 ['label' => 'Communication', 'links' => [
                     ['admin.announcements.index', 'Announcements', 'admin.announcements.*'],
+                    ['admin.memories.index', 'Memories', 'admin.memories.*'],
                     ['admin.member-emails.create', 'Email members', 'admin.member-emails.*'],
                     ['admin.settings.edit', 'Welcome page', 'admin.settings.*'],
                 ]],

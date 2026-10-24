@@ -3,12 +3,15 @@
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MemoryController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PortalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/memories', [MemoryController::class, 'index'])->name('memories.index');
+Route::get('/memories/{memory}', [MemoryController::class, 'show'])->name('memories.show');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
@@ -48,6 +51,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/students/{student}/card-photo', [Admin\StudentController::class, 'updateCardPhoto'])->name('students.card-photo');
 
     Route::resource('announcements', Admin\AnnouncementController::class)->except('show');
+    Route::resource('memories', Admin\MemoryController::class)->except('show');
     Route::get('/email-members', [Admin\MemberEmailController::class, 'create'])->name('member-emails.create');
     Route::post('/email-members', [Admin\MemberEmailController::class, 'store'])->middleware('throttle:5,10')->name('member-emails.store');
     Route::resource('events', Admin\EventController::class)->except('show');
