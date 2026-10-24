@@ -121,11 +121,7 @@
     transform: none;
 }
 
-/* Remembering posts: a slow, quiet fade and no zoom. */
-.slides-calm [data-slide] {
-    transition: opacity 1.5s ease;
-}
-
+/* Remembering posts: the one photo stays still (no zoom). */
 .slides-calm [data-slide].is-active {
     transform: none;
 }

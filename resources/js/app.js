@@ -8,4 +8,5 @@ import './photos/reframe';
 import './dropdowns';
 import './directory';
 import './slideshow';
+import './memory-form';
 import './network-status';

@@ -1,7 +1,15 @@
-{{-- One memory post as a card: its photos as a slideshow, then kind, title and the start of the story. --}}
+{{--
+    One memory post as a card: its photos as a slideshow, then kind, title and the story.
+    Normal posts show the start of the story and open the post's own page when tapped.
+    Remembering posts show the whole tribute on the card and link nowhere (Memory::linksToPostPage).
+--}}
 @props(['memory'])
 
-<article class="group flex flex-col overflow-hidden rounded-3xl bg-white ring-1 ring-slate-200/80 shadow-soft hover:-translate-y-1 hover:shadow-xl transition duration-300">
+@php($linksToPost = $memory->linksToPostPage())
+<article @class([
+    'group flex flex-col overflow-hidden rounded-3xl bg-white ring-1 ring-slate-200/80 shadow-soft',
+    'hover:-translate-y-1 hover:shadow-xl transition duration-300' => $linksToPost,
+])>
     @if ($memory->photos->isNotEmpty())
         <x-memory-slides :memory="$memory" />
     @endif
@@ -11,11 +19,15 @@
             <span>{{ $memory->created_at->diffForHumans() }}</span>
         </div>
         <h3 class="mt-3 text-lg font-bold leading-snug text-slate-900 break-words">
-            {{-- The link covers the text part of the card (after:absolute); the slideshow links to the post on its own. --}}
-            <a href="{{ route('memories.show', $memory) }}" class="after:absolute after:inset-0">{{ $memory->title }}</a>
+            @if ($linksToPost)
+                {{-- The link covers the text part of the card (after:absolute); the slideshow links to the post on its own. --}}
+                <a href="{{ route('memories.show', $memory) }}" class="after:absolute after:inset-0">{{ $memory->title }}</a>
+            @else
+                {{ $memory->title }}
+            @endif
         </h3>
         @if ($memory->story)
-            <p class="mt-2 text-sm leading-relaxed text-slate-600 whitespace-pre-line break-words line-clamp-4">{{ $memory->story }}</p>
+            <p @class(['mt-2 text-sm leading-relaxed text-slate-600 whitespace-pre-line break-words', 'line-clamp-4' => $linksToPost])>{{ $memory->story }}</p>
         @endif
     </div>
 </article>

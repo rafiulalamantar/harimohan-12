@@ -14,7 +14,8 @@
             <div class="flex flex-wrap gap-4 text-sm">
                 @foreach (\App\Models\Memory::KINDS as $kind => $label)
                     <label class="flex items-center gap-2">
-                        <input type="radio" name="kind" value="{{ $kind }}" @checked(old('kind', $memory->kind) === $kind) required> {{ $label }}
+                        <input type="radio" name="kind" value="{{ $kind }}" data-photo-limit="{{ \App\Models\Memory::maxPhotosFor($kind) }}"
+                               @checked(old('kind', $memory->kind) === $kind) required> {{ $label }}
                     </label>
                 @endforeach
             </div>
@@ -41,12 +42,23 @@
             </div>
         @endif
 
-        {{-- Not <x-field>: the input name is photos[] (many files), and errors come from photos and photos.*. --}}
+        {{--
+            Not <x-field>: the input name is photos[] (many files), and errors come from photos and photos.*.
+            The limit follows the chosen type (6, or 1 for Remembering): resources/js/memory-form.js updates
+            "multiple" and the hint when the type changes; MemoryRequest checks it again on the server.
+        --}}
+        @php($photoLimit = \App\Models\Memory::maxPhotosFor(old('kind', $memory->kind) ?? \App\Models\Memory::KIND_MEMORY))
         <div>
             <label for="photos" class="block text-sm font-semibold text-slate-700 mb-1.5">{{ $memory->photos->isNotEmpty() ? 'Add photos' : 'Photos' }}</label>
-            <input id="photos" name="photos[]" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
+            <input id="photos" name="photos[]" type="file" @if ($photoLimit > 1) multiple @endif data-photo-limit-input accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
                    class="w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-slate-900 ring-1 ring-slate-200 shadow-xs file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-3 file:py-1 file:text-sm file:font-semibold file:text-brand-800 focus:ring-2 focus:ring-brand-500 focus:outline-hidden transition">
-            <p class="text-xs text-slate-500 mt-1.5">Up to {{ \App\Models\Memory::MAX_PHOTOS }} photos per memory. Pick several at once; big photos are shrunk before upload.</p>
+            <p class="text-xs text-slate-500 mt-1.5" data-photo-limit-hint>
+                @if ($photoLimit > 1)
+                    Up to {{ $photoLimit }} photos per memory. Pick several at once; big photos are shrunk before upload.
+                @else
+                    One photo of your friend. Big photos are shrunk before upload.
+                @endif
+            </p>
             @error('photos')<p class="text-sm text-rose-600 mt-1.5">{{ $message }}</p>@enderror
             @foreach ($errors->get('photos.*') as $messages)
                 <p class="text-sm text-rose-600 mt-1.5">{{ $messages[0] }}</p>

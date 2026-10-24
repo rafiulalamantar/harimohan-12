@@ -2,9 +2,10 @@
     A memory's photos as a slideshow. resources/js/slideshow.js makes it move; the slide styles are in resources/css/app.css.
 
     Two sizes:
-    - Card (default): photos fill a 4:3 frame, small dots, tapping the photo opens the post.
+    - Card (default): photos fill a 4:3 frame, small dots, tapping the photo opens the post
+      (except Remembering cards, which show everything on the card and link nowhere).
     - Post page (large): whole photos on a dark backdrop, thumbnails, Pause and Full size buttons.
-    Remembering posts slide more slowly and without the zoom (.slides-calm). A single photo shows with no controls.
+    Remembering posts have one photo, shown without the zoom (.slides-calm). A single photo shows with no controls.
 
     The data-* attributes are what slideshow.js looks for: data-slide (a photo), data-slide-prev / -next / -dot (buttons),
     data-slide-number, data-slide-progress, data-slide-pause, data-slide-open.
@@ -14,6 +15,7 @@
 @php
     $photos = $memory->photos;
     $isSlideshow = $photos->count() > 1;
+    $photoLinksToPost = ! $large && $memory->linksToPostPage();
     $arrowClasses = 'absolute top-1/2 -translate-y-1/2 z-10 grid place-items-center rounded-full bg-white/85 text-slate-900 shadow-lg backdrop-blur-sm transition hover:bg-white '
         // Hidden until hover or keyboard focus with a mouse; always visible on touch screens, which can't hover.
         .'[@media(hover:hover)]:opacity-0 group-hover/slides:opacity-100 group-focus-within/slides:opacity-100 '
@@ -26,13 +28,13 @@
 
     {{-- The frame: photos stacked on top of each other; only the .is-active one is visible. --}}
     <div @class(['relative aspect-[4/3] overflow-hidden', 'slides-calm' => $memory->isRemembering(), 'slides-contain rounded-3xl bg-slate-950' => $large, 'bg-slate-100' => ! $large])>
-        @unless ($large)<a href="{{ route('memories.show', $memory) }}" tabindex="-1" aria-hidden="true" class="absolute inset-0">@endunless
+        @if ($photoLinksToPost)<a href="{{ route('memories.show', $memory) }}" tabindex="-1" aria-hidden="true" class="absolute inset-0">@endif
             @foreach ($photos as $photo)
                 <img src="{{ $photo->url() }}" alt="{{ $memory->title }} — photo {{ $loop->iteration }} of {{ $photos->count() }}" draggable="false" data-fallback
                      data-slide @class(['is-active' => $loop->first]) @if (! $loop->first) aria-hidden="true" @endif
                      loading="{{ $loop->first && $large ? 'eager' : 'lazy' }}" decoding="async">
             @endforeach
-        @unless ($large)</a>@endunless
+        @if ($photoLinksToPost)</a>@endif
 
         @if ($isSlideshow)
             {{-- Previous / next arrows --}}

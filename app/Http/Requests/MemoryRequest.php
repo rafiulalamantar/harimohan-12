@@ -31,7 +31,7 @@ class MemoryRequest extends FormRequest
             'kind' => ['required', Rule::in(array_keys(Memory::KINDS))],
             'title' => ['required', 'string', 'max:150'],
             'story' => ['nullable', 'string', 'max:5000'],
-            'photos' => ['nullable', 'array', 'max:'.Memory::MAX_PHOTOS],
+            'photos' => ['nullable', 'array', 'max:'.$this->maxPhotos()],
             'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
             'remove_photos' => ['nullable', 'array'],
             'remove_photos.*' => ['integer'],
@@ -42,7 +42,7 @@ class MemoryRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'photos.max' => 'A memory can have at most '.Memory::MAX_PHOTOS.' photos.',
+            'photos.max' => $this->tooManyPhotosMessage(),
             'photos.*.image' => 'Each file must be a photo.',
             'photos.*.mimes' => 'Photos must be JPG, PNG, WebP or GIF.',
             'photos.*.max' => 'Each photo must be 4 MB or smaller.',
@@ -51,7 +51,7 @@ class MemoryRequest extends FormRequest
 
     /**
      * Checks that need the post's saved photos, run after the rules above pass:
-     * 1. the post will not have more than MAX_PHOTOS photos;
+     * 1. the post will not have more photos than its type allows (6, or 1 for Remembering);
      * 2. the post will have a story or at least one photo.
      *
      * @return array<int, callable>
@@ -66,8 +66,8 @@ class MemoryRequest extends FormRequest
 
                 $photoCount = $this->photoCountAfterSave();
 
-                if ($photoCount > Memory::MAX_PHOTOS) {
-                    $validator->errors()->add('photos', 'A memory can have at most '.Memory::MAX_PHOTOS.' photos. Remove some first.');
+                if ($photoCount > $this->maxPhotos()) {
+                    $validator->errors()->add('photos', $this->tooManyPhotosMessage().' Remove some first.');
                 }
 
                 if ($photoCount === 0 && blank($this->input('story'))) {
@@ -106,6 +106,19 @@ class MemoryRequest extends FormRequest
     public function photoIdsToRemove(): array
     {
         return array_map('intval', (array) $this->input('remove_photos', []));
+    }
+
+    /** The photo limit for the type chosen on the form. */
+    private function maxPhotos(): int
+    {
+        return Memory::maxPhotosFor((string) $this->input('kind'));
+    }
+
+    private function tooManyPhotosMessage(): string
+    {
+        return $this->input('kind') === Memory::KIND_REMEMBERING
+            ? 'A Remembering post can have only one photo.'
+            : 'A memory can have at most '.$this->maxPhotos().' photos.';
     }
 
     /** Photos the post will have once saved: the ones it keeps plus the new uploads. */

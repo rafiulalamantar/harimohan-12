@@ -11,7 +11,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * A post in the welcome page's Memories section: a type, a title, an optional story and up to MAX_PHOTOS pictures.
+ * A post in the welcome page's Memories section: a type, a title, an optional story and up to
+ * maxPhotosFor(type) pictures (MAX_PHOTOS, or one for a Remembering post).
  * Each picture is a MemoryPhoto row; its file lives on the "public" disk under memories/.
  */
 class Memory extends Model
@@ -22,7 +23,10 @@ class Memory extends Model
 
     public const KIND_STORY = 'story';
 
-    /** In memory of a friend who has passed away: shown in a calm style (grey badge, slower slideshow, no zoom). */
+    /**
+     * In memory of a friend who has passed away. Kept simple and calm: one photo, a grey badge, no zoom,
+     * and the whole tribute is shown on the card itself (no link to a separate page).
+     */
     public const KIND_REMEMBERING = 'remembering';
 
     /** @var array<string, string> */
@@ -39,13 +43,13 @@ class Memory extends Model
      */
     public const MAX_PHOTOS = 6;
 
+    /** A Remembering post has a single photo of the friend. */
+    public const MAX_PHOTOS_REMEMBERING = 1;
+
     /** How long each photo stays in the slideshow, in milliseconds. */
     private const SLIDE_MS_CARD = 4000;
 
     private const SLIDE_MS_POST_PAGE = 5000;
-
-    /** Remembering posts slide more slowly, so the page feels calm. */
-    private const SLIDE_MS_EXTRA_REMEMBERING = 2000;
 
     protected $fillable = ['user_id', 'kind', 'title', 'story'];
 
@@ -76,12 +80,22 @@ class Memory extends Model
         return $this->kind === self::KIND_REMEMBERING;
     }
 
+    /** How many photos a post of this type may have. */
+    public static function maxPhotosFor(string $kind): int
+    {
+        return $kind === self::KIND_REMEMBERING ? self::MAX_PHOTOS_REMEMBERING : self::MAX_PHOTOS;
+    }
+
+    /** Whether the card opens the post's own page. Remembering cards already show the whole tribute. */
+    public function linksToPostPage(): bool
+    {
+        return ! $this->isRemembering();
+    }
+
     /** Milliseconds each photo is shown: on a welcome-page card, or on the post's own page. */
     public function slideInterval(bool $onPostPage): int
     {
-        $interval = $onPostPage ? self::SLIDE_MS_POST_PAGE : self::SLIDE_MS_CARD;
-
-        return $this->isRemembering() ? $interval + self::SLIDE_MS_EXTRA_REMEMBERING : $interval;
+        return $onPostPage ? self::SLIDE_MS_POST_PAGE : self::SLIDE_MS_CARD;
     }
 
     /**

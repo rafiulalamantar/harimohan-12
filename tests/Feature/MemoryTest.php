@@ -52,21 +52,50 @@ class MemoryTest extends TestCase
             ->assertSee($memory->photos[1]->url());
     }
 
-    public function test_remembering_post_shows_in_the_calm_style(): void
+    public function test_remembering_card_shows_whole_tribute_without_linking_to_a_page(): void
+    {
+        Storage::fake('public');
+        $tribute = "1995 – 2019\nLine two\nLine three\nLine four\nForever in our hearts.";
+
+        $this->actingAs(User::factory()->admin()->create())->post(route('admin.memories.store'), [
+            'kind' => Memory::KIND_REMEMBERING,
+            'title' => 'Remembering our friend',
+            'story' => $tribute,
+            'photos' => [UploadedFile::fake()->image('friend.jpg')],
+        ])->assertRedirect(route('admin.memories.index'));
+
+        $memory = Memory::sole();
+
+        $this->get(route('home'))
+            ->assertSee('🕊️ Remembering')
+            ->assertSee(e($tribute), false)
+            ->assertDontSee(route('memories.show', $memory))
+            ->assertDontSee('line-clamp-4', false);
+    }
+
+    public function test_remembering_post_allows_only_one_photo(): void
     {
         Storage::fake('public');
 
         $this->actingAs(User::factory()->admin()->create())->post(route('admin.memories.store'), [
             'kind' => Memory::KIND_REMEMBERING,
             'title' => 'Remembering our friend',
-            'story' => "1995 – 2019\nForever in our hearts.",
             'photos' => [UploadedFile::fake()->image('a.jpg'), UploadedFile::fake()->image('b.jpg')],
-        ])->assertRedirect(route('admin.memories.index'));
+        ])->assertSessionHasErrors(['photos' => 'A Remembering post can have only one photo.']);
 
-        $this->get(route('memories.show', Memory::sole()))
-            ->assertSee('🕊️ Remembering')
-            ->assertSee('slides-calm', false)
-            ->assertSee('data-interval="7000"', false);
+        $this->assertDatabaseCount('memories', 0);
+    }
+
+    public function test_post_with_several_photos_cannot_become_remembering_until_photos_are_removed(): void
+    {
+        Storage::fake('public');
+        $memory = $this->memoryWithPhotos(['one.jpg', 'two.jpg']);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->put(route('admin.memories.update', $memory), ['kind' => Memory::KIND_REMEMBERING, 'title' => 'Remembering our friend'])
+            ->assertSessionHasErrors(['photos' => 'A Remembering post can have only one photo. Remove some first.']);
+
+        $this->assertSame(Memory::KIND_MEMORY, $memory->fresh()->kind);
     }
 
     public function test_guest_can_open_memory_and_see_every_photo(): void
