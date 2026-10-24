@@ -46,8 +46,9 @@ class MemoryTest extends TestCase
         $this->get(route('home'))
             ->assertSee('Sir caught us')
             ->assertSee('😂 Funny moment')
-            ->assertSee('+1 photos')
-            ->assertSee($memory->photos->first()->url());
+            ->assertSee('data-slideshow', false)
+            ->assertSee($memory->photos[0]->url())
+            ->assertSee($memory->photos[1]->url());
     }
 
     public function test_guest_can_open_memory_and_see_every_photo(): void

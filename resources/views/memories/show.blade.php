@@ -10,19 +10,14 @@
     </div>
     <h1 class="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 break-words">{{ $memory->title }}</h1>
 
-    @if ($memory->story)
-        {{-- whitespace-pre-line keeps the admin's line breaks; {{ }} still escapes the text. --}}
-        <p class="mt-4 text-base leading-relaxed text-slate-700 whitespace-pre-line break-words">{{ $memory->story }}</p>
+    @if ($memory->photos->isNotEmpty())
+        <x-memory-slides :memory="$memory" large class="mt-6" />
     @endif
 
-    @if ($memory->photos->isNotEmpty())
-        <div class="mt-6 grid items-start gap-4 {{ $memory->photos->count() > 1 ? 'sm:grid-cols-2' : '' }}">
-            @foreach ($memory->photos as $photo)
-                <a href="{{ $photo->url() }}" target="_blank" rel="noopener" title="Open full size" class="block overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200">
-                    <img src="{{ $photo->url() }}" alt="{{ $memory->title }} photo {{ $loop->iteration }}" loading="lazy" decoding="async" class="w-full h-auto">
-                </a>
-            @endforeach
-        </div>
+    @if ($memory->story)
+        {{-- whitespace-pre-line keeps the admin's line breaks; {{ }} still escapes the text. --}}
+        <p class="mt-6 text-base leading-relaxed text-slate-700 whitespace-pre-line break-words">{{ $memory->story }}</p>
     @endif
+
 </article>
 @endsection

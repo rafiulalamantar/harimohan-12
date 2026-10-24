@@ -5,4 +5,5 @@ import './photos/upload';
 import './photos/reframe';
 import './dropdowns';
 import './directory';
+import './slideshow';
 import './network-status';
