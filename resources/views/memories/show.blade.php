@@ -16,7 +16,7 @@
     @endif
 
     @if ($memory->photos->isNotEmpty())
-        <div class="mt-6 grid gap-4 {{ $memory->photos->count() > 1 ? 'sm:grid-cols-2' : '' }}">
+        <div class="mt-6 grid items-start gap-4 {{ $memory->photos->count() > 1 ? 'sm:grid-cols-2' : '' }}">
             @foreach ($memory->photos as $photo)
                 <a href="{{ $photo->url() }}" target="_blank" rel="noopener" title="Open full size" class="block overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200">
                     <img src="{{ $photo->url() }}" alt="{{ $memory->title }} photo {{ $loop->iteration }}" loading="lazy" decoding="async" class="w-full h-auto">
