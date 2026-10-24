@@ -1,6 +1,23 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.6.0...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.7.0...main)
+
+## [v1.7.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.6.0...v1.7.0) - 2026-10-24
+
+v1.7.0: Memories menu for everyone
+
+- **Memories ⚡ in the menu for everyone.** Guests see it next to Login (in the ☰ menu on phones); members and admins have it in their menu. It opens the Memories page and is highlighted while you are there.
+  
+- **Welcome page shows only Remembering posts.** Photo slideshows, funny moments and stories are on the Memories page. This also makes the welcome page lighter to load on phones.
+  
+- **Phone header for guests:** Login moved into the ☰ menu so the name, Register and ☰ fit on small screens.
+  
+- Menu links are decided in `App\Services\MainMenu` (one method per audience) and drawn by the new `x-menu-link` component; the layout only displays them.
+  
+- New `Memory::scopeRemembering()`.
+  
+- The open page's menu link is marked `aria-current="page"`.
+  
 
 ## [v1.6.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.5.0...v1.6.0) - 2026-10-24
 
