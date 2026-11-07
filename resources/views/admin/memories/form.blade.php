@@ -4,7 +4,7 @@
 @section('content')
 <div class="max-w-3xl mx-auto bg-white rounded-2xl border p-6 md:p-8">
     <h1 class="text-2xl font-bold">{{ $memory->exists ? 'Edit memory' : 'New memory' }}</h1>
-    <form method="POST" enctype="multipart/form-data" class="mt-6 space-y-4" data-submit-once
+    <form method="POST" enctype="multipart/form-data" class="mt-6 space-y-4" data-submit-once data-draft="memory-{{ $memory->id ?? 'new' }}"
           action="{{ $memory->exists ? route('admin.memories.update', $memory) : route('admin.memories.store') }}">
         @csrf
         @if($memory->exists) @method('PUT') @endif

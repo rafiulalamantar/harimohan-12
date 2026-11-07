@@ -4,7 +4,7 @@
 @section('content')
 <div class="max-w-3xl mx-auto bg-white rounded-2xl border p-6 md:p-8">
     <h1 class="text-2xl font-bold">{{ $announcement->exists ? 'Edit announcement' : 'New announcement' }}</h1>
-    <form method="POST" enctype="multipart/form-data" class="mt-6 space-y-4"
+    <form method="POST" enctype="multipart/form-data" class="mt-6 space-y-4" data-draft="announcement-{{ $announcement->id ?? 'new' }}"
           action="{{ $announcement->exists ? route('admin.announcements.update', $announcement) : route('admin.announcements.store') }}">
         @csrf
         @if($announcement->exists) @method('PUT') @endif

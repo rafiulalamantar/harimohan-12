@@ -45,6 +45,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/students', [Admin\StudentController::class, 'index'])->name('students.index');
     Route::get('/students/export', [Admin\StudentController::class, 'export'])->name('students.export');
     Route::resource('student-fields', Admin\StudentFieldController::class)->except('show');
+    Route::patch('/students/approve', [Admin\StudentController::class, 'approveMany'])->name('students.approve-many');
     Route::get('/students/{student}', [Admin\StudentController::class, 'show'])->name('students.show');
     Route::patch('/students/{student}/status', [Admin\StudentController::class, 'updateStatus'])->name('students.status');
     Route::patch('/students/{student}/admin', [Admin\StudentController::class, 'updateAdminAccess'])->name('students.admin');

@@ -8,7 +8,7 @@
 </div>
 
 <form class="flex flex-wrap gap-2 mb-4 text-sm">
-    <input name="q" value="{{ request('q') }}" placeholder="Name / email / phone" class="border rounded-lg px-3 py-2">
+    <input name="q" type="search" value="{{ request('q') }}" data-search-shortcut aria-keyshortcuts="/" placeholder="Name / email / phone" class="border rounded-lg px-3 py-2">
     <select name="status" class="border rounded-lg px-3 py-2">
         <option value="">All status</option>
         @foreach (\App\Models\User::STATUSES as $s)<option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>@endforeach
@@ -46,11 +46,28 @@
     </section>
 @endif
 
+@php($unapproved = $students->getCollection()->reject->isApproved())
+@if ($unapproved->isNotEmpty())
+    {{-- Bulk approve: the row boxes below join this form through form="bulk-approve" (forms can't be nested). --}}
+    <form id="bulk-approve" method="POST" action="{{ route('admin.students.approve-many') }}" data-confirm="Approve the selected students?"
+          class="mb-4 flex flex-wrap items-center gap-3 rounded-xl border bg-white px-4 py-3 text-sm">
+        @csrf @method('PATCH')
+        <label class="flex items-center gap-2 font-medium">
+            <input type="checkbox" data-select-all="students[]" class="h-4 w-4"> Select all waiting on this page ({{ $unapproved->count() }})
+        </label>
+        <button data-bulk-count="students[]" class="ml-auto rounded-lg bg-green-600 px-4 py-2 font-semibold text-white disabled:opacity-40">
+            Approve selected (<span data-bulk-number>0</span>)
+        </button>
+        @error('students')<p class="w-full text-rose-600">{{ $message }}</p>@enderror
+    </form>
+@endif
+
 {{-- Phones: one card per student --}}
 <div class="md:hidden space-y-3">
     @forelse ($students as $s)
         <div class="bg-white rounded-xl border p-4">
             <div class="flex items-start gap-3">
+                @unless ($s->isApproved()) <span class="pt-3"><input type="checkbox" name="students[]" value="{{ $s->id }}" form="bulk-approve" aria-label="Select {{ $s->name }}" class="h-4 w-4 shrink-0"></span> @endunless
                 <x-avatar :user="$s" class="w-10 h-10 shrink-0" />
                 <div class="min-w-0 flex-1">
                     <a class="font-semibold text-brand-700 underline" href="{{ route('admin.students.show', $s) }}">{{ $s->name }}</a>@if($s->isAdmin()) <span class="ml-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800 no-underline">Admin</span>@endif
@@ -96,7 +113,7 @@
         <tbody class="divide-y">
         @forelse ($students as $s)
             <tr>
-                <td class="p-3"><div class="flex items-center gap-3"><x-avatar :user="$s" class="w-9 h-9" /><div><a class="text-brand-700 underline" href="{{ route('admin.students.show', $s) }}">{{ $s->name }}</a>@if($s->isAdmin()) <span class="ml-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800 no-underline">Admin</span>@endif<div class="text-xs text-gray-500">{{ $s->email }}</div></div></div></td>
+                <td class="p-3"><div class="flex items-center gap-3">@unless ($s->isApproved())<input type="checkbox" name="students[]" value="{{ $s->id }}" form="bulk-approve" aria-label="Select {{ $s->name }}" class="h-4 w-4 shrink-0">@endunless<x-avatar :user="$s" class="w-9 h-9" /><div><a class="text-brand-700 underline" href="{{ route('admin.students.show', $s) }}">{{ $s->name }}</a>@if($s->isAdmin()) <span class="ml-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800 no-underline">Admin</span>@endif<div class="text-xs text-gray-500">{{ $s->email }}</div></div></div></td>
                 <td class="p-3">{{ $s->ssc_batch }}</td>
                 <td class="p-3">{{ $s->phone }}</td>
                 <td class="p-3">{{ ucfirst($s->status) }}</td>

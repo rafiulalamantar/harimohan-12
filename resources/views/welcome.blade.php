@@ -124,7 +124,7 @@
             <label class="relative w-full sm:w-80">
                 <span class="sr-only">Search Alumni</span>
                 <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
-                <input name="q" type="search" value="{{ $search }}" placeholder="Search name, batch, job…"
+                <input name="q" type="search" value="{{ $search }}" placeholder="Search name, batch, job…" data-search-shortcut aria-keyshortcuts="/"
                        class="w-full rounded-full border-0 bg-white py-3 pl-11 pr-4 text-sm ring-1 ring-slate-200 shadow-soft placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-brand-500">
                 @if ($selectedBatch)<input type="hidden" name="batch" value="{{ $selectedBatch }}">@endif
             </label>

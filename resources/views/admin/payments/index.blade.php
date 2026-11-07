@@ -8,7 +8,7 @@
 </div>
 
 <form class="flex flex-wrap gap-2 mb-4 text-sm">
-    <input name="q" value="{{ request('q') }}" placeholder="TrxID / invoice / name / phone" class="border rounded-lg px-3 py-2">
+    <input name="q" type="search" value="{{ request('q') }}" data-search-shortcut aria-keyshortcuts="/" placeholder="TrxID / invoice / name / phone" class="border rounded-lg px-3 py-2">
     <select name="status" class="border rounded-lg px-3 py-2">
         <option value="">All status</option>
         @foreach (\App\Models\Payment::STATUSES as $s)<option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>@endforeach
