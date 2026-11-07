@@ -1,6 +1,15 @@
 # Release Notes
 
-## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.8.0...main)
+## [Unreleased](https://github.com/rafiulalamantar/harimohan-12/compare/v1.9.0...main)
+
+## [v1.9.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.8.0...v1.9.0) - 2026-11-07
+
+v1.9.0 - UX improvements
+
+- Autosaved drafts: announcement, memory and Email members forms keep what you type in this browser. If the tab closes or the server fails, it is restored next time ("Nothing was lost"), with a Discard draft button. Drafts are cleared after a successful save.
+- Inline form validation: mistakes (wrong email, short mobile number, empty required field) show under the field as soon as you leave it.
+- Bulk approve: on Admin > Students, tick waiting students (or Select all) and press Approve selected. The approving admin is recorded.
+- Keyboard shortcut: press / to jump to the search box on the alumni directory, Students and Payments pages.
 
 ## [v1.8.0](https://github.com/rafiulalamantar/harimohan-12/compare/v1.7.0...v1.8.0) - 2026-10-24
 
