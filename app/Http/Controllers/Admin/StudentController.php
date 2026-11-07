@@ -103,6 +103,30 @@ class StudentController extends Controller
         return back()->with('success', "{$student->name}'s status: {$data['status']}");
     }
 
+    /** Approve every ticked registration at once (bulk action on the Students page); already approved ones are skipped. */
+    public function approveMany(Request $request): RedirectResponse
+    {
+        $ids = $request->validate([
+            'students' => ['required', 'array', 'max:100'],
+            'students.*' => ['integer'],
+        ], ['students.required' => 'Tick at least one student to approve.'])['students'];
+
+        $approved = User::students()
+            ->whereIn('id', $ids)
+            ->where('status', '!=', User::STATUS_APPROVED)
+            ->update([
+                'status' => User::STATUS_APPROVED,
+                'reviewed_by' => $request->user()->id,
+                'reviewed_at' => now(),
+            ]);
+
+        if ($approved === 0) {
+            return back()->with('info', 'Those students were already approved.');
+        }
+
+        return back()->with('success', "Approved {$approved} ".str('student')->plural($approved).'.');
+    }
+
     /** Super admins make an approved student an admin, or take admin access away again. */
     public function updateAdminAccess(Request $request, User $student): RedirectResponse
     {

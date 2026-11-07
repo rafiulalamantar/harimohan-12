@@ -10,7 +10,7 @@
             <strong>{{ $remainingToday }}</strong> of {{ \App\Models\MemberEmail::DAILY_LIMIT }} emails left today (Brevo free plan limit; every member counts as one email).
         </p>
 
-        <form method="POST" action="{{ route('admin.member-emails.store') }}" class="mt-6 space-y-4"
+        <form method="POST" action="{{ route('admin.member-emails.store') }}" class="mt-6 space-y-4" data-draft="member-email"
               data-confirm="Send this email to the selected members? It can't be undone.">
             @csrf
             <div class="grid sm:grid-cols-2 gap-4">

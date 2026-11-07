@@ -113,7 +113,7 @@
 <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-1">
     @foreach (['success' => 'bg-brand-50 border-brand-200 text-brand-900', 'info' => 'bg-sky-50 border-sky-200 text-sky-900', 'error' => 'bg-rose-50 border-rose-200 text-rose-800'] as $key => $cls)
         @if (session($key))
-            <div class="mb-6 flex items-start gap-3 border rounded-2xl px-4 py-3 text-sm font-medium {{ $cls }}">
+            <div data-flash="{{ $key }}" class="mb-6 flex items-start gap-3 border rounded-2xl px-4 py-3 text-sm font-medium {{ $cls }}">
                 @if ($key === 'success')
                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                 @else
